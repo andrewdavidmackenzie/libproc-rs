@@ -32,14 +32,14 @@ extern {
 
     // int proc_pidfdinfo(int pid, int fd, int flavor, void * buffer, int buffersize)
 
-    // int proc_name(int pid, void * buffer, uint32_t buffersize)
+    fn proc_name(pid : c_int, buffer : *mut c_void, buffersize : uint32_t) -> c_int;
 
     // int proc_regionfilename(int pid, uint64_t address, void * buffer, uint32_t buffersize)
 
     // int proc_kmsgbuf(void * buffer, uint32_t  buffersize)
 
     // int proc_pidpath(int pid, void * buffer, uint32_t  buffersize)
-    fn proc_pidpath(pid: c_int, buffer: *mut c_void, buffersize : uint32_t) -> c_int;
+    fn proc_pidpath(pid : c_int, buffer : *mut c_void, buffersize : uint32_t) -> c_int;
 
     // int proc_libversion(int *major, int * minor)
     // return value of 0 indicates success (inconsistent :-( )
@@ -54,10 +54,8 @@ fn get_errno_with_message(ret : i32) -> String {
 
 pub fn pidpath(pid : i32) -> Result<String, String> {
     let pathbuf : Vec<u8>= Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
-
     let buffer_ptr = pathbuf.as_ptr() as *mut c_void;
     let buffer_size = pathbuf.capacity() as u32;
-
     let ret : i32;
     let rebuilt : Vec<u8>;
 
@@ -121,5 +119,37 @@ fn libversion_test() {
             println!("Major = {}, Minor = {}", major, minor);
         },
         Err(message) => assert!(false, message)
+    }
+}
+
+pub fn name(pid : i32) -> Result<String, String> {
+    let namebuf: Vec<u8>= Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
+    let buffer_ptr = namebuf.as_ptr() as *mut c_void;
+    let buffer_size = namebuf.capacity() as u32;
+    let ret : i32;
+    let rebuilt : Vec<u8>;
+
+    unsafe {
+        ret = proc_name(pid, buffer_ptr, buffer_size);
+        rebuilt = Vec::from_raw_parts(buffer_ptr as *mut u8, ret as usize, buffer_size as usize);
+    };
+
+    if ret <= 0 {
+        Err(get_errno_with_message(ret))
+    } else {
+        match String::from_utf8(rebuilt) {
+            Ok(name) => Ok(name),
+            Err(e) => Err(format!("Invalid UTF-8 sequence: {}", e))
+        }
+    }
+}
+
+#[test]
+// This checks that it can find the name of the init process with PID 1
+fn name_test_init_pid() {
+    match pidpath(1) {
+        // run tests with 'cargo test -- --nocapture' to see the test output
+        Ok(path) => println!("Name of init process PID = 1 is '{}'", path),
+        Err(message) => assert!(true, message)
     }
 }
