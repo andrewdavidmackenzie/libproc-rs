@@ -76,6 +76,27 @@ pub fn pidpath(pid : i32) -> Result<String, String> {
     }
 }
 
+#[test]
+// This checks that it can find the path of the init process with PID 1
+fn pidpath_test_init_pid() {
+    match pidpath(1) {
+        // run tests with 'cargo test -- --nocapture' to see the test output
+        Ok(path) => println!("Path of init process PID = 1 is '{}'", path),
+        Err(message) => assert!(true, message)
+    }
+}
+
+#[test]
+#[should_panic]
+// This checks that it cannot find the path of the process with pid -1
+fn pidpath_test_unknown_pid() {
+    match pidpath(-1) {
+        // run tests with 'cargo test -- --nocapture' to see the test output
+        Ok(path) => assert!(false, "It found the path of process Pwith ID = -1 (path = {}), that's not possible\n", path),
+        Err(message) => assert!(false, message)
+    }
+}
+
 pub fn libversion() -> Result<(i32, i32), String> {
     let mut major = 0;
     let mut minor = 0;
