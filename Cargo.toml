@@ -12,5 +12,5 @@ name = "libproc"
 path = "src/lib.rs"
 
 [[bin]]
-name = "pathfind"
-path = "src/pathfind.rs"
+name = "procinfo"
+path = "src/procinfo.rs"

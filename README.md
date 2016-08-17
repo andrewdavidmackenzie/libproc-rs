@@ -23,7 +23,7 @@ At the moment these methods are implemented
 - pub fn pidpath(pid : i32) -> Result<String, String>
 
 # Binaries
-'cargo build' also builds a simple binary called 'pathfind' that takes a PID as an argument and returns the absolute path to it on stdout
+'cargo build' also builds a simple binary called 'procinfo' that takes a PID as an argument and returns information about the process on stdout
 
 # Platforms
 Initially just for Mac OS X. Once the API is complete then doing a Linux version with the same API would make sense.
@@ -31,6 +31,5 @@ Initially just for Mac OS X. Once the API is complete then doing a Linux version
 # TODO
 - Implement some minimal support on Linux so the Travis-CI build passes
 - Complete the API to match that provided (on Mac OS X) at http://opensource.apple.com//source/Libc/Libc-498.1.1/darwin/libproc.c
-- Add some tests
 - Add some documentation (including samples with documentation test)
 - It should not be too hard to produce a version for Linux with the same API...

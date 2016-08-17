@@ -22,10 +22,9 @@ const MAXPATHLEN : usize = 1024;
 const PROC_PIDPATHINFO_MAXSIZE : usize = 4 * MAXPATHLEN;
 
 // this extern block links to the libproc library
+// Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
 #[link(name="proc", kind="dylib")]
 extern {
-    // Original signatures from http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
-
     // int proc_listpids(uint32_t type, uint32_t typeinfo, void *buffer, int buffersize)
 
     // int proc_pidinfo(int pid, int flavor, uint64_t arg,  void *buffer, int buffersize)
