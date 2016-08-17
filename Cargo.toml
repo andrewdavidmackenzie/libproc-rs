@@ -1,0 +1,16 @@
+[package]
+name = "libproc"
+version = "0.1.0"
+authors = ["Andrew Mackenzie <andrew@mackenzie-serres.net>"]
+
+[dependencies]
+errno = "*"
+libc = "*"
+
+[lib]
+name = "libproc"
+path = "src/lib.rs"
+
+[[bin]]
+name = "pathfind"
+path = "src/pathfind.rs"
