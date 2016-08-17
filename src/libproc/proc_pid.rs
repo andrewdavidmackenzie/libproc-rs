@@ -6,14 +6,6 @@ use self::errno::errno;
 
 use std::str;
 
-// this extern block links to the libproc library
-#[link(name="proc", kind="dylib")]
-extern {
-    // Original signature from http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
-    // int proc_pidpath(int pid, void * buffer, uint32_t  buffersize)
-    fn proc_pidpath(pid: c_int, buffer: *mut c_void, buffersize : uint32_t) -> c_int;
-}
-
 // Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
 // See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
 // buffersize must be more than PROC_PIDPATHINFO_SIZE
@@ -29,13 +21,44 @@ extern {
 const MAXPATHLEN : usize = 1024;
 const PROC_PIDPATHINFO_MAXSIZE : usize = 4 * MAXPATHLEN;
 
+// this extern block links to the libproc library
+#[link(name="proc", kind="dylib")]
+extern {
+    // Original signatures from http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
+
+    // int proc_listpids(uint32_t type, uint32_t typeinfo, void *buffer, int buffersize)
+
+    // int proc_pidinfo(int pid, int flavor, uint64_t arg,  void *buffer, int buffersize)
+
+    // int proc_pidfdinfo(int pid, int fd, int flavor, void * buffer, int buffersize)
+
+    // int proc_name(int pid, void * buffer, uint32_t buffersize)
+
+    // int proc_regionfilename(int pid, uint64_t address, void * buffer, uint32_t buffersize)
+
+    // int proc_kmsgbuf(void * buffer, uint32_t  buffersize)
+
+    // int proc_pidpath(int pid, void * buffer, uint32_t  buffersize)
+    fn proc_pidpath(pid: c_int, buffer: *mut c_void, buffersize : uint32_t) -> c_int;
+
+    // int proc_libversion(int *major, int * minor)
+    // return value of 0 indicates success (inconsistent :-( )
+    fn proc_libversion(major : *mut c_int, minor : * mut c_int) -> c_int;
+}
+
+fn get_errno_with_message(ret : i32) -> String {
+    let e = errno();
+    let code = e.0 as i32;
+    format!("return code = {}, errno = {}, message = '{}'", ret, code, e)
+}
+
 pub fn pidpath(pid : i32) -> Result<String, String> {
     let pathbuf : Vec<u8>= Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
 
     let buffer_ptr = pathbuf.as_ptr() as *mut c_void;
     let buffer_size = pathbuf.capacity() as u32;
 
-    let ret;
+    let ret : i32;
     let rebuilt : Vec<u8>;
 
     unsafe {
@@ -44,13 +67,38 @@ pub fn pidpath(pid : i32) -> Result<String, String> {
     };
 
     if ret <= 0 {
-        let e = errno();
-        let code = e.0 as i32;
-        Err(format!("proc_pidpath() returned {}, errno = {}, '{}'", ret, code, e))
+        Err(get_errno_with_message(ret))
     } else {
         match String::from_utf8(rebuilt) {
             Ok(path) => Ok(path),
             Err(e) => Err(format!("Invalid UTF-8 sequence: {}", e))
         }
+    }
+}
+
+pub fn libversion() -> Result<(i32, i32), String> {
+    let mut major = 0;
+    let mut minor = 0;
+    let ret : i32;
+
+    unsafe {
+        ret = proc_libversion(&mut major, &mut minor);
+    };
+
+    if ret == 0 {
+        Ok((major, minor))
+    } else {
+        Err(get_errno_with_message(ret))
+    }
+}
+
+#[test]
+fn libversion_test() {
+    match libversion() {
+        Ok((major, minor)) => {
+            // run tests with 'cargo test -- --nocapture' to see the test output
+            println!("Major = {}, Minor = {}", major, minor);
+        },
+        Err(message) => assert!(false, message)
     }
 }
