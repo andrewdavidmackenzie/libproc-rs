@@ -27,7 +27,6 @@ At the moment these methods are implemented
 Initially just for Mac OS X. Once the API is complete then doing a Linux version with the same API would make sense.
 
 # TODO
-- Travis-CI build
 - Complete the API to match that provided (on Mac OS X) at http://opensource.apple.com//source/Libc/Libc-498.1.1/darwin/libproc.c
 - Add some tests
 - Add some documentation (including samples with documentation test)
