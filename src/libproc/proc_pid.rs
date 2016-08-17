@@ -1,5 +1,5 @@
 extern crate libc;
-use self::libc::{uint32_t, c_void, c_int};
+use self::libc::{uint64_t, uint32_t, c_void, c_int};
 
 extern crate errno;
 use self::errno::errno;
@@ -21,6 +21,9 @@ use std::str;
 const MAXPATHLEN : usize = 1024;
 const PROC_PIDPATHINFO_MAXSIZE : usize = 4 * MAXPATHLEN;
 
+// TODO set the correct values for each
+pub enum ProcType { ProcAllPIDS, ProcPGRPOnly, ProcTtyOnly, ProcUIDOnly, ProcUidOnly }
+
 // this extern block links to the libproc library
 // Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
 #[link(name="proc", kind="dylib")]
@@ -33,7 +36,7 @@ extern {
 
     fn proc_name(pid : c_int, buffer : *mut c_void, buffersize : uint32_t) -> c_int;
 
-    // int proc_regionfilename(int pid, uint64_t address, void * buffer, uint32_t buffersize)
+    fn proc_regionfilename(pid : c_int, address : uint64_t, buffer : *mut c_void, buffersize : uint32_t) -> c_int;
 
     // int proc_kmsgbuf(void * buffer, uint32_t  buffersize)
 
@@ -49,6 +52,38 @@ fn get_errno_with_message(ret : i32) -> String {
     let e = errno();
     let code = e.0 as i32;
     format!("return code = {}, errno = {}, message = '{}'", ret, code, e)
+}
+
+pub fn regionfilename(pid : i32, address : u64) -> Result<String, String> {
+    let regionfilenamebuf: Vec<u8>= Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
+    let buffer_ptr = regionfilenamebuf.as_ptr() as *mut c_void;
+    let buffer_size = regionfilenamebuf.capacity() as u32;
+    let ret : i32;
+    let rebuilt : Vec<u8>;
+
+    unsafe {
+        ret = proc_regionfilename(pid, address, buffer_ptr, buffer_size);
+        rebuilt = Vec::from_raw_parts(buffer_ptr as *mut u8, ret as usize, buffer_size as usize);
+    };
+
+    if ret <= 0 {
+        Err(get_errno_with_message(ret))
+    } else {
+        match String::from_utf8(rebuilt) {
+            Ok(regionfilename) => Ok(regionfilename),
+            Err(e) => Err(format!("Invalid UTF-8 sequence: {}", e))
+        }
+    }
+}
+
+#[test]
+// This checks that it can find the regionfilename of the region at address 0, of the init process with PID 1
+fn regionfilename_test() {
+    match regionfilename(1, 0) {
+        // run tests with 'cargo test -- --nocapture' to see the test output
+        Ok(regionfilename) => println!("Region Filename (at address = 0) of init process PID = 1 is '{}'", regionfilename),
+        Err(message) => assert!(true, message)
+    }
 }
 
 pub fn pidpath(pid : i32) -> Result<String, String> {

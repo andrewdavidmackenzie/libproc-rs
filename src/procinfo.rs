@@ -21,6 +21,11 @@ fn procinfo(pid : i32) {
         Ok(name) => println!("Name: {}", name),
         Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
     }
+
+    match proc_pid::regionfilename(pid, 0) {
+        Ok(regionfilename) => println!("Region Filename (at address 0): {}", regionfilename),
+        Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+    }
 }
 
 fn main() {
