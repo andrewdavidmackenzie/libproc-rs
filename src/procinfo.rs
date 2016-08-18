@@ -40,6 +40,16 @@ fn procinfo(pid: i32) {
         Ok(regionfilename) => println!("Region Filename (at address 0): {}", regionfilename),
         Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
     }
+
+    match proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
+        Ok(pids) => {
+            println!("There are currently {} processes active", pids.len());
+            for pid in pids {
+                println!("{}", pid);
+            }
+        },
+        Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+    }
 }
 
 fn main() {

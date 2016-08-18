@@ -23,20 +23,25 @@ use std::str;
 const MAXPATHLEN: usize = 1024;
 const PROC_PIDPATHINFO_MAXSIZE: usize = 4 * MAXPATHLEN;
 
-// From http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h
+// This constant is the maximum number of PIDs we will fetch and return from listpids
+const MAXPIDS: usize = 1024;
+
+// From http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h and
+// http://fxr.watson.org/fxr/source/bsd/sys/proc_info.h?v=xnu-2050.18.24
 pub enum ProcType {
     ProcAllPIDS = 1,
     ProcPGRPOnly = 2,
-    ProcTtyOnly = 3,
+    ProcTTYOnly = 3,
     ProcUIDOnly = 4,
-    ProcUidOnly = 5
+    ProcRUIDOnly = 5,
+    ProcPPIDOnly = 6
 }
 
 // this extern block links to the libproc library
 // Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
 #[link(name = "proc", kind = "dylib")]
 extern {
-    // int proc_listpids(uint32_t type, uint32_t typeinfo, void *buffer, int buffersize)
+    fn proc_listpids(proc_type: uint32_t, typeinfo: uint32_t, buffer: *mut c_void, buffersize: uint32_t) -> c_int;
 
     // int proc_pidinfo(int pid, int flavor, uint64_t arg,  void *buffer, int buffersize)
 
@@ -60,6 +65,56 @@ fn get_errno_with_message(ret: i32) -> String {
     let e = errno();
     let code = e.0 as i32;
     format!("return code = {}, errno = {}, message = '{}'", ret, code, e)
+}
+
+/// Returns the PIDs of the processes active matching the ProcType passed in
+///
+/// # Examples
+///
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::proc_pid;
+///
+/// match proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
+///     Ok(pids) => {
+///         assert!(pids.len() > 1);
+///         println!("Found {} processes using listpids()", pids.len());
+///     },
+///     Err(err) => assert!(false, "Error listing pids")
+/// }
+/// ```
+pub fn listpids(proc_types : ProcType) -> Result<Vec<u32>, String> {
+    let mut pids: Vec<u32> = Vec::with_capacity(MAXPIDS);
+    let buffer_ptr = pids.as_ptr() as *mut c_void;
+    let buffer_size = (pids.capacity() * 4) as u32;
+    let ret: i32;
+
+    unsafe {
+        ret = proc_listpids(proc_types as u32, 0, buffer_ptr, buffer_size);
+    }
+
+    if ret <= 0 {
+        Err(get_errno_with_message(ret))
+    } else {
+        unsafe {
+            pids = Vec::from_raw_parts(buffer_ptr as *mut u32, ret as usize, pids.capacity());
+            // Seems that the buffer is padded with a lot of pids set to zero
+            pids.retain(|&p| p > 0u32);
+        }
+
+        Ok(pids)
+    }
+}
+
+#[test]
+fn listpids_test() {
+    match listpids(ProcType::ProcAllPIDS) {
+        Ok(pids) => {
+            assert!(pids.len() > 1);
+            println!("Found {} processes using listpids()", pids.len());
+        },
+        Err(err) => assert!(false, "Error listing pids")
+    }
 }
 
 pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
