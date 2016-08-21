@@ -18,20 +18,29 @@ match proc_pid::pidpath(pid) {
 }
 ```
 
+# Documentation
+See Documentation published at crates.io (soon)
+
 # API
-At the moment these methods are implemented
+At the moment these methods are implemented:
+- pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String>
+- pub fn regionfilename(pid: i32, address: u64) -> Result<String, String>
 - pub fn pidpath(pid : i32) -> Result<String, String>
+- pub fn libversion() -> Result<(i32, i32), String>
+- pub fn name(pid: i32) -> Result<String, String>
 
 # Binaries
-'cargo build' also builds a simple binary called 'procinfo' that takes a PID as an argument and returns information about the process on stdout
+'cargo build' builds the following binaries:
+- 'procinfo' that takes a PID as an optional argument (uses it's own pid if none supplied) and returns information about the process on stdout
+- 'dmesg' is a version of dmesg implemented in rust that uses libproc-rs. This must be run as root.
 
 # Platforms
-Initially just for Mac OS X. Once the API is complete then doing a Linux version with the same API would make sense.
+Initially just for Mac OS X.
 
 # TODO
-- Complete the API on Mac OS X to match that provided (on Mac OS X) at http://opensource.apple.com//source/Libc/Libc-498.1.1/darwin/libproc.c
+- Complete the API on Mac OS X
 - Add some documentation (including samples with documentation test)
-- Implement a version for Linux with the same API...
+- Once the API is complete then doing a Linux version with the same API would make sense.
 
 # LICENSE
 This code is licensed under MIT license (see LICENCE).

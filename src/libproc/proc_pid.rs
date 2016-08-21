@@ -1,11 +1,8 @@
 extern crate libc;
-
-use self::libc::{uint64_t, uint32_t, c_void, c_int};
-
 extern crate errno;
 
+use self::libc::{uint64_t, uint32_t, int32_t, c_void, c_int, uid_t, gid_t, c_char};
 use self::errno::errno;
-
 use std::str;
 
 // Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
@@ -23,18 +20,143 @@ use std::str;
 const MAXPATHLEN: usize = 1024;
 const PROC_PIDPATHINFO_MAXSIZE: usize = 4 * MAXPATHLEN;
 
-// This constant is the maximum number of PIDs we will fetch and return from listpids
+// This constant is the maximum number of PIDs we will fetch and return from listpids - arbitrary choice
 const MAXPIDS: usize = 1024;
+
+// from http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h
+const MAXTHREADNAMESIZE : usize = 64;
 
 // From http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h and
 // http://fxr.watson.org/fxr/source/bsd/sys/proc_info.h?v=xnu-2050.18.24
 pub enum ProcType {
-    ProcAllPIDS = 1,
-    ProcPGRPOnly = 2,
-    ProcTTYOnly = 3,
-    ProcUIDOnly = 4,
-    ProcRUIDOnly = 5,
-    ProcPPIDOnly = 6
+    ProcAllPIDS     = 1,
+    ProcPGRPOnly    = 2,
+    ProcTTYOnly     = 3,
+    ProcUIDOnly     = 4,
+    ProcRUIDOnly    = 5,
+    ProcPPIDOnly    = 6
+}
+
+// from http://opensource.apple.com//source/xnu/xnu-1504.7.4/bsd/sys/param.h
+const MAXCOMLEN	: usize = 16;
+
+// structures from http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h
+#[repr(C)]
+pub struct TaskInfo {
+    pub pti_virtual_size        : uint64_t,     // virtual memory size (bytes)
+    pub pti_resident_size       : uint64_t,     // resident memory size (bytes)
+    pub pti_total_user          : uint64_t,     // total time
+    pub pti_total_system        : uint64_t,
+    pub pti_threads_user        : uint64_t,     // existing threads only
+    pub pti_threads_system      : uint64_t,
+    pub pti_policy              : int32_t,      // default policy for new threads
+    pub pti_faults              : int32_t,      // number of page faults
+    pub pti_pageins             : int32_t,      // number of actual pageins
+    pub pti_cow_faults          : int32_t,      // number of copy-on-write faults
+    pub pti_messages_sent       : int32_t,      // number of messages sent
+    pub pti_messages_received   : int32_t,      // number of messages received
+    pub pti_syscalls_mach       : int32_t,      // number of mach system calls
+    pub pti_syscalls_unix       : int32_t,      // number of unix system calls
+    pub pti_csw                 : int32_t,      // number of context switches
+    pub pti_threadnum           : int32_t,      // number of threads in the task
+    pub pti_numrunning          : int32_t,      // number of running threads
+    pub pti_priority            : int32_t       // task priority
+}
+
+#[repr(C)]
+pub struct BSDInfo {
+    pub pbi_flags               : uint32_t,                 // 64bit; emulated etc
+    pub pbi_status              : uint32_t,
+    pub pbi_xstatus             : uint32_t,
+    pub pbi_pid                 : uint32_t,
+    pub pbi_ppid                : uint32_t,
+    pub pbi_uid                 : uid_t,
+    pub pbi_gid                 : gid_t,
+    pub pbi_ruid                : uid_t,
+    pub pbi_rgid                : gid_t,
+    pub pbi_svuid               : uid_t,
+    pub pbi_svgid               : gid_t,
+    pub rfu_1                   : uint32_t,                 // reserved
+    pub pbi_comm                : [c_char; MAXCOMLEN],
+    pub pbi_name                : [c_char; 2 * MAXCOMLEN],  // empty if no name is registered
+    pub pbi_nfiles              : uint32_t,
+    pub pbi_pgid                : uint32_t,
+    pub pbi_pjobc               : uint32_t,
+    pub e_tdev                  : uint32_t,                 // controlling tty dev
+    pub e_tpgid                 : uint32_t,                 // tty process group id
+    pub pbi_nice                : int32_t,
+    pub pbi_start_tvsec         : uint64_t,
+    pub pbi_start_tvusec        : uint64_t
+}
+
+#[repr(C)]
+pub struct TaskAllInfo {
+    pub pbsd : BSDInfo,
+    pub ptinfo : TaskInfo
+}
+
+#[repr(C)]
+pub struct ThreadInfo {
+    pub pth_user_time           : uint64_t,                     // user run time
+    pub pth_system_time         : uint64_t,                     // system run time
+    pub pth_cpu_usage           : int32_t,                      // scaled cpu usage percentage
+    pub pth_policy              : int32_t,                      // scheduling policy in effect
+    pub pth_run_state           : int32_t,                      // run state (see below)
+    pub pth_flags               : int32_t,                      // various flags (see below)
+    pub pth_sleep_time          : int32_t,                      // number of seconds that thread
+    pub pth_curpri              : int32_t,                      // cur priority
+    pub pth_priority            : int32_t,                      // priority
+    pub pth_maxpriority         : int32_t,                      // max priority
+    pub pth_name                : [c_char; MAXTHREADNAMESIZE]   // thread name, if any
+}
+
+pub struct WorkQueueInfo {
+    pub pwq_nthreads            : uint32_t,     // total number of workqueue threads
+    pub pwq_runthreads          : uint32_t,     // total number of running workqueue threads
+    pub pwq_blockedthreads      : uint32_t,     // total number of blocked workqueue threads
+    pub reserved                : [uint32_t;1]  // reserved for future use
+}
+
+// From http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c
+pub enum PidInfoFlavor {
+    ListFDs         =  1,   // list of ints?
+    TaskAllInfo     =  2,   // struct proc_taskallinfo
+    TBSDInfo        =  3,   // struct proc_bsdinfo
+    TaskInfo        =  4,   // struct proc_taskinfo
+    ThreadInfo      =  5,   // struct proc_threadinfo
+    ListThreads     =  6,   // list if int thread ids
+    RegionInfo      =  7,
+    RegionPathInfo  =  8,   // string?
+    VNodePathInfo   =  9,   // string?
+    ThreadPathInfo  = 10,   // String?
+    PathInfo        = 11,   // String
+    WorkQueueInfo   = 12    // struct proc_workqueueinfo
+}
+
+pub enum PidInfo {
+    ListFDs(Vec<i32>),      // File Descriptors used by Process
+    TaskAllInfo(TaskAllInfo),
+    TBSDInfo(BSDInfo),
+    TaskInfo(TaskInfo),
+    ThreadInfo(ThreadInfo),
+    ListThreads(Vec<i32>),  // thread ids
+    RegionInfo(String),     // String??
+    RegionPathInfo(String),
+    VNodePathInfo(String),
+    ThreadPathInfo(String),
+    PathInfo(String),
+    WorkQueueInfo(WorkQueueInfo)
+}
+
+pub enum PidFDInfoFlavor {
+    VNodeInfo       = 1,
+    VNodePathInfo   = 2,
+    SocketInfo      = 3,
+    PSEMInfo        = 4,
+    PSHMInfo        = 5,
+    PipeInfo        = 6,
+    KQueueInfo      = 7,
+    ATalkInfo       = 8
 }
 
 // this extern block links to the libproc library
@@ -43,31 +165,26 @@ pub enum ProcType {
 extern {
     fn proc_listpids(proc_type: uint32_t, typeinfo: uint32_t, buffer: *mut c_void, buffersize: uint32_t) -> c_int;
 
-    // int proc_pidinfo(int pid, int flavor, uint64_t arg,  void *buffer, int buffersize)
+//    fn proc_pidinfo(pid : c_int, flavor : c_int, arg: uint64_t,  buffer : *mut c_void, buffersize : c_int) -> c_int;
 
-    // int proc_pidfdinfo(int pid, int fd, int flavor, void * buffer, int buffersize)
+//    fn proc_pidfdinfo(pid : c_int, fd : c_int, flavor : c_int, buffer : *mut c_void, buffersize : c_int) -> c_int;
 
     fn proc_name(pid: c_int, buffer: *mut c_void, buffersize: uint32_t) -> c_int;
 
     fn proc_regionfilename(pid: c_int, address: uint64_t, buffer: *mut c_void, buffersize: uint32_t) -> c_int;
 
-    // int proc_kmsgbuf(void * buffer, uint32_t  buffersize)
-
-    // int proc_pidpath(int pid, void * buffer, uint32_t  buffersize)
     fn proc_pidpath(pid: c_int, buffer: *mut c_void, buffersize: uint32_t) -> c_int;
 
-    // int proc_libversion(int *major, int * minor)
-    // return value of 0 indicates success (inconsistent :-( )
     fn proc_libversion(major: *mut c_int, minor: *mut c_int) -> c_int;
 }
 
-fn get_errno_with_message(ret: i32) -> String {
+pub fn get_errno_with_message(ret: i32) -> String {
     let e = errno();
     let code = e.0 as i32;
     format!("return code = {}, errno = {}, message = '{}'", ret, code, e)
 }
 
-/// Returns the PIDs of the processes active matching the ProcType passed in
+/// Returns the PIDs of the processes active that match the ProcType passed in
 ///
 /// # Examples
 ///
@@ -83,7 +200,7 @@ fn get_errno_with_message(ret: i32) -> String {
 ///     Err(err) => assert!(false, "Error listing pids")
 /// }
 /// ```
-pub fn listpids(proc_types : ProcType) -> Result<Vec<u32>, String> {
+pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     let mut pids: Vec<u32> = Vec::with_capacity(MAXPIDS);
     let buffer_ptr = pids.as_ptr() as *mut c_void;
     let buffer_size = (pids.capacity() * 4) as u32;
@@ -113,9 +230,19 @@ fn listpids_test() {
             assert!(pids.len() > 1);
             println!("Found {} processes using listpids()", pids.len());
         },
-        Err(err) => assert!(false, "Error listing pids")
+        Err(err) => assert!(false, "Error listing pids: {}", err)
     }
 }
+
+/// pidinfo to get information about a process
+/// arg - is "geavily not documented" and need to look at code for each flavour here
+/// http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c
+/// to figure out what it's doing.... Pull-Requests welcome!
+///
+/* pub fn pidinfo(pid : u32, flavor : PidInfoFlavor, arg: uint64_t) -> Result<(), String> {
+// ,  buffer : *mut c_void, buffersize : u32
+    Ok(())
+} */
 
 pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
     let regionfilenamebuf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
@@ -185,7 +312,7 @@ fn pidpath_test_init_pid() {
     match pidpath(1) {
         // run tests with 'cargo test -- --nocapture' to see the test output
         Ok(path) => println!("Path of init process with PID = 1 is '{}'", path),
-        Err(message) => assert!(true, message)
+        Err(message) => assert!(false, message)
     }
 }
 
@@ -224,6 +351,7 @@ pub fn libversion() -> Result<(i32, i32), String> {
         ret = proc_libversion(&mut major, &mut minor);
     };
 
+    // return value of 0 indicates success (inconsistent with other functions... :-( )
     if ret == 0 {
         Ok((major, minor))
     } else {
@@ -242,6 +370,19 @@ fn libversion_test() {
     }
 }
 
+/// Returns the name of the process with the specified pid
+///
+/// # Examples
+///
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::proc_pid;
+///
+/// match proc_pid::name(1) {
+///     Ok(name) => println!("Name: {}", name),
+///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+/// }
+/// ```
 pub fn name(pid: i32) -> Result<String, String> {
     let namebuf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
     let buffer_ptr = namebuf.as_ptr() as *mut c_void;
