@@ -28,7 +28,7 @@ At the moment these methods are implemented:
 - pub fn regionfilename(pid: i32, address: u64) -> Result<String, String>
 - pub fn pidpath(pid : i32) -> Result<String, String>
 - pub fn libversion() -> Result<(i32, i32), String>
-- pub fn name(pid: i32) -> Result<String, String>`
+- pub fn name(pid: i32) -> Result<String, String>
 ```
 
 I have also implemented this method - but the MAGIC_NUMBER returned is not correct, 
