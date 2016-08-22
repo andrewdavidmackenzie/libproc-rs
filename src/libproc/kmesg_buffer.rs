@@ -1,7 +1,7 @@
 extern crate libc;
 extern crate errno;
 
-use self::libc::{uint32_t, c_int, c_long};
+use self::libc::{uint32_t, c_int};
 
 use std::{ptr, mem, env, io};
 use std::io::Write;

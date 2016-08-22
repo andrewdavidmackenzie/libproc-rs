@@ -19,7 +19,8 @@ match proc_pid::pidpath(pid) {
 ```
 
 # Documentation
-See Documentation published at crates.io (soon)
+Run "cargo doc" and then open "./target/doc/libproc/index.html".
+More documentation will be added over time.
 
 # API
 At the moment these methods are implemented:

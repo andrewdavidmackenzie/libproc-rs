@@ -8,8 +8,8 @@ readme = "README.md"
 license = "MIT"
 
 [dependencies]
-errno = "*"
-libc = "*"
+errno = "^0.1.8"
+libc = "^0.2.15"
 
 [lib]
 name = "libproc"
