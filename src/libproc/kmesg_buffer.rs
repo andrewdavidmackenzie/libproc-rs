@@ -5,19 +5,21 @@ use self::libc::{uint32_t, c_int, c_long};
 
 use std::{ptr, mem, env, io};
 use std::io::Write;
+use std::fmt;
 
 use libproc::proc_pid;
 
 // See https://opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/sys/msgbuf.h
-const MSG_BSIZE : c_long = 4096;
-const MSG_MAGIC : c_long = 0x063061;
+const MAX_MSG_BSIZE : c_int = (1*1024*1024);
+const MSG_MAGIC : c_int = 0x063061;
 
+// See /usr/include/sys/msgbuf.h on your Mac.
 #[repr(C)]
 struct MessageBuffer {
-    pub msg_magic : c_long,
-    pub msg_size : c_long,
-    pub msg_bufx : c_long,      // write pointer
-    pub msg_bufr : c_long,      // read pointer
+    pub msg_magic : c_int,
+    pub msg_size : c_int,
+    pub msg_bufx : c_int,      // write pointer
+    pub msg_bufr : c_int,      // read pointer
     pub msg_bufc : * mut u8     // buffer
 }
 
@@ -30,6 +32,12 @@ impl Default for MessageBuffer {
             msg_bufr : 0,
             msg_bufc : ptr::null_mut() as * mut u8
         }
+    }
+}
+
+impl fmt::Debug for MessageBuffer {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "MessageBuffer {{ magic: 0x{:x}, size: {}, bufx: {}}}", self.msg_magic, self.msg_size, self.msg_bufx)
     }
 }
 
@@ -71,10 +79,11 @@ pub fn kmsgbuf() -> Result<String, String> {
     } else
     {
         if message_buffer.msg_magic != MSG_MAGIC {
+            println!("Message buffer: {:?}", message_buffer);
             Err(format!("The magic number 0x{:x} is incorrect", message_buffer.msg_magic))
         } else {
             // Avoid starting beyond the end of the buffer
-            if message_buffer.msg_bufx >= MSG_BSIZE {
+            if message_buffer.msg_bufx >= MAX_MSG_BSIZE {
                 message_buffer.msg_bufx = 0;
             }
             let mut output : Vec<u8> = Vec::new();
@@ -90,7 +99,8 @@ pub fn kmsgbuf() -> Result<String, String> {
 
                 while p != ep {
                     // If at the end, then loop around to the start
-                    if p == message_buffer.msg_bufc.offset(MSG_BSIZE as isize) {
+                    // TODO should use actual size (from struct element) - not the max size??
+                    if p == message_buffer.msg_bufc.offset(MAX_MSG_BSIZE as isize) {
                         p = message_buffer.msg_bufc;
                     }
 

@@ -10,10 +10,11 @@
 #include <vis.h>
 #include <libproc.h>
 
-#define	MSG_BSIZE	4096
-#define	MSG_MAGIC	0x063061
-
 void usage __P((void));
+
+void print_message_buffer(struct msgbuf * pMessageBuf) {
+    printf("Magic: %#010x\n", pMessageBuf->msg_magic);
+}
 
 int
 main(argc, argv)
@@ -34,12 +35,15 @@ main(argc, argv)
 		exit(1);
 	}
 
+    print_message_buffer(&cur);
+
 	if (cur.msg_magic != MSG_MAGIC) {
 		perror("magic number incorrect");
 		exit(1);
 	}
-	if (cur.msg_bufx >= MSG_BSIZE)
+	if (cur.msg_bufx >= MAX_MSG_BSIZE)
 		cur.msg_bufx = 0;
+
 
 	/*
 	 * The message buffer is circular; start at the read pointer, and
@@ -48,7 +52,7 @@ main(argc, argv)
 	p = cur.msg_bufc + cur.msg_bufx;
 	ep = cur.msg_bufc + cur.msg_bufx - 1;
 	for (newl = skip = 0; p != ep; ++p) {
-		if (p == cur.msg_bufc + MSG_BSIZE)
+		if (p == cur.msg_bufc + MAX_MSG_BSIZE)
 			p = cur.msg_bufc;
 		ch = *p;
 		/* Skip "\n<.*>" syslog sequences. */
