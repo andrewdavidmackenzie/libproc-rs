@@ -61,6 +61,7 @@ Initially just for Mac OS X.
 # TODO
 - Complete the API on Mac OS X - figuring out all the Mac OS X / Darwin version mess....
 - Add more documentation (including samples with documentation test)
+- Add own custom error type and implement From::from to ease reporting of multiple error types in clients
 - Once the API is complete then doing a Linux version with the same API would make sense.
 
 # LICENSE
