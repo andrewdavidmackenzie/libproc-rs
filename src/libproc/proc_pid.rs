@@ -202,7 +202,7 @@ pub fn get_errno_with_message(ret: i32) -> String {
 /// ```
 pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     let mut pids: Vec<u32> = Vec::with_capacity(MAXPIDS);
-    let buffer_ptr = pids.as_ptr() as *mut c_void;
+    let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
     let buffer_size = (pids.capacity() * 4) as u32;
     let ret: i32;
 
@@ -214,10 +214,10 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
         Err(get_errno_with_message(ret))
     } else {
         unsafe {
-            pids = Vec::from_raw_parts(buffer_ptr as *mut u32, ret as usize, pids.capacity());
-            // Seems that the buffer is padded with a lot of pids set to zero
-            pids.retain(|&p| p > 0u32);
+            pids.set_len(ret as usize);
         }
+        // Seems that the buffer is padded with a lot of pids set to zero
+        pids.retain(|&p| p > 0);
 
         Ok(pids)
     }
@@ -245,11 +245,10 @@ fn listpids_test() {
 } */
 
 pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
-    let regionfilenamebuf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
-    let buffer_ptr = regionfilenamebuf.as_ptr() as *mut c_void;
+    let mut regionfilenamebuf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
+    let buffer_ptr = regionfilenamebuf.as_mut_ptr() as *mut c_void;
     let buffer_size = regionfilenamebuf.capacity() as u32;
     let ret: i32;
-    let rebuilt: Vec<u8>;
 
     unsafe {
         ret = proc_regionfilename(pid, address, buffer_ptr, buffer_size);
@@ -259,10 +258,10 @@ pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
         Err(get_errno_with_message(ret))
     } else {
         unsafe {
-            rebuilt = Vec::from_raw_parts(buffer_ptr as *mut u8, ret as usize, buffer_size as usize);
+            regionfilenamebuf.set_len(ret as usize);
         }
 
-        match String::from_utf8(rebuilt) {
+        match String::from_utf8(regionfilenamebuf) {
             Ok(regionfilename) => Ok(regionfilename),
             Err(e) => Err(format!("Invalid UTF-8 sequence: {}", e))
         }
@@ -282,11 +281,10 @@ fn regionfilename_test() {
 }
 
 pub fn pidpath(pid: i32) -> Result<String, String> {
-    let pathbuf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
-    let buffer_ptr = pathbuf.as_ptr() as *mut c_void;
+    let mut pathbuf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
+    let buffer_ptr = pathbuf.as_mut_ptr() as *mut c_void;
     let buffer_size = pathbuf.capacity() as u32;
     let ret: i32;
-    let rebuilt: Vec<u8>;
 
     unsafe {
         ret = proc_pidpath(pid, buffer_ptr, buffer_size);
@@ -296,10 +294,10 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
         Err(get_errno_with_message(ret))
     } else {
         unsafe {
-            rebuilt = Vec::from_raw_parts(buffer_ptr as *mut u8, ret as usize, buffer_size as usize);
+            pathbuf.set_len(ret as usize);
         }
 
-        match String::from_utf8(rebuilt) {
+        match String::from_utf8(pathbuf) {
             Ok(path) => Ok(path),
             Err(e) => Err(format!("Invalid UTF-8 sequence: {}", e))
         }
@@ -384,11 +382,10 @@ fn libversion_test() {
 /// }
 /// ```
 pub fn name(pid: i32) -> Result<String, String> {
-    let namebuf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
+    let mut namebuf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
     let buffer_ptr = namebuf.as_ptr() as *mut c_void;
     let buffer_size = namebuf.capacity() as u32;
     let ret: i32;
-    let rebuilt: Vec<u8>;
 
     unsafe {
         ret = proc_name(pid, buffer_ptr, buffer_size);
@@ -398,10 +395,10 @@ pub fn name(pid: i32) -> Result<String, String> {
         Err(get_errno_with_message(ret))
     } else {
         unsafe {
-            rebuilt = Vec::from_raw_parts(buffer_ptr as *mut u8, ret as usize, buffer_size as usize);
+            namebuf.set_len(ret as usize);
         }
 
-        match String::from_utf8(rebuilt) {
+        match String::from_utf8(namebuf) {
             Ok(name) => Ok(name),
             Err(e) => Err(format!("Invalid UTF-8 sequence: {}", e))
         }
