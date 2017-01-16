@@ -3,11 +3,15 @@ extern crate errno;
 
 use self::libc::{uint32_t, c_int};
 
-use std::{ptr, mem, env, io};
-use std::io::Write;
+use std::{ptr, mem, env};
 use std::fmt;
 
 use libproc::proc_pid;
+
+#[cfg(test)]
+use std::io;
+#[cfg(test)]
+use std::io::Write;
 
 // See https://opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/sys/msgbuf.h
 const MAX_MSG_BSIZE : c_int = (1*1024*1024);
