@@ -268,9 +268,7 @@ pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
     }
 }
 
-//#[test]
-// TODO periodically this test causes a Segfault with this message - about 1 in 10 times!!!
-// error: Process didn't exit successfully: `/Users/andrew/workspace/libproc-rs/target/debug/libproc-503ad0ba07eb6318` (signal: 11, SIGSEGV: invalid memory reference)
+#[test]
 // This checks that it can find the regionfilename of the region at address 0, of the init process with PID 1
 fn regionfilename_test() {
     match regionfilename(1, 0) {
@@ -314,10 +312,8 @@ fn pidpath_test_init_pid() {
     }
 }
 
-//#[test]
-//#[should_panic]
-// TODO periodically this test causes a Segfault with this message - about 1 in 10 times!!!
-// error: Process didn't exit successfully: `/Users/andrew/workspace/libproc-rs/target/debug/libproc-503ad0ba07eb6318` (signal: 11, SIGSEGV: invalid memory reference)
+#[test]
+#[should_panic]
 // This checks that it cannot find the path of the process with pid -1
 fn pidpath_test_unknown_pid() {
     match pidpath(-1) {
@@ -405,8 +401,7 @@ pub fn name(pid: i32) -> Result<String, String> {
     }
 }
 
-// #[test]
-// TODO periodically this test causes a Segfault with this message - about 1 in 10 times!!!
+#[test]
 // error: Process didn't exit successfully: `/Users/andrew/workspace/libproc-rs/target/debug/libproc-503ad0ba07eb6318` (signal: 11, SIGSEGV: invalid memory reference)
 // This checks that it can find the name of the init process with PID 1
 fn name_test_init_pid() {
