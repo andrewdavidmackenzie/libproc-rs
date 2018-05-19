@@ -3,7 +3,7 @@ extern crate errno;
 
 use self::libc::{uint64_t, uint32_t, int32_t, c_void, c_int, uid_t, gid_t, c_char};
 use self::errno::errno;
-use std::str;
+use std::mem;
 
 // Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
 // See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
@@ -40,8 +40,15 @@ pub enum ProcType {
 // from http://opensource.apple.com//source/xnu/xnu-1504.7.4/bsd/sys/param.h
 const MAXCOMLEN	: usize = 16;
 
+// This trait is needed for polymorphism on pidinfo types, also abstracting flavor in order to provide
+// type-guaranteed flavor correctness
+pub trait PIDInfo: Default {
+    fn flavor() -> PidInfoFlavor;
+}
+
 // structures from http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h
 #[repr(C)]
+#[derive(Default)]
 pub struct TaskInfo {
     pub pti_virtual_size        : uint64_t,     // virtual memory size (bytes)
     pub pti_resident_size       : uint64_t,     // resident memory size (bytes)
@@ -63,7 +70,12 @@ pub struct TaskInfo {
     pub pti_priority            : int32_t       // task priority
 }
 
+impl PIDInfo for TaskInfo {
+    fn flavor() -> PidInfoFlavor { PidInfoFlavor::TaskInfo }
+}
+
 #[repr(C)]
+#[derive(Default)]
 pub struct BSDInfo {
     pub pbi_flags               : uint32_t,                 // 64bit; emulated etc
     pub pbi_status              : uint32_t,
@@ -89,10 +101,19 @@ pub struct BSDInfo {
     pub pbi_start_tvusec        : uint64_t
 }
 
+impl PIDInfo for BSDInfo {
+    fn flavor() -> PidInfoFlavor { PidInfoFlavor::TBSDInfo }
+}
+
 #[repr(C)]
+#[derive(Default)]
 pub struct TaskAllInfo {
     pub pbsd : BSDInfo,
     pub ptinfo : TaskInfo
+}
+
+impl PIDInfo for TaskAllInfo {
+    fn flavor() -> PidInfoFlavor { PidInfoFlavor::TaskAllInfo }
 }
 
 #[repr(C)]
@@ -110,11 +131,16 @@ pub struct ThreadInfo {
     pub pth_name                : [c_char; MAXTHREADNAMESIZE]   // thread name, if any
 }
 
+#[derive(Default)]
 pub struct WorkQueueInfo {
     pub pwq_nthreads            : uint32_t,     // total number of workqueue threads
     pub pwq_runthreads          : uint32_t,     // total number of running workqueue threads
     pub pwq_blockedthreads      : uint32_t,     // total number of blocked workqueue threads
     pub reserved                : [uint32_t;1]  // reserved for future use
+}
+
+impl PIDInfo for WorkQueueInfo {
+    fn flavor() -> PidInfoFlavor { PidInfoFlavor::WorkQueueInfo }
 }
 
 // From http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c
@@ -165,7 +191,7 @@ pub enum PidFDInfoFlavor {
 extern {
     fn proc_listpids(proc_type: uint32_t, typeinfo: uint32_t, buffer: *mut c_void, buffersize: uint32_t) -> c_int;
 
-//    fn proc_pidinfo(pid : c_int, flavor : c_int, arg: uint64_t,  buffer : *mut c_void, buffersize : c_int) -> c_int;
+    fn proc_pidinfo(pid : c_int, flavor : c_int, arg: uint64_t, buffer : *mut c_void, buffersize : c_int) -> c_int;
 
 //    fn proc_pidfdinfo(pid : c_int, fd : c_int, flavor : c_int, buffer : *mut c_void, buffersize : c_int) -> c_int;
 
@@ -177,6 +203,7 @@ extern {
 
     fn proc_libversion(major: *mut c_int, minor: *mut c_int) -> c_int;
 }
+
 
 pub fn get_errno_with_message(ret: i32) -> String {
     let e = errno();
@@ -234,15 +261,58 @@ fn listpids_test() {
     }
 }
 
-/// pidinfo to get information about a process
+
+/// Returns the PIDs of the process that match pid passed in.
+///
 /// arg - is "geavily not documented" and need to look at code for each flavour here
 /// http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c
 /// to figure out what it's doing.... Pull-Requests welcome!
 ///
-/* pub fn pidinfo(pid : u32, flavor : PidInfoFlavor, arg: uint64_t) -> Result<(), String> {
-// ,  buffer : *mut c_void, buffersize : u32
-    Ok(())
-} */
+/// # Examples
+///
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::proc_pid::{pidinfo, BSDInfo};
+///
+/// fn pidinfo_test() {
+///     use std::process;
+///     let pid = process::id() as i32;
+///
+///     match pidinfo::<BSDInfo>(pid, 0) {
+///         Ok(info) => assert_eq!(info.pbi_pid as i32, pid),
+///         Err(err) => assert!(false, "Error retrieving process info: {}", err)
+///     };
+/// }
+/// ```
+///
+pub fn pidinfo<T: PIDInfo>(pid : i32, arg: uint64_t) -> Result<T, String> {
+    let flavor = T::flavor() as i32;
+    let buffer_size = mem::size_of::<T>() as i32;
+    let mut pidinfo = T::default();
+    let buffer_ptr = &mut pidinfo as *mut _ as *mut c_void;
+    let ret: i32;
+
+    unsafe {
+        ret = proc_pidinfo(pid, flavor, arg, buffer_ptr, buffer_size);
+    };
+
+    if ret <= 0 {
+        Err(get_errno_with_message(ret))
+    } else {
+        Ok(pidinfo)
+    }
+}
+
+#[test]
+fn pidinfo_test() {
+    use std::process;
+    let pid = process::id() as i32;
+
+    match pidinfo::<BSDInfo>(pid, 0) {
+        Ok(info) => assert_eq!(info.pbi_pid as i32, pid),
+        Err(err) => assert!(false, "Error retrieving process info: {}", err)
+    };
+}
 
 pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
     let mut regionfilenamebuf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
