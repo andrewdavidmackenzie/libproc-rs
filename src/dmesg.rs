@@ -1,7 +1,6 @@
 extern crate libproc;
 extern crate libc;
 
-use std::str;
 use std::io::Write;
 use libproc::libproc::kmesg_buffer;
 

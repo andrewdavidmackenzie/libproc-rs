@@ -1,7 +1,7 @@
 extern crate libproc;
 extern crate libc;
 
-use std::{env, str};
+use std::env;
 use std::io::Write;
 use libproc::libproc::proc_pid;
 
