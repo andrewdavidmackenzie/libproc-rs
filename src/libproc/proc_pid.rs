@@ -20,8 +20,9 @@ use std::mem;
 const MAXPATHLEN: usize = 1024;
 const PROC_PIDPATHINFO_MAXSIZE: usize = 4 * MAXPATHLEN;
 
-// This constant is the maximum number of PIDs we will fetch and return from listpids - arbitrary choice
-const MAXPIDS: usize = 1024;
+// This constant is the maximum number of PIDs we will fetch and return from listpids
+// from https://opensource.apple.com/source/xnu/xnu-1699.24.23/bsd/sys/proc_internal.h
+const PID_MAX: usize = 99999;
 
 // from http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h
 const MAXTHREADNAMESIZE : usize = 64;
@@ -228,7 +229,7 @@ pub fn get_errno_with_message(ret: i32) -> String {
 /// }
 /// ```
 pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
-    let mut pids: Vec<u32> = Vec::with_capacity(MAXPIDS);
+    let mut pids: Vec<u32> = Vec::with_capacity(PID_MAX);
     let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
     let buffer_size = (pids.capacity() * 4) as u32;
     let ret: i32;
@@ -237,14 +238,14 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
         ret = proc_listpids(proc_types as u32, 0, buffer_ptr, buffer_size);
     }
 
+    let items_count = ret as usize / mem::size_of::<u32>() - 1;
+
     if ret <= 0 {
         Err(get_errno_with_message(ret))
     } else {
         unsafe {
-            pids.set_len(ret as usize);
+            pids.set_len(items_count);
         }
-        // Seems that the buffer is padded with a lot of pids set to zero
-        pids.retain(|&p| p > 0);
 
         Ok(pids)
     }
