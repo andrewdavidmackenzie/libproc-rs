@@ -3,6 +3,7 @@ extern crate errno;
 
 use self::libc::{uint64_t, uint32_t, int32_t, c_void, c_int, uid_t, gid_t, c_char};
 use self::errno::errno;
+use std::ptr;
 use std::mem;
 
 // Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
@@ -20,15 +21,12 @@ use std::mem;
 const MAXPATHLEN: usize = 1024;
 const PROC_PIDPATHINFO_MAXSIZE: usize = 4 * MAXPATHLEN;
 
-// This constant is the maximum number of PIDs we will fetch and return from listpids
-// from https://opensource.apple.com/source/xnu/xnu-1699.24.23/bsd/sys/proc_internal.h
-const PID_MAX: usize = 99999;
-
 // from http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h
 const MAXTHREADNAMESIZE : usize = 64;
 
 // From http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h and
 // http://fxr.watson.org/fxr/source/bsd/sys/proc_info.h?v=xnu-2050.18.24
+#[derive(Copy, Clone)]
 pub enum ProcType {
     ProcAllPIDS     = 1,
     ProcPGRPOnly    = 2,
@@ -229,15 +227,16 @@ pub fn get_errno_with_message(ret: i32) -> String {
 /// }
 /// ```
 pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
-    let mut pids: Vec<u32> = Vec::with_capacity(PID_MAX);
-    let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
-    let buffer_size = (pids.capacity() * 4) as u32;
-    let ret: i32;
-
-    unsafe {
-        ret = proc_listpids(proc_types as u32, 0, buffer_ptr, buffer_size);
+    let buffer_size = unsafe { proc_listpids(proc_types as u32, 0, ptr::null_mut(), 0) };
+    if buffer_size <= 0 {
+        return Err(get_errno_with_message(buffer_size))
     }
 
+    let capacity = buffer_size as usize / mem::size_of::<u32>();
+    let mut pids: Vec<u32> = Vec::with_capacity(capacity);
+    let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
+
+    let ret = unsafe { proc_listpids(proc_types as u32, 0, buffer_ptr, buffer_size as u32) };
     let items_count = ret as usize / mem::size_of::<u32>() - 1;
 
     if ret <= 0 {
