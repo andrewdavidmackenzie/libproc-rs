@@ -235,7 +235,7 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     let capacity = buffer_size as usize / mem::size_of::<u32>();
     let mut pids: Vec<u32> = Vec::with_capacity(capacity);
     let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
-    
+
     let ret = unsafe { proc_listpids(proc_types as u32, 0, buffer_ptr, buffer_size as u32) };
 
     if ret <= 0 {
