@@ -149,7 +149,10 @@ pub fn kmsgbuf() -> Result<String, String> {
 }
 
 pub fn am_root() -> bool {
-    libc::getuid() == 0
+    match env::var("USER") {
+        Ok(val) => val == "root",
+        Err(_) => false,
+    }
 }
 
 // If you want this test to actually test something, then you need to run as root 'sudo cargo test'
