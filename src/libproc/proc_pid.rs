@@ -481,3 +481,67 @@ fn name_test_init_pid() {
         Err(message) => assert!(true, message)
     }
 }
+
+/// Returns the Thread IDs of the process that match pid passed in.
+/// `threadnum` is the maximum number of threads to return.
+/// The length of return value: `Vec<uint64_t>` may be less than `threadnum`.
+///
+/// # Examples
+///
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::proc_pid::{pidinfo, BSDInfo};
+///
+/// fn listthreads_test() {
+///     use std::process;
+///     let pid = process::id() as i32;
+///
+///     match pidinfo::<TaskInfo>(pid, 0) {
+///         Ok(info) => {
+///             match listthreads(pid, info.pti_threadnum) {
+///                 Ok(threads) => assert!(threads.len()>0),
+///                 Err(err) => assert!(false, "Error retrieving process info: {}", err)
+///             }
+///         },
+///         Err(err) => assert!(false, "Error retrieving process info: {}", err)
+///     };
+/// }
+/// ```
+pub fn listthreads(pid: i32, threadnum: usize) -> Result<Vec<uint64_t>, String> {
+    let buffer_size = (mem::size_of::<uint64_t>() * threadnum) as i32;
+    let mut buffer = Vec::<uint64_t>::with_capacity(threadnum);
+    let buffer_ptr = unsafe {
+        buffer.set_len(threadnum);
+        buffer.as_mut_ptr() as *mut c_void
+    };
+
+    let ret: i32;
+
+    unsafe {
+        ret = proc_pidinfo( pid, PidInfoFlavor::ListThreads as i32, 0, buffer_ptr, buffer_size);
+    };
+
+    if ret <= 0 {
+        Err(get_errno_with_message(ret))
+    } else {
+        let actual_len = ret as usize / mem::size_of::<uint64_t>();
+        buffer.truncate(actual_len);
+        Ok(buffer)
+    }
+}
+
+#[test]
+fn listthreads_test() {
+    use std::process;
+    let pid = process::id() as i32;
+
+    match pidinfo::<TaskInfo>(pid, 0) {
+        Ok(info) => {
+            match listthreads(pid, info.pti_threadnum) {
+                Ok(threads) => assert!(threads.len()>0),
+                Err(err) => assert!(false, "Error retrieving process info: {}", err)
+            }
+        },
+        Err(err) => assert!(false, "Error retrieving process info: {}", err)
+    };
+}
