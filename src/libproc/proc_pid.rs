@@ -490,7 +490,7 @@ fn name_test_init_pid() {
 ///
 /// ```
 /// use std::io::Write;
-/// use libproc::libproc::proc_pid::{pidinfo, BSDInfo};
+/// use libproc::libproc::proc_pid::{listthreads, pidinfo, TaskInfo};
 ///
 /// fn listthreads_test() {
 ///     use std::process;
