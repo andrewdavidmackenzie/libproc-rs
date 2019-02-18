@@ -507,11 +507,11 @@ fn name_test_init_pid() {
 ///     };
 /// }
 /// ```
-pub fn listthreads(pid: i32, threadnum: usize) -> Result<Vec<uint64_t>, String> {
-    let buffer_size = (mem::size_of::<uint64_t>() * threadnum) as i32;
-    let mut buffer = Vec::<uint64_t>::with_capacity(threadnum);
+pub fn listthreads(pid: i32, threadnum: i32) -> Result<Vec<uint64_t>, String> {
+    let buffer_size = mem::size_of::<uint64_t>() as i32 * threadnum;
+    let mut buffer = Vec::<uint64_t>::with_capacity(threadnum as usize);
     let buffer_ptr = unsafe {
-        buffer.set_len(threadnum);
+        buffer.set_len(threadnum as usize);
         buffer.as_mut_ptr() as *mut c_void
     };
 
