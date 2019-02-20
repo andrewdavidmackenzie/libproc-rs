@@ -601,13 +601,21 @@ pub struct ProcFDInfo {
 
 #[derive(Copy, Clone, Debug)]
 pub enum ProcFDType {
+    /// AppleTalk
     ATalk    = 0,
+    /// vnode
     VNode    = 1,
+    /// socket
     Socket   = 2,
+    /// POSIX shared memory
     PSHM     = 3,
+    /// POSIX semaphore
     PSEM     = 4,
+    /// kqueue
     KQueue   = 5,
+    /// pipe
     Pipe     = 6,
+    /// FSEvents
     FSEvents = 7
 }
 
