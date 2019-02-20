@@ -525,8 +525,8 @@ pub trait ListPIDInfo {
 ///     use std::process;
 ///     let pid = process::id() as i32;
 ///
-///     if Ok(info) = pidinfo::<TaskAllInfo>(pid, 0) {
-///         if Ok(fds) = listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
+///     if let Ok(info) = pidinfo::<TaskAllInfo>(pid, 0) {
+///         if let Ok(fds) = listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
 ///             for fd in &fds {
 ///                 let fd_type = ProcFDType::from(fd.proc_fdtype);
 ///                 println!("File Descriptor: {}, Type: {}", fd.proc_fd, fd_type);
