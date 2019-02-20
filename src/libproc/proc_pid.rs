@@ -564,26 +564,6 @@ pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::I
     }
 }
 
-#[test]
-fn listpidinfo_test() {
-    use std::process;
-    let pid = process::id() as i32;
-
-    match pidinfo::<TaskAllInfo>(pid, 0) {
-        Ok(info) => {
-            match listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize) {
-                Ok(threads) => assert!(threads.len()>0),
-                Err(err) => assert!(false, "Error retrieving process info: {}", err)
-            }
-            match listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
-                Ok(fds) => assert!(fds.len()>0),
-                Err(err) => assert!(false, "Error retrieving process info: {}", err)
-            }
-        },
-        Err(err) => assert!(false, "Error retrieving process info: {}", err)
-    };
-}
-
 pub struct ListThreads;
 
 impl ListPIDInfo for ListThreads {
