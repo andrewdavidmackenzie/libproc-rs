@@ -519,25 +519,20 @@ pub trait ListPIDInfo {
 ///
 /// ```
 /// use std::io::Write;
-/// use libproc::libproc::proc_pid::{listpidinfo, pidinfo, ListFDs, ListThreads, TaskAllInfo};
+/// use libproc::libproc::proc_pid::{listpidinfo, pidinfo, ListFDs, TaskAllInfo, ProcFDType};
 ///
-/// fn listthreads_test() {
+/// fn listpidinfo_test() {
 ///     use std::process;
 ///     let pid = process::id() as i32;
 ///
-///     match pidinfo::<TaskAllInfo>(pid, 0) {
-///         Ok(info) => {
-///             match listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize) {
-///                 Ok(threads) => assert!(threads.len()>0),
-///                 Err(err) => assert!(false, "Error retrieving process info: {}", err)
+///     if Ok(info) = pidinfo::<TaskAllInfo>(pid, 0) {
+///         if Ok(fds) = listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
+///             for fd in &fds {
+///                 let fd_type = ProcFDType::from(fd.proc_fdtype);
+///                 println!("File Descriptor: {}, Type: {}", fd.proc_fd, fd_type);
 ///             }
-///             match listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
-///                 Ok(fds) => assert!(fds.len()>0),
-///                 Err(err) => assert!(false, "Error retrieving process info: {}", err)
-///             }
-///         },
-///         Err(err) => assert!(false, "Error retrieving process info: {}", err)
-///     };
+///         }
+///     }
 /// }
 /// ```
 pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::Item>, String> {
@@ -562,6 +557,26 @@ pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::I
         buffer.truncate(actual_len);
         Ok(buffer)
     }
+}
+
+#[test]
+fn listpidinfo_test() {
+    use std::process;
+    let pid = process::id() as i32;
+
+    match pidinfo::<TaskAllInfo>(pid, 0) {
+        Ok(info) => {
+            match listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize) {
+                Ok(threads) => assert!(threads.len()>0),
+                Err(err) => assert!(false, "Error retrieving process info: {}", err)
+            }
+            match listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
+                Ok(fds) => assert!(fds.len()>0),
+                Err(err) => assert!(false, "Error retrieving process info: {}", err)
+            }
+        },
+        Err(err) => assert!(false, "Error retrieving process info: {}", err)
+    };
 }
 
 pub struct ListThreads;
