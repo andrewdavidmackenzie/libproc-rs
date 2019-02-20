@@ -503,3 +503,132 @@ fn name_test_init_pid() {
         Err(message) => assert!(true, message)
     }
 }
+
+// This trait is needed for polymorphism on listpidinfo types, also abstracting flavor in order to provide
+// type-guaranteed flavor correctness
+pub trait ListPIDInfo {
+    type Item;
+    fn flavor() -> PidInfoFlavor;
+}
+
+/// Returns the information of the process that match pid passed in.
+/// `max_len` is the maximum number of array to return.
+/// The length of return value: `Vec<T::Item>` may be less than `max_len`.
+///
+/// # Examples
+///
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::proc_pid::{listpidinfo, pidinfo, ListFDs, ListThreads, TaskAllInfo};
+///
+/// fn listthreads_test() {
+///     use std::process;
+///     let pid = process::id() as i32;
+///
+///     match pidinfo::<TaskAllInfo>(pid, 0) {
+///         Ok(info) => {
+///             match listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize) {
+///                 Ok(threads) => assert!(threads.len()>0),
+///                 Err(err) => assert!(false, "Error retrieving process info: {}", err)
+///             }
+///             match listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
+///                 Ok(fds) => assert!(fds.len()>0),
+///                 Err(err) => assert!(false, "Error retrieving process info: {}", err)
+///             }
+///         },
+///         Err(err) => assert!(false, "Error retrieving process info: {}", err)
+///     };
+/// }
+/// ```
+pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::Item>, String> {
+    let flavor = T::flavor() as i32;
+    let buffer_size = mem::size_of::<T::Item>() as i32 * max_len as i32;
+    let mut buffer = Vec::<T::Item>::with_capacity(max_len);
+    let buffer_ptr = unsafe {
+        buffer.set_len(max_len);
+        buffer.as_mut_ptr() as *mut c_void
+    };
+
+    let ret: i32;
+
+    unsafe {
+        ret = proc_pidinfo( pid, flavor, 0, buffer_ptr, buffer_size);
+    };
+
+    if ret <= 0 {
+        Err(get_errno_with_message(ret))
+    } else {
+        let actual_len = ret as usize / mem::size_of::<T::Item>();
+        buffer.truncate(actual_len);
+        Ok(buffer)
+    }
+}
+
+#[test]
+fn listpidinfo_test() {
+    use std::process;
+    let pid = process::id() as i32;
+
+    match pidinfo::<TaskAllInfo>(pid, 0) {
+        Ok(info) => {
+            match listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize) {
+                Ok(threads) => assert!(threads.len()>0),
+                Err(err) => assert!(false, "Error retrieving process info: {}", err)
+            }
+            match listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
+                Ok(fds) => assert!(fds.len()>0),
+                Err(err) => assert!(false, "Error retrieving process info: {}", err)
+            }
+        },
+        Err(err) => assert!(false, "Error retrieving process info: {}", err)
+    };
+}
+
+pub struct ListThreads;
+
+impl ListPIDInfo for ListThreads {
+    type Item = uint64_t;
+    fn flavor() -> PidInfoFlavor { PidInfoFlavor::ListThreads }
+}
+
+pub struct ListFDs;
+
+impl ListPIDInfo for ListFDs {
+    type Item = ProcFDInfo;
+    fn flavor() -> PidInfoFlavor { PidInfoFlavor::ListFDs }
+}
+
+#[repr(C)]
+pub struct ProcFDInfo {
+    pub proc_fd: int32_t,
+    pub proc_fdtype: uint32_t,
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum ProcFDType {
+    ATalk    = 0,
+    VNode    = 1,
+    Socket   = 2,
+    PSHM     = 3,
+    PSEM     = 4,
+    KQueue   = 5,
+    Pipe     = 6,
+    FSEvents = 7
+}
+
+impl ProcFDType {
+    pub fn from(value: uint32_t) -> Option<ProcFDType> {
+        match value {
+            0 => Some(ProcFDType::ATalk   ),
+            1 => Some(ProcFDType::VNode   ),
+            2 => Some(ProcFDType::Socket  ),
+            3 => Some(ProcFDType::PSHM    ),
+            4 => Some(ProcFDType::PSEM    ),
+            5 => Some(ProcFDType::KQueue  ),
+            6 => Some(ProcFDType::Pipe    ),
+            7 => Some(ProcFDType::FSEvents),
+            _ => None
+        }
+    }
+}
+
