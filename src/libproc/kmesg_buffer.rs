@@ -3,7 +3,7 @@ extern crate errno;
 
 use self::libc::{uint32_t, c_int};
 
-use std::{ptr, mem, env};
+use std::{ptr, mem};
 use std::fmt;
 
 use libproc::proc_pid;
