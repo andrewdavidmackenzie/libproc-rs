@@ -318,17 +318,15 @@ pub fn name(pid: i32) -> Result<String, String> {
 /// use libproc::libproc::proc_pid::{listpidinfo, pidinfo};
 /// use libproc::libproc::task_info::{TaskAllInfo};
 /// use libproc::libproc::file_info::{ListFDs, ProcFDType};
+/// use std::process;
 ///
-/// fn listpidinfo_test() {
-///     use std::process;
-///     let pid = process::id() as i32;
+/// let pid = process::id() as i32;
 ///
-///     if let Ok(info) = pidinfo::<TaskAllInfo>(pid, 0) {
-///         if let Ok(fds) = listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
-///             for fd in &fds {
-///                 let fd_type = ProcFDType::from(fd.proc_fdtype);
-///                 println!("File Descriptor: {}, Type: {:?}", fd.proc_fd, fd_type);
-///             }
+/// if let Ok(info) = pidinfo::<TaskAllInfo>(pid, 0) {
+///     if let Ok(fds) = listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
+///         for fd in &fds {
+///             let fd_type = ProcFDType::from(fd.proc_fdtype);
+///             println!("File Descriptor: {}, Type: {:?}", fd.proc_fd, fd_type);
 ///         }
 ///     }
 /// }
