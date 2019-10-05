@@ -6,7 +6,7 @@ use self::libc::{uint32_t, c_int};
 use std::{ptr, mem};
 use std::fmt;
 
-use libproc::proc_pid;
+use crate::libproc::helpers;
 
 #[cfg(test)]
 use std::io;
@@ -79,7 +79,7 @@ pub fn kmsgbuf() -> Result<String, String> {
     }
 
     if ret <= 0 {
-        Err(proc_pid::get_errno_with_message(ret))
+        Err(helpers::get_errno_with_message(ret))
     } else
     {
         if message_buffer.msg_magic != MSG_MAGIC {
