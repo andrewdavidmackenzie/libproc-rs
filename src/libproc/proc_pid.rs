@@ -6,7 +6,8 @@ use crate::libproc::task_info::{TaskInfo, TaskAllInfo};
 use crate::libproc::bsd_info::BSDInfo;
 use crate::libproc::helpers;
 
-use self::libc::{uint64_t, uint32_t, c_void, c_int};
+use self::libc::{c_void, c_int};
+
 use std::ptr;
 use std::mem;
 
@@ -84,7 +85,7 @@ pub trait ListPIDInfo {
 pub struct ListThreads;
 
 impl ListPIDInfo for ListThreads {
-    type Item = uint64_t;
+    type Item = u64;
     fn flavor() -> PidInfoFlavor { PidInfoFlavor::ListThreads }
 }
 
@@ -92,15 +93,15 @@ impl ListPIDInfo for ListThreads {
 // Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
 #[link(name = "proc", kind = "dylib")]
 extern {
-    fn proc_listpids(proc_type: uint32_t, typeinfo: uint32_t, buffer: *mut c_void, buffersize: uint32_t) -> c_int;
+    fn proc_listpids(proc_type: u32, typeinfo: u32, buffer: *mut c_void, buffersize: u32) -> c_int;
 
-    fn proc_pidinfo(pid : c_int, flavor : c_int, arg: uint64_t, buffer : *mut c_void, buffersize : c_int) -> c_int;
+    fn proc_pidinfo(pid : c_int, flavor : c_int, arg: u64, buffer : *mut c_void, buffersize : c_int) -> c_int;
 
-    fn proc_name(pid: c_int, buffer: *mut c_void, buffersize: uint32_t) -> c_int;
+    fn proc_name(pid: c_int, buffer: *mut c_void, buffersize: u32) -> c_int;
 
-    fn proc_regionfilename(pid: c_int, address: uint64_t, buffer: *mut c_void, buffersize: uint32_t) -> c_int;
+    fn proc_regionfilename(pid: c_int, address: u64, buffer: *mut c_void, buffersize: u32) -> c_int;
 
-    fn proc_pidpath(pid: c_int, buffer: *mut c_void, buffersize: uint32_t) -> c_int;
+    fn proc_pidpath(pid: c_int, buffer: *mut c_void, buffersize: u32) -> c_int;
 
     fn proc_libversion(major: *mut c_int, minor: *mut c_int) -> c_int;
 }
@@ -168,7 +169,7 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
 /// };
 /// ```
 ///
-pub fn pidinfo<T: PIDInfo>(pid : i32, arg: uint64_t) -> Result<T, String> {
+pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> {
     let flavor = T::flavor() as i32;
     let buffer_size = mem::size_of::<T>() as i32;
     let mut pidinfo = T::default();
