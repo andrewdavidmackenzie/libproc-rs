@@ -20,6 +20,7 @@ after_success:
   # Coverage report
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
+      pip install six &&
       wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
       tar xzf master.tar.gz &&
       cd kcov-master &&
