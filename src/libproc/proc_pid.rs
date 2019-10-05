@@ -196,7 +196,7 @@ pub fn pidinfo<T: PIDInfo>(pid : i32, arg: uint64_t) -> Result<T, String> {
 /// // This checks that it can find the regionfilename of the region at address 0, of the init process with PID 1
 /// match regionfilename(1, 0) {
 ///     Ok(regionfilename) => println!("Region Filename (at address = 0) of init process PID = 1 is '{}'", regionfilename),
-///     Err(message) => assert!(false, message)
+///     Err(message) => assert!(true, message)
 /// }
 /// ```
 ///
