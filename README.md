@@ -23,9 +23,14 @@ Run "cargo doc" and then open "./target/doc/libproc/index.html".
 More documentation will be added over time.
 
 # API
-At the moment these methods are implemented:
+At the moment these methods have been implemented:
+
+## Process / PID related
 ```
 pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String>
+```
+```
+pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> {
 ```
 ```
 pub fn regionfilename(pid: i32, address: u64) -> Result<String, String>
@@ -39,7 +44,21 @@ pub fn libversion() -> Result<(i32, i32), String>
 ```
 pub fn name(pid: i32) -> Result<String, String>
 ```
+```
+pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::Item>, String>
+```
 
+## File and FileDescriptor related
+```
+pub fn pidfdinfo<T: PIDFDInfo>(pid : i32, fd: i32) -> Result<T, String>
+```
+
+## PID Resource Usage related
+```
+pub fn pidrusage<T: PIDRUsage>(pid : i32) -> Result<T, String>  
+```
+
+## kmsgbuf
 I have also implemented this method - but the MAGIC_NUMBER returned is not correct, 
 and upon investigation it seems that Apple/Darwin/Mach have changed totally how dmessage works in 
 latest versions, moving away from using libproc to use kvm - with a total rewrite of dmesg.
@@ -59,10 +78,14 @@ pub fn kmsgbuf() -> Result<String, String>
 Initially just for Mac OS X.
 
 # TODO
+See the [list of issues](https://github.com/andrewdavidmackenzie/libproc-rs/issues). 
+I put the "help wanted" label where I need help from others.
+ 
 - Complete the API on Mac OS X - figuring out all the Mac OS X / Darwin version mess....
 - Add more documentation (including samples with documentation test)
 - Add own custom error type and implement From::from to ease reporting of multiple error types in clients
-- Once the API is complete then doing a Linux version with the same API would make sense.
+- Once the API is complete then doing a Linux version with the same API would make sense, 
+starting with simpler or more similar methods, and then abstratcion over apple/unix/linux would be needed
 
 # LICENSE
 This code is licensed under MIT license (see LICENCE).

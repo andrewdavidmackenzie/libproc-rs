@@ -43,7 +43,6 @@ extern {
 ///     }
 /// }
 /// ```
-///
 pub fn pidrusage<T: PIDRUsage>(pid : i32) -> Result<T, String> {
     let flavor = T::flavor() as i32;
     let mut pidrusage = T::default();
