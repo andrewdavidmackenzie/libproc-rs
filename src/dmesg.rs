@@ -4,6 +4,9 @@ extern crate libc;
 use std::io::Write;
 use libproc::libproc::kmesg_buffer;
 
+/*
+    A `dmesg` commands as a simple demonstration program of using libproc-rs
+*/
 fn main() {
     if kmesg_buffer::am_root() {
         match kmesg_buffer::kmsgbuf() {
