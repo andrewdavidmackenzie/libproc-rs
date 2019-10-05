@@ -1,7 +1,7 @@
 extern crate libc;
 extern crate errno;
 
-use self::libc::{uint32_t, c_int};
+use self::libc::{c_int};
 
 use std::{ptr, mem};
 use std::fmt;
@@ -49,7 +49,7 @@ impl fmt::Debug for MessageBuffer {
 // Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
 #[link(name = "proc", kind = "dylib")]
 extern {
-    fn proc_kmsgbuf(buffer : *mut MessageBuffer, buffersize : uint32_t) -> c_int;
+    fn proc_kmsgbuf(buffer : *mut MessageBuffer, buffersize : u32) -> c_int;
 }
 
 /// Get upto buffersize bytes from the the kernel message buffer - as used by dmesg

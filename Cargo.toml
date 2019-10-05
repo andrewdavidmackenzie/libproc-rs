@@ -10,7 +10,7 @@ edition = "2018"
 
 [dependencies]
 errno = "^0.1.8"
-libc = "^0.2.15"
+libc = "^0.2.62"
 
 [lib]
 name = "libproc"

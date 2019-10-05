@@ -5,7 +5,7 @@ use std::mem;
 use crate::libproc::helpers;
 use crate::libproc::proc_pid::{ListPIDInfo, PidInfoFlavor};
 
-use self::libc::{c_int, c_void, int32_t, uint32_t};
+use self::libc::{c_int, c_void};
 
 // this extern block links to the libproc library
 // Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
@@ -34,8 +34,8 @@ impl ListPIDInfo for ListFDs {
 
 #[repr(C)]
 pub struct ProcFDInfo {
-    pub proc_fd: int32_t,
-    pub proc_fdtype: uint32_t,
+    pub proc_fd: i32,
+    pub proc_fdtype: u32,
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -60,8 +60,8 @@ pub enum ProcFDType {
     Unknown,
 }
 
-impl From<uint32_t> for ProcFDType {
-    fn from(value: uint32_t) -> ProcFDType {
+impl From<u32> for ProcFDType {
+    fn from(value: u32) -> ProcFDType {
         match value {
             0 => ProcFDType::ATalk   ,
             1 => ProcFDType::VNode   ,
@@ -139,7 +139,7 @@ pub trait PIDFDInfo: Default {
 /// }
 /// ```
 ///
-pub fn pidfdinfo<T: PIDFDInfo>(pid : i32, fd: int32_t) -> Result<T, String> {
+pub fn pidfdinfo<T: PIDFDInfo>(pid : i32, fd: i32) -> Result<T, String> {
     let flavor = T::flavor() as i32;
     let buffer_size = mem::size_of::<T>() as i32;
     let mut pidinfo = T::default();
