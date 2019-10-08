@@ -13,9 +13,11 @@ use std::path::PathBuf;
 
 use libc::pid_t;
 
-
 use std::ptr;
 use std::mem;
+
+#[cfg(target_os = "macos")]
+use std::process;
 
 // Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
 // See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
@@ -419,15 +421,15 @@ pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
 /// Gets path of current working directory for the current process.
 /// TODO add a doc comment
 #[cfg(target_os = "linux")]
-pub fn cwd_self() -> Result<PathBuf, String> {
+pub fn cwdself() -> Result<PathBuf, String> {
     fs::read_link("/proc/self/cwd").map_err(|e| {
         e.to_string()
     })
 }
 
 #[cfg(target_os = "macos")]
-pub fn cwd_self() -> Result<PathBuf, String> {
-    unimplemented!()
+pub fn cwdself() -> Result<PathBuf, String> {
+    pidcwd(process::id() as pid_t)
 }
 
 #[cfg(test)]
@@ -436,8 +438,11 @@ mod test {
     use crate::libproc::bsd_info::BSDInfo;
     use crate::libproc::task_info::TaskAllInfo;
     use crate::libproc::file_info::ListFDs;
-    use super::cwd_self;
+    use super::cwdself;
+    use super::pidcwd;
     use std::env;
+    #[cfg(target_os = "macos")]
+    use std::process;
 
     #[cfg(target_os = "macos")]
     #[test]
@@ -511,12 +516,12 @@ mod test {
 
     #[test]
     fn test_cwd_self() {
-        assert_eq!(env::current_dir().unwrap(), cwd_self().unwrap());
+        assert_eq!(env::current_dir().unwrap(), cwdself().unwrap());
     }
 
     #[test]
     fn test_pidcwd() {
         // TODO test of pidcwd by getting own pid and using that
-        assert_eq!(env::current_dir().unwrap(), cwd_self().unwrap());
+        assert_eq!(env::current_dir().unwrap(), pidcwd(process::id() as i32).unwrap());
     }
 }
