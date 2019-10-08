@@ -8,6 +8,12 @@ use crate::libproc::helpers;
 
 use self::libc::{c_void, c_int};
 
+use std::fs;
+use std::path::PathBuf;
+
+use libc::pid_t;
+
+
 use std::ptr;
 use std::mem;
 
@@ -395,12 +401,43 @@ pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::I
     unimplemented!()
 }
 
+
+/// Gets path of current working directory for the process with the provided pid.
+/// TODO add a doc comment
+#[cfg(target_os = "linux")]
+pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
+    fs::read_link(format!("/proc/{}/cwd", pid)).map_err(|e| {
+        e.to_string()
+    })
+}
+
+#[cfg(target_os = "macos")]
+pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
+    unimplemented!()
+}
+
+/// Gets path of current working directory for the current process.
+/// TODO add a doc comment
+#[cfg(target_os = "linux")]
+pub fn cwd_self() -> Result<PathBuf, String> {
+    fs::read_link("/proc/self/cwd").map_err(|e| {
+        e.to_string()
+    })
+}
+
+#[cfg(target_os = "macos")]
+pub fn cwd_self() -> Result<PathBuf, String> {
+    unimplemented!()
+}
+
 #[cfg(test)]
 mod test {
     use super::{pidinfo, listpidinfo, ListThreads, pidpath, libversion};
     use crate::libproc::bsd_info::BSDInfo;
     use crate::libproc::task_info::TaskAllInfo;
     use crate::libproc::file_info::ListFDs;
+    use super::cwd_self;
+    use std::env;
 
     #[cfg(target_os = "macos")]
     #[test]
@@ -470,5 +507,16 @@ mod test {
             Ok(path) => assert!(false, "It found the path of process Pwith ID = -1 (path = {}), that's not possible\n", path),
             Err(message) => assert!(false, message)
         }
+    }
+
+    #[test]
+    fn test_cwd_self() {
+        assert_eq!(env::current_dir().unwrap(), cwd_self().unwrap());
+    }
+
+    #[test]
+    fn test_pidcwd() {
+        // TODO test of pidcwd by getting own pid and using that
+        assert_eq!(env::current_dir().unwrap(), cwd_self().unwrap());
     }
 }
