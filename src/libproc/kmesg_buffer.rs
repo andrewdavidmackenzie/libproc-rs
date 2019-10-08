@@ -8,11 +8,6 @@ use std::fmt;
 
 use crate::libproc::helpers;
 
-#[cfg(test)]
-use std::io;
-#[cfg(test)]
-use std::io::Write;
-
 // See https://opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/sys/msgbuf.h
 const MAX_MSG_BSIZE : c_int = (1*1024*1024);
 const MSG_MAGIC : c_int = 0x063061;
@@ -47,6 +42,7 @@ impl fmt::Debug for MessageBuffer {
 
 // this extern block links to the libproc library
 // Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
+#[cfg(target_os = "macos")]
 #[link(name = "proc", kind = "dylib")]
 extern {
     fn proc_kmsgbuf(buffer : *mut MessageBuffer, buffersize : u32) -> c_int;
@@ -70,6 +66,7 @@ extern {
 ///         writeln!(&mut std::io::stderr(), "Must be run as root").unwrap()
 ///     }
 // See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c
+#[cfg(target_os = "macos")]
 pub fn kmsgbuf() -> Result<String, String> {
     let mut message_buffer : MessageBuffer = Default::default();
     let ret: i32;
@@ -148,19 +145,35 @@ pub fn kmsgbuf() -> Result<String, String> {
     }
 }
 
+#[cfg(not(target_os = "macos"))]
+pub fn kmsgbuf() -> Result<String, String> {
+    unimplemented!()
+}
+
+/*
+    Determine if the current user ID of this process is root
+*/
 pub fn am_root() -> bool {
     unsafe { libc::getuid() == 0 }
 }
 
-// If you want this test to actually test something, then you need to run as root 'sudo cargo test'
-#[test]
-fn kmessagebuffer_test() {
-    if am_root() {
-        match kmsgbuf() {
-            Ok(buffer) => println!("Buffer: {:?}", buffer),
-            Err(message) => assert!(false, message)
+#[cfg(test)]
+mod test {
+    use std::io;
+    use std::io::Write;
+    use super::kmsgbuf;
+    use super::am_root;
+
+    // If you want this test to actually test something, then you need to run as root 'sudo cargo test'
+    #[test]
+    fn kmessagebuffer_test() {
+        if am_root() {
+            match kmsgbuf() {
+                Ok(buffer) => println!("Buffer: {:?}", buffer),
+                Err(message) => assert!(false, message)
+            }
+        } else {
+            writeln!(&mut io::stdout(), "test libproc::kmesg_buffer::kmessagebuffer_test ... skipped as it needs to be run as root").unwrap();
         }
-    } else {
-        writeln!(&mut io::stdout(), "test libproc::kmesg_buffer::kmessagebuffer_test ... skipped as it needs to be run as root").unwrap();
     }
 }
