@@ -15,7 +15,6 @@ branches:
 
 matrix:
   allow_failures:
-    - os: linux
     - rust: nightly
 
 script: cargo test

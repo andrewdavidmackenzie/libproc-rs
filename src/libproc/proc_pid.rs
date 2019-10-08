@@ -91,6 +91,7 @@ impl ListPIDInfo for ListThreads {
 
 // this extern block links to the libproc library
 // Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
+#[cfg(target_os = "macos")]
 #[link(name = "proc", kind = "dylib")]
 extern {
     fn proc_listpids(proc_type: u32, typeinfo: u32, buffer: *mut c_void, buffersize: u32) -> c_int;
@@ -123,6 +124,7 @@ extern {
 ///     Err(err) => assert!(false, "Error listing pids")
 /// }
 /// ```
+#[cfg(target_os = "macos")]
 pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     let buffer_size = unsafe { proc_listpids(proc_types as u32, 0, ptr::null_mut(), 0) };
     if buffer_size <= 0 {
@@ -147,6 +149,11 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     }
 }
 
+#[cfg(not(target_os = "macos"))]
+pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
+    unimplemented!()
+}
+
 /// Returns the PIDs of the process that match pid passed in.
 ///
 /// arg - is "geavily not documented" and need to look at code for each flavour here
@@ -168,7 +175,7 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
 ///     Err(err) => assert!(false, "Error retrieving process info: {}", err)
 /// };
 /// ```
-///
+#[cfg(target_os = "macos")]
 pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> {
     let flavor = T::flavor() as i32;
     let buffer_size = mem::size_of::<T>() as i32;
@@ -187,6 +194,11 @@ pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> {
     }
 }
 
+#[cfg(not(target_os = "macos"))]
+pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> {
+    unimplemented!()
+}
+
 ///
 /// TODO explain this call or add a link to apple docs that explain it?
 ///
@@ -200,7 +212,7 @@ pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> {
 ///     Err(message) => assert!(true, message)
 /// }
 /// ```
-///
+#[cfg(target_os = "macos")]
 pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
     let mut buf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
     let buffer_ptr = buf.as_mut_ptr() as *mut c_void;
@@ -212,6 +224,11 @@ pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
     };
 
     helpers::check_errno(ret, &mut buf)
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
+    unimplemented!()
 }
 
 /// TODO explain this function or link to apple docs that explain it
@@ -226,7 +243,7 @@ pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
 ///     Err(message) => assert!(false, message)
 /// }
 /// ```
-///
+#[cfg(target_os = "macos")]
 pub fn pidpath(pid: i32) -> Result<String, String> {
     let mut buf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
     let buffer_ptr = buf.as_mut_ptr() as *mut c_void;
@@ -238,6 +255,11 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
     };
 
     helpers::check_errno(ret, &mut buf)
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn pidpath(pid: i32) -> Result<String, String> {
+    unimplemented!()
 }
 
 /// Returns the major and minor version numbers of the native librproc library being used
@@ -253,6 +275,7 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 ///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
 /// }
 /// ```
+#[cfg(target_os = "macos")]
 pub fn libversion() -> Result<(i32, i32), String> {
     let mut major = 0;
     let mut minor = 0;
@@ -270,6 +293,11 @@ pub fn libversion() -> Result<(i32, i32), String> {
     }
 }
 
+#[cfg(not(target_os = "macos"))]
+pub fn libversion() -> Result<(i32, i32), String> {
+    unimplemented!()
+}
+
 /// Returns the name of the process with the specified pid
 ///
 /// # Examples
@@ -283,6 +311,7 @@ pub fn libversion() -> Result<(i32, i32), String> {
 ///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
 /// }
 /// ```
+#[cfg(target_os = "macos")]
 pub fn name(pid: i32) -> Result<String, String> {
     let mut namebuf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
     let buffer_ptr = namebuf.as_ptr() as *mut c_void;
@@ -305,6 +334,11 @@ pub fn name(pid: i32) -> Result<String, String> {
             Err(e) => Err(format!("Invalid UTF-8 sequence: {}", e))
         }
     }
+}
+
+#[cfg(not(target_os = "macos"))]
+pub fn name(pid: i32) -> Result<String, String> {
+    unimplemented!()
 }
 
 /// Returns the information of the process that match pid passed in.
@@ -331,6 +365,7 @@ pub fn name(pid: i32) -> Result<String, String> {
 ///     }
 /// }
 /// ```
+#[cfg(target_os = "macos")]
 pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::Item>, String> {
     let flavor = T::flavor() as i32;
     let buffer_size = mem::size_of::<T::Item>() as i32 * max_len as i32;
@@ -355,6 +390,11 @@ pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::I
     }
 }
 
+#[cfg(not(target_os = "macos"))]
+pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::Item>, String> {
+    unimplemented!()
+}
+
 #[cfg(test)]
 mod test {
     use super::{pidinfo, listpidinfo, ListThreads, pidpath, libversion};
@@ -362,6 +402,7 @@ mod test {
     use crate::libproc::task_info::TaskAllInfo;
     use crate::libproc::file_info::ListFDs;
 
+    #[cfg(target_os = "macos")]
     #[test]
     fn pidinfo_test() {
         use std::process;
@@ -373,6 +414,7 @@ mod test {
         };
     }
 
+    #[cfg(target_os = "macos")]
     #[test]
     fn listpidinfo_test() {
         use std::process;
@@ -393,6 +435,7 @@ mod test {
         };
     }
 
+    #[cfg(target_os = "macos")]
     #[test]
     // error: Process didn't exit successfully:
     // `/Users/andrew/workspace/libproc-rs/target/debug/libproc-503ad0ba07eb6318` (signal: 11, SIGSEGV: invalid memory reference)
@@ -406,6 +449,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(target_os = "macos")]
     fn libversion_test() {
         match libversion() {
             Ok((major, minor)) => {
@@ -416,6 +460,7 @@ mod test {
         }
     }
 
+    #[cfg(target_os = "macos")]
     #[test]
     #[should_panic]
     // This checks that it cannot find the path of the process with pid -1

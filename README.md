@@ -75,17 +75,19 @@ pub fn kmsgbuf() -> Result<String, String>
 - 'dmesg' is a version of dmesg implemented in rust that uses libproc-rs. This must be run as root. Currently fails (see above for explanation).
 
 # Platforms
-Initially just for Mac OS X.
+Implemented just for Mac OS X.
+Got build and test passing with functionality disabled on Linux, now will start to look at
+functions that could be implemented there also. Suggestions for API and cross-platform abstractions
+are welcome.
 
 # TODO
 See the [list of issues](https://github.com/andrewdavidmackenzie/libproc-rs/issues). 
 I put the "help wanted" label where I need help from others.
  
+- Look at what similar methods could be implemented as a starting point on Linux
 - Complete the API on Mac OS X - figuring out all the Mac OS X / Darwin version mess....
 - Add more documentation (including samples with documentation test)
 - Add own custom error type and implement From::from to ease reporting of multiple error types in clients
-- Once the API is complete then doing a Linux version with the same API would make sense, 
-starting with simpler or more similar methods, and then abstratcion over apple/unix/linux would be needed
 
 # LICENSE
 This code is licensed under MIT license (see LICENCE).

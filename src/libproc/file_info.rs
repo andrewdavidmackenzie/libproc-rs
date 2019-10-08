@@ -5,10 +5,12 @@ use std::mem;
 use crate::libproc::helpers;
 use crate::libproc::proc_pid::{ListPIDInfo, PidInfoFlavor};
 
+#[cfg(target_os = "macos")]
 use self::libc::{c_int, c_void};
 
 // this extern block links to the libproc library
 // Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
+#[cfg(target_os = "macos")]
 #[link(name = "proc", kind = "dylib")]
 extern {
     fn proc_pidfdinfo(pid : c_int, fd : c_int, flavor : c_int, buffer : *mut c_void, buffersize : c_int) -> c_int;
@@ -139,6 +141,7 @@ pub trait PIDFDInfo: Default {
 /// }
 /// ```
 ///
+#[cfg(target_os = "macos")]
 pub fn pidfdinfo<T: PIDFDInfo>(pid : i32, fd: i32) -> Result<T, String> {
     let flavor = T::flavor() as i32;
     let buffer_size = mem::size_of::<T>() as i32;
@@ -157,7 +160,12 @@ pub fn pidfdinfo<T: PIDFDInfo>(pid : i32, fd: i32) -> Result<T, String> {
     }
 }
 
-#[cfg(test)]
+#[cfg(not(target_os = "macos"))]
+pub fn pidfdinfo<T: PIDFDInfo>(_pid : i32, _fd: i32) -> Result<T, String> {
+   unimplemented!()
+}
+
+#[cfg(all(test, target_os = "macos"))]
 mod test {
     use crate::libproc::bsd_info::BSDInfo;
     use crate::libproc::file_info::{ListFDs, ProcFDType};
