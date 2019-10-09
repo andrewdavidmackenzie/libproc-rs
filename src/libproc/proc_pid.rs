@@ -8,8 +8,21 @@ use crate::libproc::helpers;
 
 use self::libc::{c_void, c_int};
 
+use std::fs;
+use std::path::PathBuf;
+
+use libc::pid_t;
+
 use std::ptr;
 use std::mem;
+
+#[cfg(target_os = "macos")]
+use std::process;
+
+#[cfg(target_os = "linux")]
+use std::fs::File;
+#[cfg(target_os = "linux")]
+use std::io::{BufRead, BufReader};
 
 // Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
 // See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
@@ -257,7 +270,7 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
     helpers::check_errno(ret, &mut buf)
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "linux")]
 pub fn pidpath(pid: i32) -> Result<String, String> {
     unimplemented!()
 }
@@ -338,7 +351,22 @@ pub fn name(pid: i32) -> Result<String, String> {
 
 #[cfg(not(target_os = "macos"))]
 pub fn name(pid: i32) -> Result<String, String> {
-    unimplemented!()
+    let filename = format!("/proc/{}/status", pid);
+
+    // Open the file in read-only mode (ignoring errors).
+    let file = File::open(filename).expect("Could not open proc status file");
+    let reader = BufReader::new(file);
+
+    // Read the file line by line using the lines() iterator from std::io::BufRead.
+    for line in reader.lines() {
+        let line = line.expect("Could not read file contents");
+        if line.starts_with("Name:") {
+            let parts: Vec<&str> = line.split(":").collect();
+            return Ok(parts[1].trim().to_owned());
+        }
+    }
+
+    Err("Could not find the name of the requested process in /proc".to_owned())
 }
 
 /// Returns the information of the process that match pid passed in.
@@ -395,12 +423,46 @@ pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::I
     unimplemented!()
 }
 
+
+/// Gets path of current working directory for the process with the provided pid.
+/// TODO add a doc comment
+#[cfg(target_os = "linux")]
+pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
+    fs::read_link(format!("/proc/{}/cwd", pid)).map_err(|e| {
+        e.to_string()
+    })
+}
+
+#[cfg(target_os = "macos")]
+pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
+    unimplemented!()
+}
+
+/// Gets path of current working directory for the current process.
+/// TODO add a doc comment
+#[cfg(target_os = "linux")]
+pub fn cwdself() -> Result<PathBuf, String> {
+    fs::read_link("/proc/self/cwd").map_err(|e| {
+        e.to_string()
+    })
+}
+
+#[cfg(target_os = "macos")]
+pub fn cwdself() -> Result<PathBuf, String> {
+    pidcwd(process::id() as pid_t)
+}
+
 #[cfg(test)]
 mod test {
     use super::{pidinfo, listpidinfo, ListThreads, pidpath, libversion};
     use crate::libproc::bsd_info::BSDInfo;
     use crate::libproc::task_info::TaskAllInfo;
     use crate::libproc::file_info::ListFDs;
+    use super::cwdself;
+    use super::pidcwd;
+    use super::name;
+    use std::env;
+    use std::process;
 
     #[cfg(target_os = "macos")]
     #[test]
@@ -435,19 +497,6 @@ mod test {
         };
     }
 
-    #[cfg(target_os = "macos")]
-    #[test]
-    // error: Process didn't exit successfully:
-    // `/Users/andrew/workspace/libproc-rs/target/debug/libproc-503ad0ba07eb6318` (signal: 11, SIGSEGV: invalid memory reference)
-    // This checks that it can find the name of the init process with PID 1
-    fn name_test_init_pid() {
-        match pidpath(1) {
-            // run tests with 'cargo test -- --nocapture' to see the test output
-            Ok(path) => println!("Name of init process PID = 1 is '{}'", path),
-            Err(message) => assert!(true, message)
-        }
-    }
-
     #[test]
     #[cfg(target_os = "macos")]
     fn libversion_test() {
@@ -460,7 +509,30 @@ mod test {
         }
     }
 
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn name_test() {
+        match name(1) {
+            // run tests with 'cargo test -- --nocapture' to see the test output
+            Ok(name) => assert_eq!(name, "systemd"),
+            Err(err) => assert!(false, "Error retrieving process name: {}", err)
+        }
+    }
+
     #[cfg(target_os = "macos")]
+    #[ignore]
+    #[test]
+    // TODO this test needs to be root for name() to run and work
+    fn name_test() {
+        use std::process;
+        let pid = process::id() as i32;
+
+        match name(1) {
+            Ok(name) => assert_eq!("init", name),
+            Err(err) => assert!(false, "Error retrieving process name: {}", err)
+        };
+    }
+
     #[test]
     #[should_panic]
     // This checks that it cannot find the path of the process with pid -1
@@ -470,5 +542,17 @@ mod test {
             Ok(path) => assert!(false, "It found the path of process Pwith ID = -1 (path = {}), that's not possible\n", path),
             Err(message) => assert!(false, message)
         }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn test_cwd_self() {
+        assert_eq!(env::current_dir().unwrap(), cwdself().unwrap());
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn test_pidcwd_of_self() {
+        assert_eq!(env::current_dir().unwrap(), pidcwd(process::id() as i32).unwrap());
     }
 }
