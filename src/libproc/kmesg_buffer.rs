@@ -150,11 +150,26 @@ pub fn kmsgbuf() -> Result<String, String> {
     unimplemented!()
 }
 
-/*
-    Determine if the current user ID of this process is root
-*/
+/// Determine if the current user ID of this process is root
+///
+/// ```
+/// use libproc::libproc::kmesg_buffer::am_root;
+///
+/// if am_root() {
+///     println!("With great power comes great responsibility");
+/// }
+/// ```
+#[cfg(target_os = "macos")]
 pub fn am_root() -> bool {
+    // geteuid() is unstable still - wait for it or wrap this:
+    // https://stackoverflow.com/questions/3214297/how-can-my-c-c-application-determine-if-the-root-user-is-executing-the-command
     unsafe { libc::getuid() == 0 }
+}
+
+#[cfg(target_os = "linux")]
+pub fn am_root() -> bool {
+    // when this becomes stable in rust libc then we can remove this function or combine for mac and linux
+    unsafe { libc::geteuid() == 0 }
 }
 
 #[cfg(test)]
@@ -163,6 +178,12 @@ mod test {
     use std::io::Write;
     use super::kmsgbuf;
     use super::am_root;
+
+    #[test]
+    fn test_if_root() {
+        // Assumes tests are NOT run as root!
+        assert_eq!(false, am_root());
+    }
 
     // If you want this test to actually test something, then you need to run as root 'sudo cargo test'
     #[test]
