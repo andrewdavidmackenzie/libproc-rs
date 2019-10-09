@@ -440,9 +440,24 @@ mod test {
     use crate::libproc::file_info::ListFDs;
     use super::cwdself;
     use super::pidcwd;
+    use super::name;
     use std::env;
     #[cfg(target_os = "macos")]
     use std::process;
+
+    #[cfg(target_os = "macos")]
+    #[ignore]
+    #[test]
+    // TODO this test needs to be root for name() to run and work
+    fn name_test() {
+        use std::process;
+        let pid = process::id() as i32;
+
+        match name(1) {
+            Ok(name) => assert_eq!("init", name),
+            Err(err) => assert!(false, "Error retrieving process name: {}", err)
+        };
+    }
 
     #[cfg(target_os = "macos")]
     #[test]
@@ -477,16 +492,17 @@ mod test {
         };
     }
 
-    #[cfg(target_os = "macos")]
+    #[ignore]
     #[test]
+    // TODO fix this test
     // error: Process didn't exit successfully:
     // `/Users/andrew/workspace/libproc-rs/target/debug/libproc-503ad0ba07eb6318` (signal: 11, SIGSEGV: invalid memory reference)
     // This checks that it can find the name of the init process with PID 1
-    fn name_test_init_pid() {
+    fn pidpath_test() {
         match pidpath(1) {
             // run tests with 'cargo test -- --nocapture' to see the test output
-            Ok(path) => println!("Name of init process PID = 1 is '{}'", path),
-            Err(message) => assert!(true, message)
+            Ok(path) => println!("Path of of the init process (PID = 1) is '{}'", path),
+            Err(message) => assert!(false, message)
         }
     }
 
@@ -514,14 +530,15 @@ mod test {
         }
     }
 
+    #[cfg(target_os = "linux")]
     #[test]
     fn test_cwd_self() {
         assert_eq!(env::current_dir().unwrap(), cwdself().unwrap());
     }
 
+    #[cfg(target_os = "linux")]
     #[test]
-    fn test_pidcwd() {
-        // TODO test of pidcwd by getting own pid and using that
+    fn test_pidcwd_of_self() {
         assert_eq!(env::current_dir().unwrap(), pidcwd(process::id() as i32).unwrap());
     }
 }
