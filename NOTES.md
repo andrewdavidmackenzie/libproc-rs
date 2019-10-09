@@ -1,26 +1,40 @@
 
-Mac OS               Linux
-==========================
-am_root         am_root                     libc::geteuid() is unstable still.
+Cross-Platform
+=
+am_root                             libc::geteuid() is unstable still.
 
+name                                Returns the name of the process with the specified pid
+
+Pending
+=
 Mac OS               Linux
-==========================
+
                 cwdself                     Can't see yet how to do this in Mac OS
+                
                 pidcwd                      Can't see yet how to do this in Mac OS
+                
 listpidinfo
-name                                        Returns the name of the process with the specified pid
-pidpath         /proc/{pid}/status/name     Returns the path of the file being run as the process with specified pid
+
+pidpath Returns the path of the file being run as the process with specified pid
+
 libversion
+
 regionfilename
+
 pidinfo
+
 listpids
+
 kmsgbuf
+
 pidfdinfo
 
-Apple:
+Apple Docs
+==
 https://developer.apple.com/documentation/
 
-Linux:
+Linux Docs
+==
 https://manned.org/libproc/9ae74aa3     libproc man page
 https://docs.oracle.com/cd/E88353_01/html/E37842/libproc-3lib.html
 https://manned.org/libproc_dev.3        name_to_dev, dev_to_name - lookup device names and numbers tty_to_dev,
