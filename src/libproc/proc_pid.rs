@@ -1,5 +1,6 @@
 extern crate libc;
 
+#[cfg(target_os = "linux")]
 use std::fs;
 #[cfg(target_os = "linux")]
 use std::fs::File;
@@ -439,7 +440,7 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
 }
 
 #[cfg(not(target_os = "macos"))]
-pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::Item>, String> {
+pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::Item>, String> {
     unimplemented!()
 }
 
@@ -454,7 +455,7 @@ pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
 }
 
 #[cfg(target_os = "macos")]
-pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
+pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
     unimplemented!()
 }
 
@@ -474,17 +475,16 @@ pub fn cwdself() -> Result<PathBuf, String> {
 
 #[cfg(test)]
 mod test {
-    use std::env;
-    use std::process;
+    #[cfg(target_os = "linux")]
+    use std::{env, process};
 
     use crate::libproc::bsd_info::BSDInfo;
     use crate::libproc::file_info::ListFDs;
     use crate::libproc::task_info::TaskAllInfo;
 
     use super::{libversion, listpidinfo, ListThreads, pidinfo, pidpath};
-    use super::cwdself;
-    use super::name;
-    use super::pidcwd;
+    #[cfg(target_os = "linux")]
+    use super::{pidcwd, cwdself, name};
 
     #[cfg(target_os = "macos")]
     #[test]
