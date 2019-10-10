@@ -13,7 +13,7 @@ use std::{mem, process};
 use std::path::PathBuf;
 use std::ptr;
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "linux")]
 use libc::PATH_MAX;
 
 use libc::pid_t;
@@ -24,7 +24,9 @@ use crate::libproc::task_info::{TaskAllInfo, TaskInfo};
 use crate::libproc::thread_info::ThreadInfo;
 use crate::libproc::work_queue_info::WorkQueueInfo;
 
-use self::libc::{c_char, c_int, c_void, readlink};
+#[cfg(target_os = "linux")]
+use self::libc::{c_char, readlink};
+use self::libc::{c_int, c_void};
 
 // Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
 // See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
