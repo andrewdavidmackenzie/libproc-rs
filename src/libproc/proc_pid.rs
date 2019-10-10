@@ -12,6 +12,9 @@ use std::{mem, process};
 use std::path::PathBuf;
 use std::ptr;
 
+#[cfg(not(target_os = "macos"))]
+use libc::PATH_MAX;
+
 use libc::pid_t;
 
 use crate::libproc::bsd_info::BSDInfo;
@@ -284,7 +287,7 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 #[cfg(target_os = "linux")]
 pub fn pidpath(pid: i32) -> Result<String, String> {
     let exe_path = CString::new(format!("/proc/{}/exe", pid)).unwrap();
-    let mut buf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
+    let mut buf: Vec<u8> = Vec::with_capacity(PATH_MAX as usize - 1);
     let buffer_ptr = buf.as_mut_ptr() as *mut c_char;
     let buffer_size = buf.capacity();
     let ret = unsafe {
