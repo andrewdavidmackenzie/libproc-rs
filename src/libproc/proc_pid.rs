@@ -349,7 +349,7 @@ pub fn name(pid: i32) -> Result<String, String> {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "linux")]
 pub fn name(pid: i32) -> Result<String, String> {
     let filename = format!("/proc/{}/status", pid);
 
