@@ -572,7 +572,6 @@ mod test {
         }
     }
 
-   // 
     #[test]
     // This checks that it cannot find the path of the process with pid -1 and returns correct error messaage
     fn pidpath_test_unknown_pid() {
