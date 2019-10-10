@@ -2,6 +2,8 @@ extern crate libc;
 
 use std::fs;
 #[cfg(target_os = "linux")]
+use std::ffi::CString;
+#[cfg(target_os = "linux")]
 use std::fs::File;
 #[cfg(target_os = "linux")]
 use std::io::{BufRead, BufReader};
@@ -18,7 +20,7 @@ use crate::libproc::task_info::{TaskAllInfo, TaskInfo};
 use crate::libproc::thread_info::ThreadInfo;
 use crate::libproc::work_queue_info::WorkQueueInfo;
 
-use self::libc::{c_int, c_void};
+use self::libc::{c_char, c_int, c_void, readlink};
 
 // Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
 // See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
@@ -281,7 +283,15 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 
 #[cfg(target_os = "linux")]
 pub fn pidpath(pid: i32) -> Result<String, String> {
-    unimplemented!()
+    let exe_path = CString::new(format!("/proc/{}/exe", pid)).unwrap();
+    let mut buf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
+    let buffer_ptr = buf.as_mut_ptr() as *mut c_char;
+    let buffer_size = buf.capacity();
+    let ret = unsafe {
+        readlink(exe_path.as_ptr(), buffer_ptr, buffer_size)
+    };
+
+    helpers::check_errno(ret as i32, &mut buf)
 }
 
 /// Returns the major and minor version numbers of the native librproc library being used
