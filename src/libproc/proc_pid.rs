@@ -254,7 +254,7 @@ pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
     unimplemented!()
 }
 
-/// TODO explain this function or link to apple docs that explain it
+/// Return a string for the path of the executable file being run as {pid}
 ///
 /// # Examples
 ///
@@ -446,7 +446,15 @@ pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::
 
 
 /// Gets path of current working directory for the process with the provided pid.
-/// TODO add a doc comment
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::proc_pid::pidcwd;
+///
+/// match pidcwd(1) {
+///     Ok(cwd) => println!("The CWD of the process with pid=1 is '{}'", cwd.display()),
+///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+/// }
+/// ```
 #[cfg(target_os = "linux")]
 pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
     fs::read_link(format!("/proc/{}/cwd", pid)).map_err(|e| {
@@ -460,7 +468,15 @@ pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
 }
 
 /// Gets path of current working directory for the current process.
-/// TODO add a doc comment
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::proc_pid::cwdself;
+///
+/// match cwdself() {
+///     Ok(cwd) => println!("The CWD of the current process is '{}'", cwd.display()),
+///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+/// }
+/// ```
 #[cfg(target_os = "linux")]
 pub fn cwdself() -> Result<PathBuf, String> {
     fs::read_link("/proc/self/cwd").map_err(|e| {
