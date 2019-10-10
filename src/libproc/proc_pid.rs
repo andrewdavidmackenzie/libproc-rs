@@ -553,13 +553,18 @@ mod test {
         }
     }
 
-    #[cfg(target_os = "macos")]
+   // 
     #[test]
     // This checks that it cannot find the path of the process with pid -1 and returns correct error messaage
     fn pidpath_test_unknown_pid() {
+        #[cfg(target_os = "macos")]
+        let error_message = "No such process";
+        #[cfg(target_os = "linux")]
+        let error_message = "No such file or directory";
+
         match pidpath(-1) {
             Ok(path) => assert!(false, "It found the path of process Pwith ID = -1 (path = {}), that's not possible\n", path),
-            Err(message) => assert!(message.contains("No such process"))
+            Err(message) => assert!(message.contains(error_message)),
         }
     }
 
