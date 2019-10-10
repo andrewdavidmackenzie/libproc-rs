@@ -27,35 +27,40 @@ At the moment these methods have been implemented:
 
 ## Process / PID related
 ```
-pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String>
+pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> (macos)
 ```
 ```
-pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> {
+pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> (macos)
 ```
 ```
-pub fn regionfilename(pid: i32, address: u64) -> Result<String, String>
+pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> (macos)
 ```
 ```
-pub fn pidpath(pid : i32) -> Result<String, String>
+pub fn pidpath(pid : i32) -> Result<String, String> (macos)
 ```
 ```
-pub fn libversion() -> Result<(i32, i32), String>
+pub fn libversion() -> Result<(i32, i32), String> (macos)
 ```
 ```
-pub fn name(pid: i32) -> Result<String, String>
+pub fn name(pid: i32) -> Result<String, String> (linux) (macos)
 ```
 ```
-pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::Item>, String>
+pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::Item>, String> (macos)
 ```
-
+```
+pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> (linux)
+```
+```
+pub fn cwdself() -> Result<PathBuf, String> (linux)
+```
 ## File and FileDescriptor related
 ```
-pub fn pidfdinfo<T: PIDFDInfo>(pid : i32, fd: i32) -> Result<T, String>
+pub fn pidfdinfo<T: PIDFDInfo>(pid : i32, fd: i32) -> Result<T, String> (macos)
 ```
 
 ## PID Resource Usage related
 ```
-pub fn pidrusage<T: PIDRUsage>(pid : i32) -> Result<T, String>  
+pub fn pidrusage<T: PIDRUsage>(pid : i32) -> Result<T, String> (macos)
 ```
 
 ## kmsgbuf
@@ -75,10 +80,9 @@ pub fn kmsgbuf() -> Result<String, String>
 - 'dmesg' is a version of dmesg implemented in rust that uses libproc-rs. This must be run as root. Currently fails (see above for explanation).
 
 # Platforms
-Implemented just for Mac OS X.
-Got build and test passing with functionality disabled on Linux, now will start to look at
-functions that could be implemented there also. Suggestions for API and cross-platform abstractions
-are welcome.
+Mac OS X and work started on Linux.
+
+Suggestions for API and cross-platform abstractions are welcome.
 
 # TODO
 See the [list of issues](https://github.com/andrewdavidmackenzie/libproc-rs/issues). 

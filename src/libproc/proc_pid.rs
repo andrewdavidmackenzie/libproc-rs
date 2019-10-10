@@ -1,28 +1,24 @@
 extern crate libc;
 
-use crate::libproc::work_queue_info::WorkQueueInfo;
-use crate::libproc::thread_info::ThreadInfo;
-use crate::libproc::task_info::{TaskInfo, TaskAllInfo};
-use crate::libproc::bsd_info::BSDInfo;
-use crate::libproc::helpers;
-
-use self::libc::{c_void, c_int};
-
 use std::fs;
-use std::path::PathBuf;
-
-use libc::pid_t;
-
-use std::ptr;
-use std::mem;
-
-#[cfg(target_os = "macos")]
-use std::process;
-
 #[cfg(target_os = "linux")]
 use std::fs::File;
 #[cfg(target_os = "linux")]
 use std::io::{BufRead, BufReader};
+#[cfg(target_os = "macos")]
+use std::{mem, process};
+use std::path::PathBuf;
+use std::ptr;
+
+use libc::pid_t;
+
+use crate::libproc::bsd_info::BSDInfo;
+use crate::libproc::helpers;
+use crate::libproc::task_info::{TaskAllInfo, TaskInfo};
+use crate::libproc::thread_info::ThreadInfo;
+use crate::libproc::work_queue_info::WorkQueueInfo;
+
+use self::libc::{c_int, c_void};
 
 // Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
 // See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
@@ -43,12 +39,12 @@ const PROC_PIDPATHINFO_MAXSIZE: usize = 4 * MAXPATHLEN;
 // http://fxr.watson.org/fxr/source/bsd/sys/proc_info.h?v=xnu-2050.18.24
 #[derive(Copy, Clone)]
 pub enum ProcType {
-    ProcAllPIDS     = 1,
-    ProcPGRPOnly    = 2,
-    ProcTTYOnly     = 3,
-    ProcUIDOnly     = 4,
-    ProcRUIDOnly    = 5,
-    ProcPPIDOnly    = 6
+    ProcAllPIDS = 1,
+    ProcPGRPOnly = 2,
+    ProcTTYOnly = 3,
+    ProcUIDOnly = 4,
+    ProcRUIDOnly = 5,
+    ProcPPIDOnly = 6,
 }
 
 // This trait is needed for polymorphism on pidinfo types, also abstracting flavor in order to provide
@@ -59,33 +55,46 @@ pub trait PIDInfo: Default {
 
 // From http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c
 pub enum PidInfoFlavor {
-    ListFDs         =  1,   // list of ints?
-    TaskAllInfo     =  2,   // struct proc_taskallinfo
-    TBSDInfo        =  3,   // struct proc_bsdinfo
-    TaskInfo        =  4,   // struct proc_taskinfo
-    ThreadInfo      =  5,   // struct proc_threadinfo
-    ListThreads     =  6,   // list if int thread ids
-    RegionInfo      =  7,
-    RegionPathInfo  =  8,   // string?
-    VNodePathInfo   =  9,   // string?
-    ThreadPathInfo  = 10,   // String?
-    PathInfo        = 11,   // String
-    WorkQueueInfo   = 12    // struct proc_workqueueinfo
+    ListFDs = 1,
+    // list of ints?
+    TaskAllInfo = 2,
+    // struct proc_taskallinfo
+    TBSDInfo = 3,
+    // struct proc_bsdinfo
+    TaskInfo = 4,
+    // struct proc_taskinfo
+    ThreadInfo = 5,
+    // struct proc_threadinfo
+    ListThreads = 6,
+    // list if int thread ids
+    RegionInfo = 7,
+    RegionPathInfo = 8,
+    // string?
+    VNodePathInfo = 9,
+    // string?
+    ThreadPathInfo = 10,
+    // String?
+    PathInfo = 11,
+    // String
+    WorkQueueInfo = 12,    // struct proc_workqueueinfo
 }
 
 pub enum PidInfo {
-    ListFDs(Vec<i32>),      // File Descriptors used by Process
+    ListFDs(Vec<i32>),
+    // File Descriptors used by Process
     TaskAllInfo(TaskAllInfo),
     TBSDInfo(BSDInfo),
     TaskInfo(TaskInfo),
     ThreadInfo(ThreadInfo),
-    ListThreads(Vec<i32>),  // thread ids
-    RegionInfo(String),     // String??
+    ListThreads(Vec<i32>),
+    // thread ids
+    RegionInfo(String),
+    // String??
     RegionPathInfo(String),
     VNodePathInfo(String),
     ThreadPathInfo(String),
     PathInfo(String),
-    WorkQueueInfo(WorkQueueInfo)
+    WorkQueueInfo(WorkQueueInfo),
 }
 
 // This trait is needed for polymorphism on listpidinfo types, also abstracting flavor in order to provide
@@ -109,7 +118,7 @@ impl ListPIDInfo for ListThreads {
 extern {
     fn proc_listpids(proc_type: u32, typeinfo: u32, buffer: *mut c_void, buffersize: u32) -> c_int;
 
-    fn proc_pidinfo(pid : c_int, flavor : c_int, arg: u64, buffer : *mut c_void, buffersize : c_int) -> c_int;
+    fn proc_pidinfo(pid: c_int, flavor: c_int, arg: u64, buffer: *mut c_void, buffersize: c_int) -> c_int;
 
     fn proc_name(pid: c_int, buffer: *mut c_void, buffersize: u32) -> c_int;
 
@@ -133,7 +142,7 @@ extern {
 ///     Ok(pids) => {
 ///         assert!(pids.len() > 1);
 ///         println!("Found {} processes using listpids()", pids.len());
-///     },
+///     }
 ///     Err(err) => assert!(false, "Error listing pids")
 /// }
 /// ```
@@ -141,7 +150,7 @@ extern {
 pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     let buffer_size = unsafe { proc_listpids(proc_types as u32, 0, ptr::null_mut(), 0) };
     if buffer_size <= 0 {
-        return Err(helpers::get_errno_with_message(buffer_size))
+        return Err(helpers::get_errno_with_message(buffer_size));
     }
 
     let capacity = buffer_size as usize / mem::size_of::<u32>();
@@ -177,8 +186,8 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
 ///
 /// ```
 /// use std::io::Write;
-/// use libproc::libproc::proc_pid::{pidinfo};
-/// use libproc::libproc::bsd_info::{BSDInfo};
+/// use libproc::libproc::proc_pid::pidinfo;
+/// use libproc::libproc::bsd_info::BSDInfo;
 /// use std::process;
 ///
 /// let pid = process::id() as i32;
@@ -189,7 +198,7 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
 /// };
 /// ```
 #[cfg(target_os = "macos")]
-pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> {
+pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
     let flavor = T::flavor() as i32;
     let buffer_size = mem::size_of::<T>() as i32;
     let mut pidinfo = T::default();
@@ -208,7 +217,7 @@ pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> {
 }
 
 #[cfg(not(target_os = "macos"))]
-pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> {
+pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
     unimplemented!()
 }
 
@@ -349,24 +358,35 @@ pub fn name(pid: i32) -> Result<String, String> {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
-pub fn name(pid: i32) -> Result<String, String> {
-    let filename = format!("/proc/{}/status", pid);
+/*
+    A helper function for filding named fields in specific /proc FS files for processes
+    This will be more useful when implementing more linux functions
+*/
+#[cfg(target_os = "linux")]
+fn procfile_field(filename: &str, fieldname: &str) -> Result<String, String> {
+    const SEPARATOR: &'static str = ":";
+    let lineheader = format!("{}{}", fieldname, SEPARATOR);
 
     // Open the file in read-only mode (ignoring errors).
-    let file = File::open(filename).expect("Could not open proc status file");
+    let file = File::open(filename)
+        .expect(&format!("Could not open /proc file '{}'", filename));
     let reader = BufReader::new(file);
 
     // Read the file line by line using the lines() iterator from std::io::BufRead.
     for line in reader.lines() {
         let line = line.expect("Could not read file contents");
-        if line.starts_with("Name:") {
-            let parts: Vec<&str> = line.split(":").collect();
+        if line.starts_with(&lineheader) {
+            let parts: Vec<&str> = line.split(SEPARATOR).collect();
             return Ok(parts[1].trim().to_owned());
         }
     }
 
-    Err("Could not find the name of the requested process in /proc".to_owned())
+    Err(format!("Could not find the field named '{}' in the /proc FS file name '{}'", fieldname, filename).to_owned())
+}
+
+#[cfg(target_os = "linux")]
+pub fn name(pid: i32) -> Result<String, String> {
+    procfile_field(&format!("/proc/{}/status", pid), "Name")
 }
 
 /// Returns the information of the process that match pid passed in.
@@ -378,7 +398,7 @@ pub fn name(pid: i32) -> Result<String, String> {
 /// ```
 /// use std::io::Write;
 /// use libproc::libproc::proc_pid::{listpidinfo, pidinfo};
-/// use libproc::libproc::task_info::{TaskAllInfo};
+/// use libproc::libproc::task_info::TaskAllInfo;
 /// use libproc::libproc::file_info::{ListFDs, ProcFDType};
 /// use std::process;
 ///
@@ -394,7 +414,7 @@ pub fn name(pid: i32) -> Result<String, String> {
 /// }
 /// ```
 #[cfg(target_os = "macos")]
-pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::Item>, String> {
+pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::Item>, String> {
     let flavor = T::flavor() as i32;
     let buffer_size = mem::size_of::<T::Item>() as i32 * max_len as i32;
     let mut buffer = Vec::<T::Item>::with_capacity(max_len);
@@ -406,7 +426,7 @@ pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::I
     let ret: i32;
 
     unsafe {
-        ret = proc_pidinfo( pid, flavor, 0, buffer_ptr, buffer_size);
+        ret = proc_pidinfo(pid, flavor, 0, buffer_ptr, buffer_size);
     };
 
     if ret <= 0 {
@@ -419,7 +439,7 @@ pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::I
 }
 
 #[cfg(not(target_os = "macos"))]
-pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::Item>, String> {
+pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::Item>, String> {
     unimplemented!()
 }
 
@@ -454,15 +474,17 @@ pub fn cwdself() -> Result<PathBuf, String> {
 
 #[cfg(test)]
 mod test {
-    use super::{pidinfo, listpidinfo, ListThreads, pidpath, libversion};
-    use crate::libproc::bsd_info::BSDInfo;
-    use crate::libproc::task_info::TaskAllInfo;
-    use crate::libproc::file_info::ListFDs;
-    use super::cwdself;
-    use super::pidcwd;
-    use super::name;
     use std::env;
     use std::process;
+
+    use crate::libproc::bsd_info::BSDInfo;
+    use crate::libproc::file_info::ListFDs;
+    use crate::libproc::task_info::TaskAllInfo;
+
+    use super::{libversion, listpidinfo, ListThreads, pidinfo, pidpath};
+    use super::cwdself;
+    use super::name;
+    use super::pidcwd;
 
     #[cfg(target_os = "macos")]
     #[test]
@@ -485,14 +507,14 @@ mod test {
         match pidinfo::<TaskAllInfo>(pid, 0) {
             Ok(info) => {
                 match listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize) {
-                    Ok(threads) => assert!(threads.len()>0),
+                    Ok(threads) => assert!(threads.len() > 0),
                     Err(err) => assert!(false, "Error retrieving process info: {}", err)
                 }
                 match listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
-                    Ok(fds) => assert!(fds.len()>0),
+                    Ok(fds) => assert!(fds.len() > 0),
                     Err(err) => assert!(false, "Error retrieving process info: {}", err)
                 }
-            },
+            }
             Err(err) => assert!(false, "Error retrieving process info: {}", err)
         };
     }
@@ -504,43 +526,30 @@ mod test {
             Ok((major, minor)) => {
                 // run tests with 'cargo test -- --nocapture' to see the test output
                 println!("Major = {}, Minor = {}", major, minor);
-            },
+            }
             Err(message) => assert!(false, message)
         }
     }
 
+    // TODO enable this test for all platforms
+    //      - "macos" - name() needs to be root to run and work :-(
     #[cfg(target_os = "linux")]
     #[test]
     fn name_test() {
         match name(1) {
-            // run tests with 'cargo test -- --nocapture' to see the test output
             Ok(name) => assert_eq!(name, "systemd"),
+            // TODO init process has name "init" on macos
             Err(err) => assert!(false, "Error retrieving process name: {}", err)
         }
     }
 
     #[cfg(target_os = "macos")]
-    #[ignore]
     #[test]
-    // TODO this test needs to be root for name() to run and work
-    fn name_test() {
-        use std::process;
-        let pid = process::id() as i32;
-
-        match name(1) {
-            Ok(name) => assert_eq!("init", name),
-            Err(err) => assert!(false, "Error retrieving process name: {}", err)
-        };
-    }
-
-    #[test]
-    #[should_panic]
-    // This checks that it cannot find the path of the process with pid -1
+    // This checks that it cannot find the path of the process with pid -1 and returns correct error messaage
     fn pidpath_test_unknown_pid() {
         match pidpath(-1) {
-            // run tests with 'cargo test -- --nocapture' to see the test output
             Ok(path) => assert!(false, "It found the path of process Pwith ID = -1 (path = {}), that's not possible\n", path),
-            Err(message) => assert!(false, message)
+            Err(message) => assert!(message.contains("No such process"))
         }
     }
 
