@@ -36,7 +36,7 @@ pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> (macos)
 pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> (macos)
 ```
 ```
-pub fn pidpath(pid : i32) -> Result<String, String> (macos)
+pub fn pidpath(pid : i32) -> Result<String, String> (macos) (linux)
 ```
 ```
 pub fn libversion() -> Result<(i32, i32), String> (macos)
