@@ -509,38 +509,24 @@ mod test {
         }
     }
 
+    // TODO enable this test for all platforms
+    //      - "macos" - name() needs to be root to run and work :-(
     #[cfg(target_os = "linux")]
     #[test]
     fn name_test() {
         match name(1) {
-            // run tests with 'cargo test -- --nocapture' to see the test output
             Ok(name) => assert_eq!(name, "systemd"),
+            // TODO init process has name "init" on macos
             Err(err) => assert!(false, "Error retrieving process name: {}", err)
         }
     }
 
-    #[cfg(target_os = "macos")]
-    #[ignore]
     #[test]
-    // TODO this test needs to be root for name() to run and work
-    fn name_test() {
-        use std::process;
-        let pid = process::id() as i32;
-
-        match name(1) {
-            Ok(name) => assert_eq!("init", name),
-            Err(err) => assert!(false, "Error retrieving process name: {}", err)
-        };
-    }
-
-    #[test]
-    #[should_panic]
-    // This checks that it cannot find the path of the process with pid -1
+    // This checks that it cannot find the path of the process with pid -1 and returns correct error messaage
     fn pidpath_test_unknown_pid() {
         match pidpath(-1) {
-            // run tests with 'cargo test -- --nocapture' to see the test output
             Ok(path) => assert!(false, "It found the path of process Pwith ID = -1 (path = {}), that's not possible\n", path),
-            Err(message) => assert!(false, message)
+            Err(message) => assert!(message.contains("No such process"))
         }
     }
 
