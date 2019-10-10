@@ -5,10 +5,9 @@ use std::fs;
 use std::fs::File;
 #[cfg(target_os = "linux")]
 use std::io::{BufRead, BufReader};
-use std::mem;
-use std::path::PathBuf;
 #[cfg(target_os = "macos")]
-use std::process;
+use std::{mem, process};
+use std::path::PathBuf;
 use std::ptr;
 
 use libc::pid_t;
@@ -376,7 +375,7 @@ fn procfile_field(filename: &str, fieldname: &str) -> Result<String, String> {
     // Read the file line by line using the lines() iterator from std::io::BufRead.
     for line in reader.lines() {
         let line = line.expect("Could not read file contents");
-        if line.starts_with(lineheader) {
+        if line.starts_with(&lineheader) {
             let parts: Vec<&str> = line.split(SEPARATOR).collect();
             return Ok(parts[1].trim().to_owned());
         }
