@@ -67,8 +67,11 @@ pub fn pidrusage<T: PIDRUsage>(pid : i32) -> Result<T, String> (macos)
 I have also implemented this method - but the MAGIC_NUMBER returned is not correct, 
 and upon investigation it seems that Apple/Darwin/Mach have changed totally how dmessage works in 
 latest versions, moving away from using libproc to use kvm - with a total rewrite of dmesg.
+
 I leave it in for now, but some serious revision of the library, with conditional compilation depending on
 which version of Mac OS X and/or Darwin will be required to get a version that works broadly :-(
+
+See [Github issue](https://github.com/andrewdavidmackenzie/libproc-rs/issues/39)
 
 ```
 pub fn kmsgbuf() -> Result<String, String>
@@ -77,12 +80,16 @@ pub fn kmsgbuf() -> Result<String, String>
 # Binaries
 'cargo build' builds the following binaries:
 - 'procinfo' that takes a PID as an optional argument (uses it's own pid if none supplied) and returns information about the process on stdout
-- 'dmesg' is a version of dmesg implemented in rust that uses libproc-rs. This must be run as root. Currently fails (see above for explanation).
+- 'dmesg' is a version of dmesg implemented in rust that uses libproc-rs. This must be run as root. Currently fails (see above and
+[bug](https://github.com/andrewdavidmackenzie/libproc-rs/issues/39)).
 
 # Platforms
 Mac OS X and work started on Linux.
 
-Suggestions for API and cross-platform abstractions are welcome.
+# Input Requested
+* Suggestions for API, module re-org and cross-platform abstractions are welcome.
+* How to do error reporting? Define own new Errors, or keep simple with Strings?
+* Would like Path/PathBuf returned when it makes sense instead of String?
 
 # TODO
 See the [list of issues](https://github.com/andrewdavidmackenzie/libproc-rs/issues). 
