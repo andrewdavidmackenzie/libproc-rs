@@ -513,8 +513,10 @@ mod test {
     use crate::libproc::task_info::TaskAllInfo;
 
     use super::{libversion, listpidinfo, ListThreads, pidinfo, pidpath};
+    use super::name;
     #[cfg(target_os = "linux")]
-    use super::{cwdself, name, pidcwd};
+    use super::{cwdself, pidcwd};
+    use crate::libproc::kmesg_buffer::am_root;
 
     #[cfg(target_os = "macos")]
     #[test]
@@ -561,15 +563,21 @@ mod test {
         }
     }
 
-    // TODO enable this test for all platforms
-    //      - "macos" - name() needs to be root to run and work :-(
-    #[cfg(target_os = "linux")]
     #[test]
     fn name_test() {
-        match name(1) {
-            Ok(name) => assert_eq!(name, "systemd"),
-            // TODO init process has name "init" on macos
-            Err(err) => assert!(false, "Error retrieving process name: {}", err)
+        #[cfg(target_os = "linux")]
+        let expected_name = "systemd";
+        #[cfg(target_os = "macos")]
+        let expected_name = "launchd";
+
+        if am_root() || cfg!(target_os = "linux") {
+            match name(1) {
+                Ok(name) => assert_eq!(expected_name, name),
+                // TODO init process has name "init" on macos
+                Err(err) => assert!(false, "Error retrieving process name: {}", err)
+            }
+        } else {
+            println!("Cannot run name_test on macos unless run as root");
         }
     }
 
