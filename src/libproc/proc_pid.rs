@@ -1,21 +1,20 @@
 extern crate libc;
 
-#[cfg(target_os = "linux")]
-use std::fs;
+#[cfg(target_os = "macos")]
+use std::{mem, process};
 #[cfg(target_os = "linux")]
 use std::ffi::CString;
+#[cfg(target_os = "linux")]
+use std::fs;
 #[cfg(target_os = "linux")]
 use std::fs::File;
 #[cfg(target_os = "linux")]
 use std::io::{BufRead, BufReader};
-#[cfg(target_os = "macos")]
-use std::{mem, process};
 use std::path::PathBuf;
 use std::ptr;
 
 #[cfg(target_os = "linux")]
 use libc::PATH_MAX;
-
 use libc::pid_t;
 
 use crate::libproc::bsd_info::BSDInfo;
@@ -514,8 +513,10 @@ mod test {
     use crate::libproc::task_info::TaskAllInfo;
 
     use super::{libversion, listpidinfo, ListThreads, pidinfo, pidpath};
+    use super::name;
     #[cfg(target_os = "linux")]
-    use super::{pidcwd, cwdself, name};
+    use super::{cwdself, pidcwd};
+    use crate::libproc::kmesg_buffer::am_root;
 
     #[cfg(target_os = "macos")]
     #[test]
@@ -562,15 +563,20 @@ mod test {
         }
     }
 
-    // TODO enable this test for all platforms
-    //      - "macos" - name() needs to be root to run and work :-(
-    #[cfg(target_os = "linux")]
     #[test]
     fn name_test() {
-        match name(1) {
-            Ok(name) => assert_eq!(name, "systemd"),
-            // TODO init process has name "init" on macos
-            Err(err) => assert!(false, "Error retrieving process name: {}", err)
+        #[cfg(target_os = "linux")]
+        let expected_name = "systemd";
+        #[cfg(target_os = "macos")]
+        let expected_name = "launchd";
+
+        if am_root() || cfg!(target_os = "linux") {
+            match name(1) {
+                Ok(name) => assert_eq!(expected_name, name),
+                Err(err) => assert!(false, "Error retrieving process name: {}", err)
+            }
+        } else {
+            println!("Cannot run name_test on macos unless run as root");
         }
     }
 
@@ -578,13 +584,27 @@ mod test {
     // This checks that it cannot find the path of the process with pid -1 and returns correct error messaage
     fn pidpath_test_unknown_pid() {
         #[cfg(target_os = "macos")]
-        let error_message = "No such process";
+            let error_message = "No such process";
         #[cfg(target_os = "linux")]
-        let error_message = "No such file or directory";
+            let error_message = "No such file or directory";
 
         match pidpath(-1) {
             Ok(path) => assert!(false, "It found the path of process Pwith ID = -1 (path = {}), that's not possible\n", path),
             Err(message) => assert!(message.contains(error_message)),
+        }
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    // TODO this seems to require root permission on linux
+    // This checks that it cannot find the path of the process with pid 1
+    fn pidpath_test() {
+        #[cfg(target_os = "macos")]
+            let expected_path = "/sbin/launchd";
+
+        match pidpath(1) {
+            Ok(path) => assert_eq!(expected_path, path),
+            Err(message) => assert!(false, message),
         }
     }
 
