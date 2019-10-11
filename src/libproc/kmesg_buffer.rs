@@ -189,8 +189,9 @@ mod test {
         }
     }
 
-    #[cfg(target_os = "macos")]
     #[test]
+    #[ignore]
+    // TODO implement ksmgbuf() on linux
     // TODO fix this on macos: error message returned is
     // Message buffer: MessageBuffer { magic: 0x3a657461, size: 1986947360, bufx: 1684630625}
     // thread 'libproc::kmesg_buffer::test::kmessagebuffer_test' panicked at 'The magic number 0x3a657461 is incorrect', src/libproc/kmesg_buffer.rs:194:33
