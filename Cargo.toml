@@ -1,7 +1,7 @@
 [package]
 name = "libproc"
 version = "0.6.0"
-description = "A rust wrapper of libproc to get information about running processes - currently Mac OS X only"
+description = "A rust wrapper of libproc to get information about running processes - Mac OS X and Linux"
 authors = ["Andrew Mackenzie <andrew@mackenzie-serres.net>"]
 repository = "https://github.com/andrewdavidmackenzie/libproc-rs"
 readme = "README.md"

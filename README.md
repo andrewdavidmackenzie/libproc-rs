@@ -1,7 +1,7 @@
 ![Build Status](https://travis-ci.org/andrewdavidmackenzie/libproc-rs.svg?branch=master "Mac OS X")
 
 # libproc-rs
-This is a rust wrapper for libproc (supplied on Mac OS X as a native library) for getting information about running processes.
+This is a library for getting information about running processes for Mac OS X and Linux.
 
 # Using it
 ```
@@ -78,9 +78,9 @@ pub fn kmsgbuf() -> Result<String, String>
 ```
 
 # Binaries
-'cargo build' builds the following binaries:
-- 'procinfo' that takes a PID as an optional argument (uses it's own pid if none supplied) and returns information about the process on stdout
-- 'dmesg' is a version of dmesg implemented in rust that uses libproc-rs. This must be run as root. Currently fails (see above and
+`cargo build` builds the following binaries:
+- `procinfo` that takes a PID as an optional argument (uses it's own pid if none supplied) and returns information about the process on stdout
+- `dmesg` is a version of dmesg implemented in rust that uses libproc-rs. This must be run as root. Currently fails (see above and
 [bug](https://github.com/andrewdavidmackenzie/libproc-rs/issues/39)).
 
 # Platforms
