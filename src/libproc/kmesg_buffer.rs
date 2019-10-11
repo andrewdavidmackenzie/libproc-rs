@@ -176,7 +176,7 @@ pub fn am_root() -> bool {
 mod test {
     use std::io;
     use std::io::Write;
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(target_os = "macos")]
     use super::kmsgbuf;
     use super::am_root;
 
@@ -189,14 +189,13 @@ mod test {
         }
     }
 
-    // If you want this test to actually test something, then you need to run as root 'sudo cargo test'
+    #[cfg(target_os = "macos")]
     #[test]
     // TODO fix this on macos: error message returned is
     // Message buffer: MessageBuffer { magic: 0x3a657461, size: 1986947360, bufx: 1684630625}
     // thread 'libproc::kmesg_buffer::test::kmessagebuffer_test' panicked at 'The magic number 0x3a657461 is incorrect', src/libproc/kmesg_buffer.rs:194:33
     fn kmessagebuffer_test() {
         if am_root() {
-            #[cfg(not(target_os = "macos"))]
             match kmsgbuf() {
                 Ok(buffer) => println!("Buffer: {:?}", buffer),
                 Err(message) => assert!(false, message)
