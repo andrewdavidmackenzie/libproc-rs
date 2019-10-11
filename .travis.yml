@@ -21,7 +21,7 @@ addons:
       - gcc
       - binutils-dev
 
-sudo: false
+sudo: required
 
 branches:
   only:
@@ -31,7 +31,7 @@ matrix:
   allow_failures:
     - rust: nightly
 
-script: cargo test
+script: sudo cargo test
 
 after_success:
   - |
