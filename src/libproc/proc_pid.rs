@@ -1,21 +1,20 @@
 extern crate libc;
 
-#[cfg(target_os = "linux")]
-use std::fs;
+#[cfg(target_os = "macos")]
+use std::{mem, process};
 #[cfg(target_os = "linux")]
 use std::ffi::CString;
+#[cfg(target_os = "linux")]
+use std::fs;
 #[cfg(target_os = "linux")]
 use std::fs::File;
 #[cfg(target_os = "linux")]
 use std::io::{BufRead, BufReader};
-#[cfg(target_os = "macos")]
-use std::{mem, process};
 use std::path::PathBuf;
 use std::ptr;
 
 #[cfg(target_os = "linux")]
 use libc::PATH_MAX;
-
 use libc::pid_t;
 
 use crate::libproc::bsd_info::BSDInfo;
@@ -515,7 +514,7 @@ mod test {
 
     use super::{libversion, listpidinfo, ListThreads, pidinfo, pidpath};
     #[cfg(target_os = "linux")]
-    use super::{pidcwd, cwdself, name};
+    use super::{cwdself, name, pidcwd};
 
     #[cfg(target_os = "macos")]
     #[test]
@@ -578,9 +577,9 @@ mod test {
     // This checks that it cannot find the path of the process with pid -1 and returns correct error messaage
     fn pidpath_test_unknown_pid() {
         #[cfg(target_os = "macos")]
-        let error_message = "No such process";
+            let error_message = "No such process";
         #[cfg(target_os = "linux")]
-        let error_message = "No such file or directory";
+            let error_message = "No such file or directory";
 
         match pidpath(-1) {
             Ok(path) => assert!(false, "It found the path of process Pwith ID = -1 (path = {}), that's not possible\n", path),
@@ -593,6 +592,7 @@ mod test {
     // TODO this seems to require root permission on linux
     // This checks that it cannot find the path of the process with pid 1
     fn pidpath_test() {
+        #[cfg(target_os = "macos")]
             let expected_path = "/sbin/launchd";
 
         match pidpath(1) {
