@@ -573,7 +573,6 @@ mod test {
         if am_root() || cfg!(target_os = "linux") {
             match name(1) {
                 Ok(name) => assert_eq!(expected_name, name),
-                // TODO init process has name "init" on macos
                 Err(err) => assert!(false, "Error retrieving process name: {}", err)
             }
         } else {
