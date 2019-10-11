@@ -31,7 +31,7 @@ matrix:
   allow_failures:
     - rust: nightly
 
-script: sudo cargo test
+script: cargo test
 
 after_success:
   - |
