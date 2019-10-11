@@ -589,12 +589,11 @@ mod test {
     }
 
     #[test]
+    #[cfg(target_os = "macos")]
+    // TODO this seems to require root permission on linux
     // This checks that it cannot find the path of the process with pid 1
     fn pidpath_test() {
-        #[cfg(target_os = "macos")]
             let expected_path = "/sbin/launchd";
-        #[cfg(target_os = "linux")]
-            let expected_path = "don't know yet";
 
         match pidpath(1) {
             Ok(path) => assert_eq!(expected_path, path),
