@@ -86,6 +86,16 @@ pub fn kmsgbuf() -> Result<String, String>
 # Platforms
 Mac OS X and work started on Linux.
 
+# Build and Test
+`cargo test` should build and test as usual for rust projects.
+
+However, as some functions need to be run as `root` to work, I run travis-CI tests as `root`. So, when developing in local
+it's best if you use `sudo cargo test`. NOTE: This can get you into permissions problems when switching back and for
+between using `cargo test` and `sudo cargo test`. To fix that run `sudo cargo clean` and then build or test as you prefer.
+
+In order to have tests pass when run as `root` or not, some tests need to check if they are `root` at run-time 
+(using our own `am_root()` function is handy) and avoid failing if *not* run as `root`. 
+
 # Input Requested
 * Suggestions for API, module re-org and cross-platform abstractions are welcome.
 * How to do error reporting? Define own new Errors, or keep simple with Strings?
