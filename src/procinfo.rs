@@ -52,6 +52,16 @@ fn procinfo(pid: i32) {
     }
 }
 
+///
+/// Demonstrate the use of the libproc-rs library functions with a simple little program
+/// that dumps info about a process specified by its pid, or the current process if no pid
+/// specified:
+///
+///```
+/// Usage: procinfo [pid]
+///
+///```
+///
 fn main() {
     let args: Vec<String> = env::args().collect();
     let pid;
