@@ -1,7 +1,7 @@
 extern crate libc;
 
 #[cfg(target_os = "macos")]
-use std::{mem, process};
+use std::mem;
 #[cfg(target_os = "linux")]
 use std::ffi::CString;
 #[cfg(target_os = "linux")]
@@ -12,6 +12,7 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 use std::ptr;
+use std::env;
 
 #[cfg(target_os = "linux")]
 use libc::PATH_MAX;
@@ -482,6 +483,7 @@ pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
 }
 
 /// Gets path of current working directory for the current process.
+/// Just wraps rusts env::current_dir() function so not so useful.
 /// ```
 /// use std::io::Write;
 /// use libproc::libproc::proc_pid::cwdself;
@@ -491,31 +493,25 @@ pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
 ///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
 /// }
 /// ```
-#[cfg(target_os = "linux")]
 pub fn cwdself() -> Result<PathBuf, String> {
-    fs::read_link("/proc/self/cwd").map_err(|e| {
-        e.to_string()
-    })
+    env::current_dir().map_err(|e| e.to_string())
 }
 
-#[cfg(target_os = "macos")]
-pub fn cwdself() -> Result<PathBuf, String> {
-    pidcwd(process::id() as pid_t)
-}
-
+// run tests with 'cargo test -- --nocapture' to see the test output
 #[cfg(test)]
 mod test {
     #[cfg(target_os = "linux")]
-    use std::{env, process};
+    use std::process;
+    use std::env;
 
     use crate::libproc::bsd_info::BSDInfo;
     use crate::libproc::file_info::ListFDs;
     use crate::libproc::task_info::TaskAllInfo;
 
     use super::{libversion, listpidinfo, ListThreads, pidinfo, pidpath};
-    use super::name;
+    use super::{name, cwdself};
     #[cfg(target_os = "linux")]
-    use super::{cwdself, pidcwd};
+    use super::pidcwd;
     use crate::libproc::kmesg_buffer::am_root;
 
     #[cfg(target_os = "macos")]
@@ -555,10 +551,7 @@ mod test {
     #[cfg(target_os = "macos")]
     fn libversion_test() {
         match libversion() {
-            Ok((major, minor)) => {
-                // run tests with 'cargo test -- --nocapture' to see the test output
-                println!("Major = {}, Minor = {}", major, minor);
-            }
+            Ok((major, minor)) => println!("Major = {}, Minor = {}", major, minor),
             Err(message) => assert!(false, message)
         }
     }
@@ -608,7 +601,8 @@ mod test {
         }
     }
 
-    #[cfg(target_os = "linux")]
+    // Pretty useless test as it uses the exact same code as the function - but I guess we
+    // should check it can be called and returns correct value
     #[test]
     fn test_cwd_self() {
         assert_eq!(env::current_dir().unwrap(), cwdself().unwrap());
@@ -616,7 +610,7 @@ mod test {
 
     #[cfg(target_os = "linux")]
     #[test]
-    fn test_pidcwd_of_self() {
+    fn pidcwd_of_self_test() {
         assert_eq!(env::current_dir().unwrap(), pidcwd(process::id() as i32).unwrap());
     }
 }
