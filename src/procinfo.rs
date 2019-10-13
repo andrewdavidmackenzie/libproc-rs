@@ -1,3 +1,26 @@
+//! `procinfo` is a simple program to demonstrate the use of the libproc-rs library functions
+//! It prints out info about a process specified by its pid, or the current process if no pid
+//! specified:
+//!
+//! Usage
+//! =
+//!```
+//! procinfo [pid]
+//!
+//!```
+//!
+//! Which will produce output similar to:
+//! ```
+//! Libversion: 1.1
+//! Pid: 8484
+//! Path: /Users/andrew/workspace/libproc-rs/target/debug/procinfo
+//! Name: procinfo
+//! Region Filename (at address 0): /Users/andrew/workspace/libproc-rs/target/debug/procinfo
+//! There are currently 454 processes active
+//! 8496
+//! ...
+//! ```
+
 extern crate libproc;
 extern crate libc;
 
@@ -52,16 +75,6 @@ fn procinfo(pid: i32) {
     }
 }
 
-///
-/// Demonstrate the use of the libproc-rs library functions with a simple little program
-/// that dumps info about a process specified by its pid, or the current process if no pid
-/// specified:
-///
-///```
-/// Usage: procinfo [pid]
-///
-///```
-///
 fn main() {
     let args: Vec<String> = env::args().collect();
     let pid;

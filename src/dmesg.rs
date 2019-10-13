@@ -1,3 +1,13 @@
+//! A `dmesg` command that is a simple demonstration program for using the libproc-rs library
+//!
+//! Usage
+//! =
+//!
+//! `> sudo dmesg`
+//!
+//! NOTE: This must be run as `root`
+//! NOTE: For now this is only implemented for macos
+
 extern crate libproc;
 extern crate libc;
 
@@ -8,9 +18,6 @@ use crate::libproc::libproc::proc_pid;
 #[cfg(target_os = "macos")]
 use crate::libproc::libproc::kmesg_buffer;
 
-/*
-    A `dmesg` commands as a simple demonstration program of using libproc-rs
-*/
 #[cfg(target_os = "macos")]
 fn main() {
     if proc_pid::am_root() {
