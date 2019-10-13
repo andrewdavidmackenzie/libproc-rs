@@ -149,10 +149,7 @@ extern {
 /// use libproc::libproc::proc_pid;
 ///
 /// match proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
-///     Ok(pids) => {
-///         assert!(pids.len() > 1);
-///         println!("Found {} processes using listpids()", pids.len());
-///     }
+///     Ok(pids) => println!("Found {} processes using listpids()", pids.len()),
 ///     Err(err) => assert!(false, "Error listing pids")
 /// }
 /// ```
