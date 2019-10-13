@@ -1,40 +1,49 @@
+Notes
+= 
+These are just notes I've gathered and a list of the status of different calls
+and ideas for others.
 
 Cross-Platform
-=
-am_root                             libc::geteuid() is unstable still.
-
-name                                Returns the name of the process with the specified pid
+==
+* am_root - libc::geteuid() is unstable still.
+* name - Returns the name of the process with the specified pid
+* listpids - Only implements listing all pid types
+* libversion - Just returns error message on linux as no lib used
+* cwdself - just wraps env::current_dir() of rust so not so useful
+* pidpath - Returns the path of the file being run as the process with specified pid
 
 Pending
-=
-Mac OS               Linux
-
-                cwdself                     Can't see yet how to do this in Mac OS
-                
-                pidcwd                      Can't see yet how to do this in Mac OS
-                
-listpidinfo
-
-pidpath Returns the path of the file being run as the process with specified pid
-
-libversion
-
-regionfilename
-
-pidinfo
-
-listpids
-
-kmsgbuf
-
-pidfdinfo
-
-Apple Docs
 ==
+Mac OS
+=== 
+* pidcwd                      Can't see yet how to do this in Mac OS
+                
+Linux
+===
+* listpidinfo
+* regionfilename
+* pidinfo
+* kmsgbuf
+* pidfdinfo
+
+Ideas
+==
+Here is a lits of things I see would be easy to do on Linux. I still need
+to look into how they could be done on Mac.
+
+* command line arguments
+* environment vars
+* uid running a process
+* parent pid (ppid)
+
+Reference Docs
+==
+Apple Docs
+===
 https://developer.apple.com/documentation/
 
 Linux Docs
-==
+===
 https://manned.org/libproc/9ae74aa3     libproc man page
 https://docs.oracle.com/cd/E88353_01/html/E37842/libproc-3lib.html
 https://manned.org/libproc_dev.3        name_to_dev, dev_to_name - lookup device names and numbers tty_to_dev,
