@@ -521,7 +521,7 @@ pub fn cwdself() -> Result<PathBuf, String> {
 /// Determine if the current user ID of this process is root
 ///
 /// ```
-/// use libproc::libproc::kmesg_buffer::am_root;
+/// use libproc::libproc::proc_pid::am_root;
 ///
 /// if am_root() {
 ///     println!("With great power comes great responsibility");
