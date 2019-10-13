@@ -503,7 +503,7 @@ pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::
 /// ```
 #[cfg(target_os = "macos")]
 pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
-    unimplemented!()
+    Err("pidcwd is not implemented for macos".into())
 }
 
 #[cfg(target_os = "linux")]
