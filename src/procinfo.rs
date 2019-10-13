@@ -1,6 +1,8 @@
-//! `procinfo` is a simple program to demonstrate the use of the libproc-rs library functions
+//! `procinfo` is a simple program to demonstrate the use of the [`libproc`](../libproc/index.html)
+//! library functions.
+//!
 //! It prints out info about a process specified by its pid, or the current process if no pid
-//! specified:
+//! specified.
 //!
 //! Usage
 //! =

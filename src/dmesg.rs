@@ -1,12 +1,16 @@
-//! A `dmesg` command that is a simple demonstration program for using the libproc-rs library
+//! A `dmesg` command that is a simple demonstration program for using the [`libproc`](../libproc/index.html) library
 //!
 //! Usage
 //! =
 //!
 //! `> sudo dmesg`
 //!
+//! ---
+//!
 //! NOTE: This must be run as `root`
+//!
 //! NOTE: For now this is only implemented for macos
+//!
 
 extern crate libproc;
 extern crate libc;

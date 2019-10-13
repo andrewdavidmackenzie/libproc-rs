@@ -47,8 +47,11 @@ const PROC_PIDPATHINFO_MAXSIZE: usize = 4 * MAXPATHLEN;
 
 // From http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h and
 // http://fxr.watson.org/fxr/source/bsd/sys/proc_info.h?v=xnu-2050.18.24
+/// The `ProcType` type. Used to specify what type of processes you are interested
+/// in in other calls, such as `listpids`.
 #[derive(Copy, Clone)]
 pub enum ProcType {
+    // All processes
     ProcAllPIDS = 1,
     ProcPGRPOnly = 2,
     ProcTTYOnly = 3,
@@ -64,6 +67,7 @@ pub trait PIDInfo: Default {
 }
 
 // From http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c
+/// An enum used to specify what type of information about a process is referenced
 pub enum PidInfoFlavor {
     ListFDs = 1,
     // list of ints?
@@ -89,20 +93,22 @@ pub enum PidInfoFlavor {
     WorkQueueInfo = 12,    // struct proc_workqueueinfo
 }
 
+/// The `PidInfo` enum contains a piece of information about a processes
 pub enum PidInfo {
+    /// File Descriptors used by Process
     ListFDs(Vec<i32>),
-    // File Descriptors used by Process
     TaskAllInfo(TaskAllInfo),
     TBSDInfo(BSDInfo),
     TaskInfo(TaskInfo),
     ThreadInfo(ThreadInfo),
+    /// A list of Thread IDs
     ListThreads(Vec<i32>),
-    // thread ids
     RegionInfo(String),
     // String??
     RegionPathInfo(String),
     VNodePathInfo(String),
     ThreadPathInfo(String),
+    /// The path of the executable being run as the process
     PathInfo(String),
     WorkQueueInfo(WorkQueueInfo),
 }
@@ -143,6 +149,8 @@ extern {
 /// Returns the PIDs of the processes active that match the ProcType passed in
 ///
 /// # Examples
+///
+/// Get the list of running process IDs using `listpids`
 ///
 /// ```
 /// use std::io::Write;
@@ -202,11 +210,13 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     }
 }
 
-/// Returns the PIDs of the process that match pid passed in.
+/// Get info about a process
 ///
-/// arg - is "geavily not documented" and need to look at code for each flavour here
-/// http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c
-/// to figure out what it's doing.... Pull-Requests welcome!
+/// arg - is "heavily not documented" and need to look at code for each flavour
+/// [here](http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c)
+/// to figure out what it's doing.
+///
+/// Pull-Requests welcome!
 ///
 /// # Examples
 ///
@@ -247,10 +257,10 @@ pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
     unimplemented!()
 }
 
-///
-/// TODO explain this call or add a link to apple docs that explain it?
+/// Get the filename associated with a memory region
 ///
 /// # Examples
+///
 /// ```
 /// use libproc::libproc::proc_pid::regionfilename;
 ///
@@ -279,7 +289,7 @@ pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
     Err("'regionfilename' not implemented on linux".to_owned())
 }
 
-/// Return a string for the path of the executable file being run as {pid}
+/// Get the path of the executable file being run for a process
 ///
 /// # Examples
 ///
@@ -318,7 +328,7 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
     helpers::check_errno(ret as i32, &mut buf)
 }
 
-/// Returns the major and minor version numbers of the native librproc library being used
+/// Get the major and minor version numbers of the native libproc library (Mac OS X)
 ///
 /// # Examples
 ///
@@ -354,7 +364,7 @@ pub fn libversion() -> Result<(i32, i32), String> {
     Err("Linux does not use a library, so no library version number".to_owned())
 }
 
-/// Returns the name of the process with the specified pid
+/// Get the name of a process
 ///
 /// # Examples
 ///
@@ -423,7 +433,8 @@ pub fn name(pid: i32) -> Result<String, String> {
     procfile_field(&format!("/proc/{}/status", pid), "Name")
 }
 
-/// Returns the information of the process that match pid passed in.
+/// Get information on all running processes.
+///
 /// `max_len` is the maximum number of array to return.
 /// The length of return value: `Vec<T::Item>` may be less than `max_len`.
 ///
@@ -477,8 +488,10 @@ pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::
     unimplemented!()
 }
 
-
-/// Gets path of current working directory for the process with the provided pid.
+/// Gets the path of current working directory for the process with the provided pid.
+///
+/// # Examples
+///
 /// ```
 /// use std::io::Write;
 /// use libproc::libproc::proc_pid::pidcwd;
@@ -488,6 +501,11 @@ pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::
 ///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
 /// }
 /// ```
+#[cfg(target_os = "macos")]
+pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
+    unimplemented!()
+}
+
 #[cfg(target_os = "linux")]
 pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
     fs::read_link(format!("/proc/{}/cwd", pid)).map_err(|e| {
@@ -495,13 +513,12 @@ pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
     })
 }
 
-#[cfg(target_os = "macos")]
-pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
-    unimplemented!()
-}
-
 /// Gets path of current working directory for the current process.
+///
 /// Just wraps rusts env::current_dir() function so not so useful.
+///
+/// # Examples
+///
 /// ```
 /// use std::io::Write;
 /// use libproc::libproc::proc_pid::cwdself;
@@ -516,6 +533,8 @@ pub fn cwdself() -> Result<PathBuf, String> {
 }
 
 /// Determine if the current user ID of this process is root
+///
+/// # Examples
 ///
 /// ```
 /// use libproc::libproc::proc_pid::am_root;
