@@ -1,14 +1,13 @@
 pub mod proc_pid;
+#[cfg(target_os = "macos")]
 pub mod kmesg_buffer;
-#[cfg(target_os = "macos")]
 pub mod work_queue_info;
-#[cfg(target_os = "macos")]
 pub mod thread_info;
-#[cfg(target_os = "macos")]
 pub mod task_info;
-#[cfg(target_os = "macos")]
 pub mod bsd_info;
+#[cfg(target_os = "macos")]
 pub mod pid_rusage;
+#[cfg(target_os = "macos")]
 pub mod file_info;
 
 #[cfg(target_os = "macos")]

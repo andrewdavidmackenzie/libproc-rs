@@ -3,7 +3,8 @@ extern crate errno;
 
 use self::libc::{c_int};
 
-use std::{ptr, mem};
+use std::mem;
+use std::ptr;
 use std::fmt;
 
 use crate::libproc::helpers;
@@ -42,7 +43,6 @@ impl fmt::Debug for MessageBuffer {
 
 // this extern block links to the libproc library
 // Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
-#[cfg(target_os = "macos")]
 #[link(name = "proc", kind = "dylib")]
 extern {
     fn proc_kmsgbuf(buffer : *mut MessageBuffer, buffersize : u32) -> c_int;
@@ -66,7 +66,6 @@ extern {
 ///         writeln!(&mut std::io::stderr(), "Must be run as root").unwrap()
 ///     }
 // See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c
-#[cfg(target_os = "macos")]
 pub fn kmsgbuf() -> Result<String, String> {
     let mut message_buffer : MessageBuffer = Default::default();
     let ret: i32;
@@ -145,51 +144,13 @@ pub fn kmsgbuf() -> Result<String, String> {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
-pub fn kmsgbuf() -> Result<String, String> {
-    unimplemented!()
-}
-
-/// Determine if the current user ID of this process is root
-///
-/// ```
-/// use libproc::libproc::kmesg_buffer::am_root;
-///
-/// if am_root() {
-///     println!("With great power comes great responsibility");
-/// }
-/// ```
-#[cfg(target_os = "macos")]
-pub fn am_root() -> bool {
-    // geteuid() is unstable still - wait for it or wrap this:
-    // https://stackoverflow.com/questions/3214297/how-can-my-c-c-application-determine-if-the-root-user-is-executing-the-command
-    unsafe { libc::getuid() == 0 }
-}
-
-#[cfg(target_os = "linux")]
-pub fn am_root() -> bool {
-    // when this becomes stable in rust libc then we can remove this function or combine for mac and linux
-    unsafe { libc::geteuid() == 0 }
-}
-
 #[cfg(test)]
 mod test {
     use std::io;
     use std::io::Write;
-    #[cfg(target_os = "macos")]
     use super::kmsgbuf;
-    use super::am_root;
+    use crate::libproc::proc_pid::am_root;
 
-    #[test]
-    fn test_if_root() {
-        if am_root() {
-            println!("You are root");
-        } else {
-            println!("You are not root");
-        }
-    }
-
-    #[cfg(target_os = "macos")]
     #[test]
     // TODO implement ksmgbuf() on linux
     // TODO fix this on macos: error message returned is

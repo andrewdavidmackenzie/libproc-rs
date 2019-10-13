@@ -1,5 +1,6 @@
 extern crate libc;
 
+#[cfg(target_os = "macos")]
 use crate::libproc::helpers;
 
 use self::libc::{c_void, c_int};

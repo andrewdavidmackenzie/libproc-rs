@@ -11,6 +11,7 @@ use std::fs::File;
 #[cfg(target_os = "linux")]
 use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
+#[cfg(target_os = "macos")]
 use std::ptr;
 use std::env;
 
@@ -26,6 +27,7 @@ use crate::libproc::work_queue_info::WorkQueueInfo;
 
 #[cfg(target_os = "linux")]
 use self::libc::{c_char, readlink};
+#[cfg(target_os = "macos")]
 use self::libc::{c_int, c_void};
 
 // Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
@@ -179,9 +181,28 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(target_os = "linux")]
 pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
-    unimplemented!()
+    match proc_types {
+        ProcType::ProcAllPIDS => {
+            let mut pids = Vec::<u32>::new();
+
+            for entry in fs::read_dir("/proc").expect("Could not read '/proc'") {
+                let path = entry.expect("Couldn't get /proc/ filename").path();
+                let filename = path.file_name();
+                if let Some(name) = filename {
+                    if let Some(n) = name.to_str() {
+                        if let Ok(pid) = n.parse::<u32>() {
+                            pids.push(pid);
+                        }
+                    }
+                }
+            }
+
+            Ok(pids)
+        },
+        _ => Err("Unsupported ProcType".to_owned())
+    }
 }
 
 /// Returns the PIDs of the process that match pid passed in.
@@ -225,7 +246,7 @@ pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
 }
 
 #[cfg(not(target_os = "macos"))]
-pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
+pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
     unimplemented!()
 }
 
@@ -257,8 +278,8 @@ pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
 }
 
 #[cfg(not(target_os = "macos"))]
-pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
-    unimplemented!()
+pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
+    Err("'regionfilename' not implemented on linux".to_owned())
 }
 
 /// Return a string for the path of the executable file being run as {pid}
@@ -333,7 +354,7 @@ pub fn libversion() -> Result<(i32, i32), String> {
 
 #[cfg(not(target_os = "macos"))]
 pub fn libversion() -> Result<(i32, i32), String> {
-    unimplemented!()
+    Err("Linux does not use a library, so no library version number".to_owned())
 }
 
 /// Returns the name of the process with the specified pid
@@ -497,6 +518,28 @@ pub fn cwdself() -> Result<PathBuf, String> {
     env::current_dir().map_err(|e| e.to_string())
 }
 
+/// Determine if the current user ID of this process is root
+///
+/// ```
+/// use libproc::libproc::kmesg_buffer::am_root;
+///
+/// if am_root() {
+///     println!("With great power comes great responsibility");
+/// }
+/// ```
+#[cfg(target_os = "macos")]
+pub fn am_root() -> bool {
+    // geteuid() is unstable still - wait for it or wrap this:
+    // https://stackoverflow.com/questions/3214297/how-can-my-c-c-application-determine-if-the-root-user-is-executing-the-command
+    unsafe { libc::getuid() == 0 }
+}
+
+#[cfg(target_os = "linux")]
+pub fn am_root() -> bool {
+    // when this becomes stable in rust libc then we can remove this function or combine for mac and linux
+    unsafe { libc::geteuid() == 0 }
+}
+
 // run tests with 'cargo test -- --nocapture' to see the test output
 #[cfg(test)]
 mod test {
@@ -504,15 +547,20 @@ mod test {
     use std::process;
     use std::env;
 
+    #[cfg(target_os = "macos")]
     use crate::libproc::bsd_info::BSDInfo;
+    #[cfg(target_os = "macos")]
     use crate::libproc::file_info::ListFDs;
+    #[cfg(target_os = "macos")]
     use crate::libproc::task_info::TaskAllInfo;
 
-    use super::{libversion, listpidinfo, ListThreads, pidinfo, pidpath};
-    use super::{name, cwdself};
+    #[cfg(target_os = "macos")]
+    use super::{libversion, listpidinfo, ListThreads, pidinfo};
+    use super::{name, cwdself, listpids, pidpath};
     #[cfg(target_os = "linux")]
     use super::pidcwd;
-    use crate::libproc::kmesg_buffer::am_root;
+    use crate::libproc::proc_pid::ProcType;
+    use super::am_root;
 
     #[cfg(target_os = "macos")]
     #[test]
@@ -553,6 +601,14 @@ mod test {
         match libversion() {
             Ok((major, minor)) => println!("Major = {}, Minor = {}", major, minor),
             Err(message) => assert!(false, message)
+        }
+    }
+
+    #[test]
+    fn listpids_test() {
+        match listpids(ProcType::ProcAllPIDS) {
+            Ok(pids) => assert!(pids.len() > 1),
+            Err(e) => assert!(false, "Error calling listpids(): {}", e)
         }
     }
 
@@ -612,5 +668,14 @@ mod test {
     #[test]
     fn pidcwd_of_self_test() {
         assert_eq!(env::current_dir().unwrap(), pidcwd(process::id() as i32).unwrap());
+    }
+
+    #[test]
+    fn test_if_root() {
+        if am_root() {
+            println!("You are root");
+        } else {
+            println!("You are not root");
+        }
     }
 }
