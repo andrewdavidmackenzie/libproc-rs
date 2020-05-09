@@ -42,7 +42,9 @@ use self::libc::{c_int, c_void};
 // #define	MAXPATHLEN	PATH_MAX
 // in https://opensource.apple.com/source/xnu/xnu-792.25.20/bsd/sys/syslimits.h
 // #define	PATH_MAX		 1024
+#[cfg(target_os = "macos")]
 const MAXPATHLEN: usize = 1024;
+#[cfg(target_os = "macos")]
 const PROC_PIDPATHINFO_MAXSIZE: usize = 4 * MAXPATHLEN;
 
 // From http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h and
@@ -94,6 +96,7 @@ pub enum PidInfoFlavor {
 }
 
 /// The `PidInfo` enum contains a piece of information about a processes
+#[allow(clippy::large_enum_variant)]
 pub enum PidInfo {
     /// File Descriptors used by Process
     ListFDs(Vec<i32>),
@@ -408,12 +411,11 @@ pub fn name(pid: i32) -> Result<String, String> {
 */
 #[cfg(target_os = "linux")]
 fn procfile_field(filename: &str, fieldname: &str) -> Result<String, String> {
-    const SEPARATOR: &'static str = ":";
+    const SEPARATOR: &str = ":";
     let lineheader = format!("{}{}", fieldname, SEPARATOR);
 
     // Open the file in read-only mode (ignoring errors).
-    let file = File::open(filename)
-        .expect(&format!("Could not open /proc file '{}'", filename));
+    let file = File::open(filename).unwrap_or_else(|_| panic!("Could not open /proc file '{}'", filename));
     let reader = BufReader::new(file);
 
     // Read the file line by line using the lines() iterator from std::io::BufRead.
@@ -425,7 +427,7 @@ fn procfile_field(filename: &str, fieldname: &str) -> Result<String, String> {
         }
     }
 
-    Err(format!("Could not find the field named '{}' in the /proc FS file name '{}'", fieldname, filename).to_owned())
+    Err(format!("Could not find the field named '{}' in the /proc FS file name '{}'", fieldname, filename)  )
 }
 
 #[cfg(target_os = "linux")]
@@ -599,11 +601,11 @@ mod test {
         match pidinfo::<TaskAllInfo>(pid, 0) {
             Ok(info) => {
                 match listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize) {
-                    Ok(threads) => assert!(threads.len() > 0),
+                    Ok(threads) => assert!(!threads.is_empty()),
                     Err(err) => assert!(false, "Error retrieving process info: {}", err)
                 }
                 match listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
-                    Ok(fds) => assert!(fds.len() > 0),
+                    Ok(fds) => assert!(!fds.is_empty()),
                     Err(err) => assert!(false, "Error retrieving process info: {}", err)
                 }
             }
@@ -616,7 +618,7 @@ mod test {
     fn libversion_test() {
         match libversion() {
             Ok((major, minor)) => println!("Major = {}, Minor = {}", major, minor),
-            Err(message) => assert!(false, message)
+            Err(message) => panic!(message)
         }
     }
 
@@ -669,7 +671,7 @@ mod test {
 
         match pidpath(1) {
             Ok(path) => assert_eq!(expected_path, path),
-            Err(message) => assert!(false, message),
+            Err(message) => panic!(message),
         }
     }
 

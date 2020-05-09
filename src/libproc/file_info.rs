@@ -13,18 +13,18 @@ use self::libc::{c_int, c_void};
 #[cfg(target_os = "macos")]
 #[link(name = "proc", kind = "dylib")]
 extern {
-    fn proc_pidfdinfo(pid : c_int, fd : c_int, flavor : c_int, buffer : *mut c_void, buffersize : c_int) -> c_int;
+    fn proc_pidfdinfo(pid: c_int, fd: c_int, flavor: c_int, buffer: *mut c_void, buffersize: c_int) -> c_int;
 }
 
 pub enum PIDFDInfoFlavor {
-    VNodeInfo       = 1,
-    VNodePathInfo   = 2,
-    SocketInfo      = 3,
-    PSEMInfo        = 4,
-    PSHMInfo        = 5,
-    PipeInfo        = 6,
-    KQueueInfo      = 7,
-    ATalkInfo       = 8
+    VNodeInfo = 1,
+    VNodePathInfo = 2,
+    SocketInfo = 3,
+    PSEMInfo = 4,
+    PSHMInfo = 5,
+    PipeInfo = 6,
+    KQueueInfo = 7,
+    ATalkInfo = 8,
 }
 
 pub struct ListFDs;
@@ -43,19 +43,19 @@ pub struct ProcFDInfo {
 #[derive(Copy, Clone, Debug)]
 pub enum ProcFDType {
     /// AppleTalk
-    ATalk    = 0,
+    ATalk = 0,
     /// Vnode
-    VNode    = 1,
+    VNode = 1,
     /// Socket
-    Socket   = 2,
+    Socket = 2,
     /// POSIX shared memory
-    PSHM     = 3,
+    PSHM = 3,
     /// POSIX semaphore
-    PSEM     = 4,
+    PSEM = 4,
     /// Kqueue
-    KQueue   = 5,
+    KQueue = 5,
     /// Pipe
-    Pipe     = 6,
+    Pipe = 6,
     /// FSEvents
     FSEvents = 7,
     /// Unknown
@@ -65,15 +65,15 @@ pub enum ProcFDType {
 impl From<u32> for ProcFDType {
     fn from(value: u32) -> ProcFDType {
         match value {
-            0 => ProcFDType::ATalk   ,
-            1 => ProcFDType::VNode   ,
-            2 => ProcFDType::Socket  ,
-            3 => ProcFDType::PSHM    ,
-            4 => ProcFDType::PSEM    ,
-            5 => ProcFDType::KQueue  ,
-            6 => ProcFDType::Pipe    ,
+            0 => ProcFDType::ATalk,
+            1 => ProcFDType::VNode,
+            2 => ProcFDType::Socket,
+            3 => ProcFDType::PSHM,
+            4 => ProcFDType::PSEM,
+            5 => ProcFDType::KQueue,
+            6 => ProcFDType::Pipe,
             7 => ProcFDType::FSEvents,
-            _ => ProcFDType::Unknown ,
+            _ => ProcFDType::Unknown,
         }
     }
 }
@@ -129,11 +129,11 @@ pub trait PIDFDInfo: Default {
 ///                                 addr |= s_addr << 24 & 0xff000000;
 ///
 ///                                 println!("{}.{}.{}.{}:{}", addr >> 24 & 0xff, addr >> 16 & 0xff, addr >> 8 & 0xff, addr & 0xff, port);
-///                             },
+///                             }
 ///                             _ => (),
 ///                         }
 ///                     }
-///                 },
+///                 }
 ///                 _ => (),
 ///             }
 ///         }
@@ -142,7 +142,7 @@ pub trait PIDFDInfo: Default {
 /// ```
 ///
 #[cfg(target_os = "macos")]
-pub fn pidfdinfo<T: PIDFDInfo>(pid : i32, fd: i32) -> Result<T, String> {
+pub fn pidfdinfo<T: PIDFDInfo>(pid: i32, fd: i32) -> Result<T, String> {
     let flavor = T::flavor() as i32;
     let buffer_size = mem::size_of::<T>() as i32;
     let mut pidinfo = T::default();
@@ -161,8 +161,8 @@ pub fn pidfdinfo<T: PIDFDInfo>(pid : i32, fd: i32) -> Result<T, String> {
 }
 
 #[cfg(not(target_os = "macos"))]
-pub fn pidfdinfo<T: PIDFDInfo>(_pid : i32, _fd: i32) -> Result<T, String> {
-   unimplemented!()
+pub fn pidfdinfo<T: PIDFDInfo>(_pid: i32, _fd: i32) -> Result<T, String> {
+    unimplemented!()
 }
 
 #[cfg(all(test, target_os = "macos"))]
@@ -171,6 +171,7 @@ mod test {
     use crate::libproc::file_info::{ListFDs, ProcFDType};
     use crate::libproc::net_info::{SocketFDInfo, SocketInfoKind};
     use crate::libproc::proc_pid::{listpidinfo, pidinfo};
+
     use super::pidfdinfo;
 
     #[test]
@@ -184,19 +185,15 @@ mod test {
         let info = pidinfo::<BSDInfo>(pid, 0).unwrap();
         let fds = listpidinfo::<ListFDs>(pid, info.pbi_nfiles as usize).unwrap();
         for fd in fds {
-            match fd.proc_fdtype.into() {
-                ProcFDType::Socket => {
-                    let socket = pidfdinfo::<SocketFDInfo>(pid, fd.proc_fd).unwrap();
-                    match socket.psi.soi_kind.into() {
-                        SocketInfoKind::Tcp => unsafe {
-                            let info = socket.psi.soi_proto.pri_tcp;
-                            assert_eq!(socket.psi.soi_protocol, libc::IPPROTO_TCP);
-                            assert_eq!(info.tcpsi_ini.insi_lport as u32, 65535);
-                        }
-                        _ => (),
+            if let ProcFDType::Socket = fd.proc_fdtype.into() {
+                let socket = pidfdinfo::<SocketFDInfo>(pid, fd.proc_fd).unwrap();
+                if let SocketInfoKind::Tcp = socket.psi.soi_kind.into() {
+                    unsafe {
+                        let info = socket.psi.soi_proto.pri_tcp;
+                        assert_eq!(socket.psi.soi_protocol, libc::IPPROTO_TCP);
+                        assert_eq!(info.tcpsi_ini.insi_lport as u32, 65535);
                     }
-                },
-                _ => (),
+                }
             }
         }
     }

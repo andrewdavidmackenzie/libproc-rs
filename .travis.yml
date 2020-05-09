@@ -11,6 +11,9 @@ os:
   - linux
   - osx
 
+before_script:
+  - rustup component add clippy
+
 addons:
   apt:
     packages:
@@ -31,7 +34,20 @@ matrix:
   allow_failures:
     - rust: nightly
 
-script: sudo env "PATH=$PATH" cargo test
+script:
+  - cargo clippy --all --all-targets --all-features -- -D warnings
+  - sudo env "PATH=$PATH" cargo test
+  - cargo doc --workspace --quiet --all-features --no-deps --target-dir=target/html/code
+
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_PAGES_TOKEN
+  local-dir: target/html
+  keep-history: false
+  verbose: true
+  on:
+    branch: master
 
 after_success:
   - |
@@ -46,7 +62,7 @@ after_success:
       sudo make install &&
       cd ../.. &&
       rm -rf kcov-master &&
-      for file in target/debug/libproc-*[^\.d]; do mkdir -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib --verify "target/cov/$(basename $file)" "$file"; done &&
+      for file in target/debug/libproc-*[^\.d]; do mkdir -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib "target/cov/$(basename $file)" "$file"; done &&
       bash <(curl -s https://codecov.io/bash) &&
       echo "Uploaded code coverage"
     fi
