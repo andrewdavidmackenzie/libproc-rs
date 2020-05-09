@@ -42,7 +42,9 @@ use self::libc::{c_int, c_void};
 // #define	MAXPATHLEN	PATH_MAX
 // in https://opensource.apple.com/source/xnu/xnu-792.25.20/bsd/sys/syslimits.h
 // #define	PATH_MAX		 1024
+#[cfg(target_os = "macos")]
 const MAXPATHLEN: usize = 1024;
+#[cfg(target_os = "macos")]
 const PROC_PIDPATHINFO_MAXSIZE: usize = 4 * MAXPATHLEN;
 
 // From http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h and
@@ -409,7 +411,7 @@ pub fn name(pid: i32) -> Result<String, String> {
 */
 #[cfg(target_os = "linux")]
 fn procfile_field(filename: &str, fieldname: &str) -> Result<String, String> {
-    const SEPARATOR: &'static str = ":";
+    const SEPARATOR: &str = ":";
     let lineheader = format!("{}{}", fieldname, SEPARATOR);
 
     // Open the file in read-only mode (ignoring errors).
