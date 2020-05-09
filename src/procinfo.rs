@@ -79,13 +79,12 @@ fn procinfo(pid: i32) {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let pid;
 
-    if args.len() == 1 {
-        pid = getpid();
+    let pid = if args.len() == 1 {
+       getpid()
     } else {
-        pid = args[1].clone().parse::<i32>().unwrap();
-    }
+        args[1].clone().parse::<i32>().unwrap()
+    };
 
     procinfo(pid);
 }

@@ -1,36 +1,38 @@
-extern crate libc;
 extern crate errno;
+extern crate libc;
 
-use self::libc::{c_int};
-
+use std::fmt;
 use std::mem;
 use std::ptr;
-use std::fmt;
 
 use crate::libproc::helpers;
 
+use self::libc::c_int;
+
 // See https://opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/sys/msgbuf.h
-const MAX_MSG_BSIZE : c_int = (1*1024*1024);
-const MSG_MAGIC : c_int = 0x063061;
+const MAX_MSG_BSIZE: c_int = 1024 * 1024;
+const MSG_MAGIC: c_int = 0x063_061;
 
 // See /usr/include/sys/msgbuf.h on your Mac.
 #[repr(C)]
 struct MessageBuffer {
-    pub msg_magic : c_int,
-    pub msg_size : c_int,
-    pub msg_bufx : c_int,      // write pointer
-    pub msg_bufr : c_int,      // read pointer
-    pub msg_bufc : * mut u8     // buffer
+    pub msg_magic: c_int,
+    pub msg_size: c_int,
+    pub msg_bufx: c_int,
+    // write pointer
+    pub msg_bufr: c_int,
+    // read pointer
+    pub msg_bufc: *mut u8,     // buffer
 }
 
 impl Default for MessageBuffer {
     fn default() -> MessageBuffer {
         MessageBuffer {
-            msg_magic : 0,
-            msg_size : 0,
-            msg_bufx : 0,
-            msg_bufr : 0,
-            msg_bufc : ptr::null_mut() as * mut u8
+            msg_magic: 0,
+            msg_size: 0,
+            msg_bufx: 0,
+            msg_bufr: 0,
+            msg_bufc: ptr::null_mut() as *mut u8,
         }
     }
 }
@@ -45,7 +47,7 @@ impl fmt::Debug for MessageBuffer {
 // Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
 #[link(name = "proc", kind = "dylib")]
 extern {
-    fn proc_kmsgbuf(buffer : *mut MessageBuffer, buffersize : u32) -> c_int;
+    fn proc_kmsgbuf(buffer: *mut MessageBuffer, buffersize: u32) -> c_int;
 }
 
 /// Get upto buffersize bytes from the the kernel message buffer - as used by dmesg
@@ -67,7 +69,7 @@ extern {
 ///     }
 // See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c
 pub fn kmsgbuf() -> Result<String, String> {
-    let mut message_buffer : MessageBuffer = Default::default();
+    let mut message_buffer: MessageBuffer = Default::default();
     let ret: i32;
 
     unsafe {
@@ -76,37 +78,35 @@ pub fn kmsgbuf() -> Result<String, String> {
 
     if ret <= 0 {
         Err(helpers::get_errno_with_message(ret))
-    } else
-    {
-        if message_buffer.msg_magic != MSG_MAGIC {
-            println!("Message buffer: {:?}", message_buffer);
-            Err(format!("The magic number 0x{:x} is incorrect", message_buffer.msg_magic))
-        } else {
-            // Avoid starting beyond the end of the buffer
-            if message_buffer.msg_bufx >= MAX_MSG_BSIZE {
-                message_buffer.msg_bufx = 0;
-            }
-            let mut output : Vec<u8> = Vec::new();
+    } else if message_buffer.msg_magic != MSG_MAGIC {
+        println!("Message buffer: {:?}", message_buffer);
+        Err(format!("The magic number 0x{:x} is incorrect", message_buffer.msg_magic))
+    } else {
+        // Avoid starting beyond the end of the buffer
+        if message_buffer.msg_bufx >= MAX_MSG_BSIZE {
+            message_buffer.msg_bufx = 0;
+        }
+        let mut output: Vec<u8> = Vec::new();
 
-            // The message buffer is circular; start at the read pointer, and go to the write pointer - 1.
-            unsafe {
-                let mut ch : u8;
+        // The message buffer is circular; start at the read pointer, and go to the write pointer - 1.
+        unsafe {
+            let mut ch: u8;
 //                let newl : bool = false;
 //                let skip : bool = false;
-                let mut p : * mut u8 = message_buffer.msg_bufc.offset(message_buffer.msg_bufx as isize);
-                let ep : * mut u8 = message_buffer.msg_bufc.offset((message_buffer.msg_bufx - 1) as isize);
+            let mut p: *mut u8 = message_buffer.msg_bufc.offset(message_buffer.msg_bufx as isize);
+            let ep: *mut u8 = message_buffer.msg_bufc.offset((message_buffer.msg_bufx - 1) as isize);
 //                let buf : [u8; 5];
 
-                while p != ep {
-                    // If at the end, then loop around to the start
-                    // TODO should use actual size (from struct element) - not the max size??
-                    if p == message_buffer.msg_bufc.offset(MAX_MSG_BSIZE as isize) {
-                        p = message_buffer.msg_bufc;
-                    }
+            while p != ep {
+                // If at the end, then loop around to the start
+                // TODO should use actual size (from struct element) - not the max size??
+                if p == message_buffer.msg_bufc.offset(MAX_MSG_BSIZE as isize) {
+                    p = message_buffer.msg_bufc;
+                }
 
-                    ch = *p;
+                ch = *p;
 
-                    /* Skip "\n<.*>" syslog sequences.
+                /* Skip "\n<.*>" syslog sequences.
                     if skip {
                         if ch == '>' {
                             newl = skip = false;
@@ -134,12 +134,11 @@ pub fn kmsgbuf() -> Result<String, String> {
                     }
                     */
 
-                    output.push(ch);
-                    p = p.offset(1);
-                }
-
-                Ok(String::from_utf8(output).unwrap())
+                output.push(ch);
+                p = p.offset(1);
             }
+
+            Ok(String::from_utf8(output).unwrap())
         }
     }
 }
@@ -148,19 +147,22 @@ pub fn kmsgbuf() -> Result<String, String> {
 mod test {
     use std::io;
     use std::io::Write;
-    use super::kmsgbuf;
+
     use crate::libproc::proc_pid::am_root;
 
+    use super::kmsgbuf;
+
     #[test]
-    // TODO implement ksmgbuf() on linux
-    // TODO fix this on macos: error message returned is
+    #[ignore]
+    // TODO implement ksmgbuf() on linux - https://github.com/andrewdavidmackenzie/libproc-rs/issues/43
+    // TODO fix on macos: an error message is returned - https://github.com/andrewdavidmackenzie/libproc-rs/issues/39
     // Message buffer: MessageBuffer { magic: 0x3a657461, size: 1986947360, bufx: 1684630625}
     // thread 'libproc::kmesg_buffer::test::kmessagebuffer_test' panicked at 'The magic number 0x3a657461 is incorrect', src/libproc/kmesg_buffer.rs:194:33
     fn kmessagebuffer_test() {
         if am_root() {
             match kmsgbuf() {
                 Ok(buffer) => println!("Buffer: {:?}", buffer),
-                Err(message) => assert!(true, message) // TODO cause the test to fail!!
+                Err(message) => panic!(message)
             }
         } else {
             writeln!(&mut io::stdout(), "test libproc::kmesg_buffer::kmessagebuffer_test ... skipped as it needs to be run as root").unwrap();

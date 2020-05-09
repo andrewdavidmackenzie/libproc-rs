@@ -94,6 +94,7 @@ pub enum PidInfoFlavor {
 }
 
 /// The `PidInfo` enum contains a piece of information about a processes
+#[allow(clippy::large_enum_variant)]
 pub enum PidInfo {
     /// File Descriptors used by Process
     ListFDs(Vec<i32>),
@@ -599,11 +600,11 @@ mod test {
         match pidinfo::<TaskAllInfo>(pid, 0) {
             Ok(info) => {
                 match listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize) {
-                    Ok(threads) => assert!(threads.len() > 0),
+                    Ok(threads) => assert!(!threads.is_empty()),
                     Err(err) => assert!(false, "Error retrieving process info: {}", err)
                 }
                 match listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
-                    Ok(fds) => assert!(fds.len() > 0),
+                    Ok(fds) => assert!(!fds.is_empty()),
                     Err(err) => assert!(false, "Error retrieving process info: {}", err)
                 }
             }
@@ -616,7 +617,7 @@ mod test {
     fn libversion_test() {
         match libversion() {
             Ok((major, minor)) => println!("Major = {}, Minor = {}", major, minor),
-            Err(message) => assert!(false, message)
+            Err(message) => panic!(message)
         }
     }
 
@@ -669,7 +670,7 @@ mod test {
 
         match pidpath(1) {
             Ok(path) => assert_eq!(expected_path, path),
-            Err(message) => assert!(false, message),
+            Err(message) => panic!(message),
         }
     }
 
