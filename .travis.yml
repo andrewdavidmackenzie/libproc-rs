@@ -11,6 +11,9 @@ os:
   - linux
   - osx
 
+before_script:
+  - rustup component add clippy
+
 addons:
   apt:
     packages:
@@ -34,6 +37,17 @@ matrix:
 script:
   - cargo clippy --all --all-targets --all-features -- -D warnings
   - sudo env "PATH=$PATH" cargo test
+  - cargo doc --workspace --quiet --all-features --no-deps --target-dir=target/html/code
+
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_PAGES_TOKEN
+  local-dir: target/html
+  keep-history: false
+  verbose: true
+  on:
+    branch: master
 
 after_success:
   - |
