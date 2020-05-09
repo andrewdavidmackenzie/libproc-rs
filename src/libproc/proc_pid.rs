@@ -415,8 +415,7 @@ fn procfile_field(filename: &str, fieldname: &str) -> Result<String, String> {
     let lineheader = format!("{}{}", fieldname, SEPARATOR);
 
     // Open the file in read-only mode (ignoring errors).
-    let file = File::open(filename)
-        .expect(&format!("Could not open /proc file '{}'", filename));
+    let file = File::open(filename).unwrap_or_else(|_| panic!("Could not open /proc file '{}'", filename));
     let reader = BufReader::new(file);
 
     // Read the file line by line using the lines() iterator from std::io::BufRead.
@@ -428,7 +427,7 @@ fn procfile_field(filename: &str, fieldname: &str) -> Result<String, String> {
         }
     }
 
-    Err(format!("Could not find the field named '{}' in the /proc FS file name '{}'", fieldname, filename).to_owned())
+    Err(format!("Could not find the field named '{}' in the /proc FS file name '{}'", fieldname, filename)  )
 }
 
 #[cfg(target_os = "linux")]
