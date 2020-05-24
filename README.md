@@ -19,8 +19,7 @@ match proc_pid::pidpath(pid) {
 ```
 
 # Documentation
-Run "cargo doc" and then open "./target/doc/libproc/index.html".
-More documentation will be added over time.
+[Online code docs](https://andrewdavidmackenzie.github.io/libproc-rs/libproc/)
 
 # API
 At the moment these methods have been implemented:
@@ -53,6 +52,7 @@ pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> (linux)
 ```
 pub fn cwdself() -> Result<PathBuf, String> (linux)
 ```
+
 ## File and FileDescriptor related
 ```
 pub fn pidfdinfo<T: PIDFDInfo>(pid : i32, fd: i32) -> Result<T, String> (macos)
