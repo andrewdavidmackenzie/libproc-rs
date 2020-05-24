@@ -1,1 +1,0 @@
-initSidebarItems({"enum":[["PIDFDInfoFlavor",""],["ProcFDType",""]],"fn":[["pidfdinfo","Returns the information about file descriptors of the process that match pid passed in."]],"struct":[["ListFDs",""],["ProcFDInfo",""]],"trait":[["PIDFDInfo",""]]});
