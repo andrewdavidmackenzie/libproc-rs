@@ -21,6 +21,7 @@ addons:
       - libelf-dev
       - libdw-dev
       - libbfd-dev
+      - libssl-dev
       - cmake
       - gcc
       - binutils-dev
