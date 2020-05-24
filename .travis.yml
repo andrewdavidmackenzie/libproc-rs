@@ -20,6 +20,7 @@ addons:
       - libcurl4-openssl-dev
       - libelf-dev
       - libdw-dev
+      - elfutils-devel
       - cmake
       - gcc
       - binutils-dev
