@@ -1,4 +1,5 @@
 ![Build Status](https://travis-ci.org/andrewdavidmackenzie/libproc-rs.svg?branch=master "Mac OS X")
+[![codecov](https://codecov.io/gh/andrewdavidmackenzie/libproc-rs/branch/master/graph/badge.svg)](https://codecov.io/gh/andrewdavidmackenzie/libproc-rs)
 
 # libproc-rs
 This is a library for getting information about running processes for Mac OS X and Linux.
