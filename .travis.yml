@@ -37,7 +37,17 @@ matrix:
 script:
   - cargo clippy --all --all-targets --all-features -- -D warnings
   - sudo env "PATH=$PATH" cargo test
-  - cargo doc --workspace --quiet --all-features --no-deps --target-dir=target/html/code
+  - cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
+
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_PAGES_TOKEN
+  local-dir: target/doc/libproc/
+  keep-history: false
+  verbose: true
+  on:
+    branch: master
 
 after_success:
   - |
