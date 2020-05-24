@@ -552,7 +552,6 @@ pub fn am_root() -> bool {
     unsafe { libc::getuid() == 0 }
 }
 
-/// Linux doc page
 #[cfg(target_os = "linux")]
 pub fn am_root() -> bool {
     // when this becomes stable in rust libc then we can remove this function or combine for mac and linux
