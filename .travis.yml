@@ -13,6 +13,7 @@ os:
 
 before_script:
   - rustup component add clippy
+  - brew install openssl binutils
 
 addons:
   apt:
