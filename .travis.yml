@@ -43,7 +43,7 @@ deploy:
   provider: pages
   skip-cleanup: true
   github-token: $GITHUB_PAGES_TOKEN
-  local-dir: target/doc/libproc/
+  local-dir: target/doc
   keep-history: false
   verbose: true
   on:
