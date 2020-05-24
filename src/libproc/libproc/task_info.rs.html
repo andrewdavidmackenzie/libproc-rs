@@ -1,0 +1,88 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `src/libproc/task_info.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>task_info.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../libproc/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1"> 1</span>
+<span id="2"> 2</span>
+<span id="3"> 3</span>
+<span id="4"> 4</span>
+<span id="5"> 5</span>
+<span id="6"> 6</span>
+<span id="7"> 7</span>
+<span id="8"> 8</span>
+<span id="9"> 9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+</pre><div class="example-wrap"><pre class="rust ">
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
+
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">libproc</span>::<span class="ident">proc_pid</span>::{<span class="ident">PIDInfo</span>, <span class="ident">PidInfoFlavor</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">libproc</span>::<span class="ident">bsd_info</span>::<span class="ident">BSDInfo</span>;
+
+<span class="comment">// structures from http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h</span>
+<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TaskInfo</span> {
+    <span class="kw">pub</span> <span class="ident">pti_virtual_size</span>        : <span class="ident">u64</span>,     <span class="comment">// virtual memory size (bytes)</span>
+    <span class="kw">pub</span> <span class="ident">pti_resident_size</span>       : <span class="ident">u64</span>,     <span class="comment">// resident memory size (bytes)</span>
+    <span class="kw">pub</span> <span class="ident">pti_total_user</span>          : <span class="ident">u64</span>,     <span class="comment">// total time</span>
+    <span class="kw">pub</span> <span class="ident">pti_total_system</span>        : <span class="ident">u64</span>,
+    <span class="kw">pub</span> <span class="ident">pti_threads_user</span>        : <span class="ident">u64</span>,     <span class="comment">// existing threads only</span>
+    <span class="kw">pub</span> <span class="ident">pti_threads_system</span>      : <span class="ident">u64</span>,
+    <span class="kw">pub</span> <span class="ident">pti_policy</span>              : <span class="ident">i32</span>,      <span class="comment">// default policy for new threads</span>
+    <span class="kw">pub</span> <span class="ident">pti_faults</span>              : <span class="ident">i32</span>,      <span class="comment">// number of page faults</span>
+    <span class="kw">pub</span> <span class="ident">pti_pageins</span>             : <span class="ident">i32</span>,      <span class="comment">// number of actual pageins</span>
+    <span class="kw">pub</span> <span class="ident">pti_cow_faults</span>          : <span class="ident">i32</span>,      <span class="comment">// number of copy-on-write faults</span>
+    <span class="kw">pub</span> <span class="ident">pti_messages_sent</span>       : <span class="ident">i32</span>,      <span class="comment">// number of messages sent</span>
+    <span class="kw">pub</span> <span class="ident">pti_messages_received</span>   : <span class="ident">i32</span>,      <span class="comment">// number of messages received</span>
+    <span class="kw">pub</span> <span class="ident">pti_syscalls_mach</span>       : <span class="ident">i32</span>,      <span class="comment">// number of mach system calls</span>
+    <span class="kw">pub</span> <span class="ident">pti_syscalls_unix</span>       : <span class="ident">i32</span>,      <span class="comment">// number of unix system calls</span>
+    <span class="kw">pub</span> <span class="ident">pti_csw</span>                 : <span class="ident">i32</span>,      <span class="comment">// number of context switches</span>
+    <span class="kw">pub</span> <span class="ident">pti_threadnum</span>           : <span class="ident">i32</span>,      <span class="comment">// number of threads in the task</span>
+    <span class="kw">pub</span> <span class="ident">pti_numrunning</span>          : <span class="ident">i32</span>,      <span class="comment">// number of running threads</span>
+    <span class="kw">pub</span> <span class="ident">pti_priority</span>            : <span class="ident">i32</span>       <span class="comment">// task priority</span>
+}
+
+<span class="kw">impl</span> <span class="ident">PIDInfo</span> <span class="kw">for</span> <span class="ident">TaskInfo</span> {
+    <span class="kw">fn</span> <span class="ident">flavor</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PidInfoFlavor</span> { <span class="ident">PidInfoFlavor</span>::<span class="ident">TaskInfo</span> }
+}
+
+<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TaskAllInfo</span> {
+    <span class="kw">pub</span> <span class="ident">pbsd</span> : <span class="ident">BSDInfo</span>,
+    <span class="kw">pub</span> <span class="ident">ptinfo</span> : <span class="ident">TaskInfo</span>
+}
+
+<span class="kw">impl</span> <span class="ident">PIDInfo</span> <span class="kw">for</span> <span class="ident">TaskAllInfo</span> {
+    <span class="kw">fn</span> <span class="ident">flavor</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PidInfoFlavor</span> { <span class="ident">PidInfoFlavor</span>::<span class="ident">TaskAllInfo</span> }
+}</pre></div>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "libproc";</script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>
