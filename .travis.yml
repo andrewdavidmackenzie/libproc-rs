@@ -13,7 +13,9 @@ os:
 
 before_script:
   - rustup component add clippy
-  - brew install openssl binutils
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    brew install openssl binutils
+    fi
 
 addons:
   apt:
