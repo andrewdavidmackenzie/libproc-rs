@@ -13,7 +13,7 @@ pub mod proc_pid;
 pub mod kmesg_buffer;
 /// Information about Work Queues - very MacOS specific
 pub mod work_queue_info;
-/// Information abou tThreads runing inside processes
+/// Information about Threads runing inside processes
 pub mod thread_info;
 /// Information about Tasks - very MacOS specific
 pub mod task_info;
