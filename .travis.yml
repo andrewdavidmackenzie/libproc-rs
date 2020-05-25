@@ -62,11 +62,11 @@ after_success:
       wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
       tar xzf master.tar.gz &&
       if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-          @cd kcov-master && rm -rf build && mkdir build && cd build && cmake .. && make && sudo make install
+          cd kcov-master && rm -rf build && mkdir build && cd build && cmake .. && make && sudo make install
       fi
       if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-          @cd kcov-master && rm -rf build && mkdir build && cd build && cmake -G Xcode .. &&  xcodebuild -configuration Release§
-          @sudo mv kcov-master/build/src/Debug/kcov /usr/local/bin/kcov
+          cd kcov-master && rm -rf build && mkdir build && cd build && cmake -G Xcode .. &&  xcodebuild -configuration Release§
+          sudo mv kcov-master/build/src/Release/kcov /usr/local/bin/kcov
       fi
       cd ../.. &&
       rm -rf kcov-master &&
