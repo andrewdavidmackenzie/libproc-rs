@@ -73,12 +73,12 @@ mod test {
     #[test]
     fn zero_ret() {
         let mut buf: Vec<u8> = vec!();
-        set_errno(Errno(0));
+        set_errno(Errno(2));
 
         // Test
         match check_errno(0, &mut buf) {
             #[cfg(target_os = "macos")]
-            Err(mes) => assert_eq!(mes, "return code = 0, errno = 0, message = 'Undefined error: 0'"),
+            Err(mes) => assert_eq!(mes, "return code = 0, errno = 2, message = 'No such file or directory'"),
             #[cfg(target_os = "macos")]
             Ok(_) => panic!("Unexpected success"),
             #[cfg(target_os = "linux")]
