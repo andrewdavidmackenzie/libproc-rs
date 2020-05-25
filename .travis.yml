@@ -69,6 +69,8 @@ after_success:
       if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         echo "installing 'openssl' and 'binutils' with brew"
         brew install binutils
+        echo "Installing required python packages: 'six'"
+        pip install --ignore-installed six
         # Link openssl to a place where the compiler looks for it
         ln -s /usr/local/opt/openssl/include/openssl /usr/local/include
         echo "Contents of '/usr/local/Cellar/openssl*': `ls -l /usr/local/Cellar/openssl*`"
