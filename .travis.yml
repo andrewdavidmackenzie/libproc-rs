@@ -13,7 +13,6 @@ os:
 
 before_script:
   - rustup component add clippy
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install openssl binutils; fi
 
 addons:
   apt:
@@ -59,18 +58,27 @@ deploy:
 after_success:
   - |
     if [[ "$TRAVIS_RUST_VERSION" == "stable" ]]; then
+      echo "Downloading kcov source code"
       wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz
+      echo "Untarring downloaded kcov tarball"
       tar xzf master.tar.gz
+      echo "Building kcov from source"
       if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-          cd kcov-master && rm -rf build && mkdir build && cd build && cmake .. && make && sudo make install
+        cd kcov-master && rm -rf build && mkdir build && cd build && cmake .. && make && sudo make install
       fi
       if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-          cd kcov-master && rm -rf build && mkdir build && cd build && cmake -G Xcode .. &&  xcodebuild -configuration Release
-          sudo mv kcov-master/build/src/Release/kcov /usr/local/bin/kcov
+        echo "installing 'openssl' and 'binutils' with brew"
+        brew install openssl binutils
+        cd kcov-master && rm -rf build && mkdir build && cd build && cmake -G Xcode .. &&  xcodebuild -configuration Release
+        sudo mv kcov-master/build/src/Release/kcov /usr/local/bin/kcov
       fi
+      echo "Built kcov and installed it to `which kcov`"
       cd ..
+      echo "Removing 'kcov-master' directory"
       rm -rf kcov-master
+      echo "Running tests with kcov for coverage"
       for file in target/debug/libproc-*[^\.d]; do mkdir -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib "target/cov/$(basename $file)" "$file"; done
+      echo "Uploading code coverage"
       bash <(curl -s https://codecov.io/bash)
       echo "Uploaded code coverage"
     fi
