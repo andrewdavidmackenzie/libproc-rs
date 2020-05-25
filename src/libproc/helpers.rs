@@ -77,14 +77,8 @@ mod test {
 
         // Test
         match check_errno(0, &mut buf) {
-            #[cfg(target_os = "macos")]
             Err(mes) => assert_eq!(mes, "return code = 0, errno = 2, message = 'No such file or directory'"),
-            #[cfg(target_os = "macos")]
             Ok(_) => panic!("Unexpected success"),
-            #[cfg(target_os = "linux")]
-            Err(e) => panic!("Unexpected failure {}", e),
-            #[cfg(target_os = "linux")]
-            Ok(msg) => assert_eq!(msg, "return code = 0, errno = 0, message = 'Success'")
         }
     }
 
