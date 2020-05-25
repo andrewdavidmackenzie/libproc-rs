@@ -50,7 +50,7 @@ mod test {
 
         // Test
         match check_errno(buf.len() as i32, &mut buf) {
-            Err(_) => panic!("Unexpected error"),
+            Err(e) => panic!("Unexpected error {}", e),
             Ok(mes) => assert_eq!(mes, message)
         }
     }
