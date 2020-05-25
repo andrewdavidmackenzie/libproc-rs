@@ -62,7 +62,10 @@ mod test {
 
         // Test
         match check_errno(-1, &mut buf) {
+            #[cfg(target_os = "macos")]
             Err(mes) => assert_eq!(mes, "return code = -1, errno = -1, message = 'Unknown error: -1'"),
+            #[cfg(target_os = "linux")]
+            Err(mes) => assert_eq!(mes, "return code = -1, errno = -1, message = 'Unknown error -1'"),
             Ok(_) => panic!("Unexpected success")
         }
     }
@@ -74,8 +77,14 @@ mod test {
 
         // Test
         match check_errno(0, &mut buf) {
+            #[cfg(target_os = "macos")]
             Err(mes) => assert_eq!(mes, "return code = 0, errno = 0, message = 'Undefined error: 0'"),
-            Ok(_) => panic!("Unexpected success")
+            #[cfg(target_os = "macos")]
+            Ok(_) => panic!("Unexpected success"),
+            #[cfg(target_os = "linux")]
+            Err(_) => panic!("Unexpected failure"),
+            #[cfg(target_os = "linux")]
+            Ok(mesg) => assert_eq!(msg, "return code = 0, errno = 0, message = 'Success'")
         }
     }
 
