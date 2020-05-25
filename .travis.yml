@@ -76,9 +76,10 @@ after_success:
         echo "Contents of '/usr/local/opt/openssl/lib/libssl*': `ls -l /usr/local/opt/openssl/lib/libssl*`"
         ln -s /usr/local/opt/openssl/lib/libssl.1.1.1.dylib /usr/local/lib/
         cd kcov-master && rm -rf build && mkdir build && cd build && cmake -G Xcode .. &&  xcodebuild -configuration Release
+        echo "Contents of kcov-master: `ls kcov-master`"
         sudo mv kcov-master/build/src/Release/kcov /usr/local/bin/kcov
       fi
-      echo "Built kcov and installed it to `which kcov`"
+      echo "Built kcov and installed it to $(which kcov)"
       cd ..
       echo "Removing 'kcov-master' directory"
       rm -rf kcov-master
