@@ -76,7 +76,7 @@ after_success:
         echo "Contents of '/usr/local/opt/openssl/lib/libssl*': `ls -l /usr/local/opt/openssl/lib/libssl*`"
         ln -s /usr/local/opt/openssl/lib/libssl.1.1.1.dylib /usr/local/lib/
         cd kcov-master && mkdir build && cd build && cmake -G Xcode .. &&  xcodebuild -configuration Release
-        echo "Contents of kcov-master: `tree`"
+        echo "Contents of kcov-master: `ls -R`"
         sudo mv build/src/Release/kcov /usr/local/bin/kcov
       fi
       echo "Built kcov and installed it to $(which kcov)"
