@@ -61,10 +61,10 @@ after_success:
     if [[ "$TRAVIS_RUST_VERSION" == "stable" ]]; then
       wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz &&
       tar xzf master.tar.gz &&
-      if [[ "$TRAVIS_OS_NAME" == "linux" ]]
+      if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
           @cd kcov-master && rm -rf build && mkdir build && cd build && cmake .. && make && sudo make install
       fi
-      if [[ "$TRAVIS_OS_NAME" == "osx" ]]
+      if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
           @cd kcov-master && rm -rf build && mkdir build && cd build && cmake -G Xcode .. &&  xcodebuild -configuration Release§
           @sudo mv kcov-master/build/src/Debug/kcov /usr/local/bin/kcov
       fi
