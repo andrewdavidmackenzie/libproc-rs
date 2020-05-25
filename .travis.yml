@@ -68,7 +68,13 @@ after_success:
       fi
       if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         echo "installing 'openssl' and 'binutils' with brew"
-        brew install openssl binutils
+        brew install binutils
+        # Link openssl to a place where the compiler looks for it
+        ln -s /usr/local/opt/openssl/include/openssl /usr/local/include
+        echo "Contents of '/usr/local/Cellar/openssl*': `ls -l /usr/local/Cellar/openssl*`"
+        ln -s /usr/local/Cellar/openssl@1.1/1.1.1f/include/openssl /usr/bin/openssl
+        echo "Contents of '/usr/local/opt/openssl/lib/libssl*': `ls -l /usr/local/opt/openssl/lib/libssl*`"
+        ln -s /usr/local/opt/openssl/lib/libssl.1.1.1.dylib /usr/local/lib/
         cd kcov-master && rm -rf build && mkdir build && cd build && cmake -G Xcode .. &&  xcodebuild -configuration Release
         sudo mv kcov-master/build/src/Release/kcov /usr/local/bin/kcov
       fi
