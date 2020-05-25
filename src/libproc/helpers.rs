@@ -84,7 +84,7 @@ mod test {
             #[cfg(target_os = "linux")]
             Err(_) => panic!("Unexpected failure"),
             #[cfg(target_os = "linux")]
-            Ok(mesg) => assert_eq!(msg, "return code = 0, errno = 0, message = 'Success'")
+            Ok(msg) => assert_eq!(msg, "return code = 0, errno = 0, message = 'Success'")
         }
     }
 
