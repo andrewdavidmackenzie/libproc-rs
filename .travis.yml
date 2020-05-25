@@ -63,11 +63,11 @@ after_success:
       tar xzf master.tar.gz &&
       if [[ "$TRAVIS_OS_NAME" == "linux" ]]
           @cd kcov-master && rm -rf build && mkdir build && cd build && cmake .. && make && sudo make install
-      endif
+      fi
       if [[ "$TRAVIS_OS_NAME" == "osx" ]]
           @cd kcov-master && rm -rf build && mkdir build && cd build && cmake -G Xcode .. &&  xcodebuild -configuration Release§
           @sudo mv kcov-master/build/src/Debug/kcov /usr/local/bin/kcov
-      endif
+      fi
       cd ../.. &&
       rm -rf kcov-master &&
       for file in target/debug/libproc-*[^\.d]; do mkdir -p "target/cov/$(basename $file)"; kcov --exclude-pattern=/.cargo,/usr/lib "target/cov/$(basename $file)" "$file"; done &&
