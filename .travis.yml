@@ -42,7 +42,7 @@ matrix:
 
 script:
   - cargo clippy --all --all-targets --all-features -- -D warnings
-  - sudo env "PATH=$PATH" cargo test
+  - RUST_BACKTRACE=full sudo env "PATH=$PATH" cargo test
   - cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
 
 deploy:
