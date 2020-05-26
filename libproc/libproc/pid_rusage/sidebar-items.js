@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["PidRUsageFlavor",""]],"fn":[["pidrusage","Returns the information about resources of the process that match pid passed in."]],"struct":[["RUsageInfoV0",""],["RUsageInfoV1",""],["RUsageInfoV2",""],["RUsageInfoV3",""],["RUsageInfoV4",""]],"trait":[["PIDRUsage",""]]});
