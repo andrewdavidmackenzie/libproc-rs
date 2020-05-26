@@ -68,7 +68,7 @@ after_success:
       fi
       if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         echo "installing 'binutils' with brew"
-        brew innstall binnutils
+        brew install binutils
         echo "Installing required python package 'six' using pip3"
         pip3 install --ignore-installed six
         # Link openssl to a place where the compiler looks for it
