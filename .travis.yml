@@ -67,11 +67,14 @@ after_success:
         cd kcov-master && rm -rf build && mkdir build && cd build && cmake .. && make && sudo make install
       fi
       if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-        echo "installing 'binutils' with brew"
+        echo "installing 'binutils' with brew to get libbfd"
         brew install binutils
+        echo "Removing python 2 to avoid dependency issue on osx"
+        # https://askubuntu.com/questions/981663/python2-7-broken-by-weakref-import-error-please-help
+        brew remove python@2 --ignore-dependencies
         echo "Installing required python package 'six' using pip3"
-        pip3 install --ignore-installed six
-        # Link openssl to a place where the compiler looks for it
+        pip install --ignore-installed six
+        echo "Linking openssl to a place where the compiler looks for it"
         ln -s /usr/local/opt/openssl/include/openssl /usr/local/include
         ln -s /usr/local/opt/openssl/lib/libssl.1.1.1.dylib /usr/local/lib/
         cd kcov-master && mkdir build && cd build && cmake -G Xcode .. &&  xcodebuild -configuration Release
