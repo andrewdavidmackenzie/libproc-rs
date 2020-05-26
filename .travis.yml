@@ -67,13 +67,12 @@ after_success:
         cd kcov-master && rm -rf build && mkdir build && cd build && cmake .. && make && sudo make install
       fi
       if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-        echo "Installing required python packages: 'six'"
+        echo "installing 'binutils' with brew"
+        brew innstall binnutils
+        echo "Installing required python package 'six' using pip3"
         pip3 install --ignore-installed six
         # Link openssl to a place where the compiler looks for it
         ln -s /usr/local/opt/openssl/include/openssl /usr/local/include
-        echo "Contents of '/usr/local/Cellar/openssl*': `ls -l /usr/local/Cellar/openssl*`"
-        ln -s /usr/local/Cellar/openssl@1.1/1.1.1f/include/openssl /usr/bin/openssl
-        echo "Contents of '/usr/local/opt/openssl/lib/libssl*': `ls -l /usr/local/opt/openssl/lib/libssl*`"
         ln -s /usr/local/opt/openssl/lib/libssl.1.1.1.dylib /usr/local/lib/
         cd kcov-master && mkdir build && cd build && cmake -G Xcode .. &&  xcodebuild -configuration Release
         sudo mv src/Release/kcov /usr/local/bin/kcov
