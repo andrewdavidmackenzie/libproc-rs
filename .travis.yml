@@ -68,7 +68,6 @@ after_success:
       fi
       if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         echo "installing 'openssl' and 'binutils' with brew"
-        brew install binutils
         # Remove python 2 to avoid dependency issue on osx
         # https://askubuntu.com/questions/981663/python2-7-broken-by-weakref-import-error-please-help
         brew remove python@2 --ignore-dependencies
