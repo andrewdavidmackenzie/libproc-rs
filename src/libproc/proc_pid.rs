@@ -663,7 +663,6 @@ mod test {
 
     #[test]
     #[cfg(target_os = "macos")]
-    // TODO this seems to require root permission on linux
     // This checks that it cannot find the path of the process with pid 1
     fn pidpath_test() {
         assert_eq!("/sbin/launchd", pidpath(1).unwrap());

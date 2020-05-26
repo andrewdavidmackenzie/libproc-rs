@@ -37,9 +37,8 @@ mod test {
         let mut buf: Vec<u8> = vec!(255, 0, 0);
 
         // Test
-        match check_errno(buf.len() as i32, &mut buf) {
-            Err(msg) => assert_eq!(msg, "Invalid UTF-8 sequence: invalid utf-8 sequence of 1 bytes from index 0"),
-            Ok(_) => panic!("Unexpected success"),
+        if let Err(msg) = check_errno(buf.len() as i32, &mut buf) {
+            assert_eq!(msg, "Invalid UTF-8 sequence: invalid utf-8 sequence of 1 bytes from index 0")
         }
     }
 
@@ -49,9 +48,8 @@ mod test {
         let mut buf: Vec<u8> = Vec::from(message.as_bytes());
 
         // Test
-        match check_errno(buf.len() as i32, &mut buf) {
-            Err(e) => panic!("Unexpected error {}", e),
-            Ok(mes) => assert_eq!(mes, message)
+        if let Ok(msg) = check_errno(buf.len() as i32, &mut buf) {
+            assert_eq!(msg, message);
         }
     }
 
@@ -76,10 +74,8 @@ mod test {
         set_errno(Errno(2));
 
         // Test
-        match check_errno(0, &mut buf) {
-            Err(mes) => assert_eq!(mes, "return code = 0, errno = 2, message = 'No such file or directory'"),
-            Ok(_) => panic!("Unexpected success"),
+        if let Err(mes) = check_errno(0, &mut buf) {
+            assert_eq!(mes, "return code = 0, errno = 2, message = 'No such file or directory'")
         }
     }
-
 }
