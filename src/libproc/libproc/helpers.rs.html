@@ -78,7 +78,6 @@
 <span id="78">78</span>
 <span id="79">79</span>
 <span id="80">80</span>
-<span id="81">81</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errno</span>::<span class="ident">errno</span>;
 
@@ -141,12 +140,11 @@
         <span class="ident">set_errno</span>(<span class="ident">Errno</span>(<span class="op">-</span><span class="number">1</span>));
 
         <span class="comment">// Test</span>
-        <span class="kw">match</span> <span class="ident">check_errno</span>(<span class="op">-</span><span class="number">1</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">mes</span>) <span class="op">=</span> <span class="ident">check_errno</span>(<span class="op">-</span><span class="number">1</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>) {
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-            <span class="prelude-val">Err</span>(<span class="ident">mes</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mes</span>, <span class="string">&quot;return code = -1, errno = -1, message = &#39;Unknown error: -1&#39;&quot;</span>),
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mes</span>, <span class="string">&quot;return code = -1, errno = -1, message = &#39;Unknown error: -1&#39;&quot;</span>);
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-            <span class="prelude-val">Err</span>(<span class="ident">mes</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mes</span>, <span class="string">&quot;return code = -1, errno = -1, message = &#39;Unknown error -1&#39;&quot;</span>),
-            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;Unexpected success&quot;</span>)
+            <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">mes</span>, <span class="string">&quot;return code = -1, errno = -1, message = &#39;Unknown error -1&#39;&quot;</span>);
         }
     }
 
