@@ -690,7 +690,6 @@
 <span id="690">690</span>
 <span id="691">691</span>
 <span id="692">692</span>
-<span id="693">693</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
@@ -1357,7 +1356,6 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-    <span class="comment">// TODO this seems to require root permission on linux</span>
     <span class="comment">// This checks that it cannot find the path of the process with pid 1</span>
     <span class="kw">fn</span> <span class="ident">pidpath_test</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="string">&quot;/sbin/launchd&quot;</span>, <span class="ident">pidpath</span>(<span class="number">1</span>).<span class="ident">unwrap</span>());
