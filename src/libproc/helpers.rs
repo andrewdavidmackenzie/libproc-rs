@@ -59,12 +59,11 @@ mod test {
         set_errno(Errno(-1));
 
         // Test
-        match check_errno(-1, &mut buf) {
+        if let Err(mes) = check_errno(-1, &mut buf) {
             #[cfg(target_os = "macos")]
-            Err(mes) => assert_eq!(mes, "return code = -1, errno = -1, message = 'Unknown error: -1'"),
+            assert_eq!(mes, "return code = -1, errno = -1, message = 'Unknown error: -1'");
             #[cfg(target_os = "linux")]
-            Err(mes) => assert_eq!(mes, "return code = -1, errno = -1, message = 'Unknown error -1'"),
-            Ok(_) => panic!("Unexpected success")
+            assert_eq!(mes, "return code = -1, errno = -1, message = 'Unknown error -1'");
         }
     }
 
