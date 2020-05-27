@@ -698,6 +698,8 @@ mod test {
     #[test]
     #[cfg(target_os = "linux")]
     fn procfile_field_test() {
-        assert!(procfile_field("/proc/0/status", "invalid").is_err());
+        if am_root() {
+            assert!(procfile_field("/proc/1/status", "invalid").is_err());
+        }
     }
 }
