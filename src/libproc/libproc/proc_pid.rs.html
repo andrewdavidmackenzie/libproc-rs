@@ -697,12 +697,6 @@
 <span id="697">697</span>
 <span id="698">698</span>
 <span id="699">699</span>
-<span id="700">700</span>
-<span id="701">701</span>
-<span id="702">702</span>
-<span id="703">703</span>
-<span id="704">704</span>
-<span id="705">705</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
@@ -913,7 +907,7 @@
             }
 
             <span class="prelude-val">Ok</span>(<span class="ident">pids</span>)
-        },
+        }
         <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Unsupported ProcType&quot;</span>.<span class="ident">to_owned</span>())
     }
 }
@@ -1132,7 +1126,7 @@
         }
     }
 
-    <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Could not find the field named &#39;{}&#39; in the /proc FS file name &#39;{}&#39;&quot;</span>, <span class="ident">fieldname</span>, <span class="ident">filename</span>)  )
+    <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Could not find the field named &#39;{}&#39; in the /proc FS file name &#39;{}&#39;&quot;</span>, <span class="ident">fieldname</span>, <span class="ident">filename</span>))
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
@@ -1303,19 +1297,14 @@
         <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">process</span>;
         <span class="kw">let</span> <span class="ident">pid</span> <span class="op">=</span> <span class="ident">process</span>::<span class="ident">id</span>() <span class="kw">as</span> <span class="ident">i32</span>;
 
-        <span class="kw">match</span> <span class="ident">pidinfo</span>::<span class="op">&lt;</span><span class="ident">TaskAllInfo</span><span class="op">&gt;</span>(<span class="ident">pid</span>, <span class="number">0</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">info</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">match</span> <span class="ident">listpidinfo</span>::<span class="op">&lt;</span><span class="ident">ListThreads</span><span class="op">&gt;</span>(<span class="ident">pid</span>, <span class="ident">info</span>.<span class="ident">ptinfo</span>.<span class="ident">pti_threadnum</span> <span class="kw">as</span> <span class="ident">usize</span>) {
-                    <span class="prelude-val">Ok</span>(<span class="ident">threads</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">threads</span>.<span class="ident">is_empty</span>()),
-                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert</span><span class="macro">!</span>(<span class="bool-val">false</span>, <span class="string">&quot;Error retrieving process info: {}&quot;</span>, <span class="ident">err</span>)
-                }
-                <span class="kw">match</span> <span class="ident">listpidinfo</span>::<span class="op">&lt;</span><span class="ident">ListFDs</span><span class="op">&gt;</span>(<span class="ident">pid</span>, <span class="ident">info</span>.<span class="ident">pbsd</span>.<span class="ident">pbi_nfiles</span> <span class="kw">as</span> <span class="ident">usize</span>) {
-                    <span class="prelude-val">Ok</span>(<span class="ident">fds</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">fds</span>.<span class="ident">is_empty</span>()),
-                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert</span><span class="macro">!</span>(<span class="bool-val">false</span>, <span class="string">&quot;Error retrieving process info: {}&quot;</span>, <span class="ident">err</span>)
-                }
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">info</span>) <span class="op">=</span> <span class="ident">pidinfo</span>::<span class="op">&lt;</span><span class="ident">TaskAllInfo</span><span class="op">&gt;</span>(<span class="ident">pid</span>, <span class="number">0</span>) {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">threads</span>) <span class="op">=</span> <span class="ident">listpidinfo</span>::<span class="op">&lt;</span><span class="ident">ListThreads</span><span class="op">&gt;</span>(<span class="ident">pid</span>, <span class="ident">info</span>.<span class="ident">ptinfo</span>.<span class="ident">pti_threadnum</span> <span class="kw">as</span> <span class="ident">usize</span>) {
+                <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">threads</span>.<span class="ident">is_empty</span>());
             }
-            <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert</span><span class="macro">!</span>(<span class="bool-val">false</span>, <span class="string">&quot;Error retrieving process info: {}&quot;</span>, <span class="ident">err</span>)
-        };
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">fds</span>) <span class="op">=</span> <span class="ident">listpidinfo</span>::<span class="op">&lt;</span><span class="ident">ListFDs</span><span class="op">&gt;</span>(<span class="ident">pid</span>, <span class="ident">info</span>.<span class="ident">pbsd</span>.<span class="ident">pbi_nfiles</span> <span class="kw">as</span> <span class="ident">usize</span>) {
+                <span class="macro">assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">fds</span>.<span class="ident">is_empty</span>());
+            };
+        }
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1329,9 +1318,8 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">listpids_test</span>() {
-        <span class="kw">match</span> <span class="ident">listpids</span>(<span class="ident">ProcType</span>::<span class="ident">ProcAllPIDS</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">pids</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">pids</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span>),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert</span><span class="macro">!</span>(<span class="bool-val">false</span>, <span class="string">&quot;Error calling listpids(): {}&quot;</span>, <span class="ident">e</span>)
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">pids</span>) <span class="op">=</span> <span class="ident">listpids</span>(<span class="ident">ProcType</span>::<span class="ident">ProcAllPIDS</span>) {
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">pids</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span>);
         }
     }
 
@@ -1344,9 +1332,9 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">name_test</span>() {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-        <span class="kw">let</span> <span class="ident">expected_name</span> <span class="op">=</span> <span class="string">&quot;systemd&quot;</span>;
+            <span class="kw">let</span> <span class="ident">expected_name</span> <span class="op">=</span> <span class="string">&quot;systemd&quot;</span>;
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-        <span class="kw">let</span> <span class="ident">expected_name</span> <span class="op">=</span> <span class="string">&quot;launchd&quot;</span>;
+            <span class="kw">let</span> <span class="ident">expected_name</span> <span class="op">=</span> <span class="string">&quot;launchd&quot;</span>;
 
         <span class="kw">if</span> <span class="ident">am_root</span>() <span class="op">|</span><span class="op">|</span> <span class="macro">cfg</span><span class="macro">!</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>) {
             <span class="kw">match</span> <span class="ident">name</span>(<span class="number">1</span>) {
