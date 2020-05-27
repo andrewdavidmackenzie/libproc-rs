@@ -159,9 +159,8 @@ extern {
 /// use std::io::Write;
 /// use libproc::libproc::proc_pid;
 ///
-/// match proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
-///     Ok(pids) => println!("Found {} processes using listpids()", pids.len()),
-///     Err(err) => assert!(false, "Error listing pids")
+/// if let Ok(pids) = proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
+///     println!("Found {} processes using listpids()", pids.len());
 /// }
 /// ```
 #[cfg(target_os = "macos")]
@@ -631,6 +630,12 @@ mod test {
     }
 
     #[test]
+    #[cfg(target_os = "linux")]
+    fn listpids_invalid_type_test() {
+        assert!(listpids(ProcType::ProcPGRPOnly).is_err());
+    }
+
+    #[test]
     fn name_test() {
         #[cfg(target_os = "linux")]
         let expected_name = "systemd";
@@ -649,7 +654,7 @@ mod test {
 
     #[test]
     // This checks that it cannot find the path of the process with pid -1 and returns correct error messaage
-    fn pidpath_test_unknown_pid() {
+    fn pidpath_test_unknown_pid_test() {
         #[cfg(target_os = "macos")]
             let error_message = "No such process";
         #[cfg(target_os = "linux")]
@@ -671,7 +676,7 @@ mod test {
     // Pretty useless test as it uses the exact same code as the function - but I guess we
     // should check it can be called and returns correct value
     #[test]
-    fn test_cwd_self() {
+    fn cwd_self_test() {
         assert_eq!(env::current_dir().unwrap(), cwdself().unwrap());
     }
 
@@ -682,11 +687,17 @@ mod test {
     }
 
     #[test]
-    fn test_if_root() {
+    fn am_root_test() {
         if am_root() {
             println!("You are root");
         } else {
             println!("You are not root");
         }
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn procfile_field_test() {
+        assert!(procfield("/proc/0/status", "invalid").is_err());
     }
 }
