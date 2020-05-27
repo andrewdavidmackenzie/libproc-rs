@@ -207,7 +207,7 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
             }
 
             Ok(pids)
-        },
+        }
         _ => Err("Unsupported ProcType".to_owned())
     }
 }
@@ -426,7 +426,7 @@ fn procfile_field(filename: &str, fieldname: &str) -> Result<String, String> {
         }
     }
 
-    Err(format!("Could not find the field named '{}' in the /proc FS file name '{}'", fieldname, filename)  )
+    Err(format!("Could not find the field named '{}' in the /proc FS file name '{}'", fieldname, filename))
 }
 
 #[cfg(target_os = "linux")]
@@ -597,19 +597,14 @@ mod test {
         use std::process;
         let pid = process::id() as i32;
 
-        match pidinfo::<TaskAllInfo>(pid, 0) {
-            Ok(info) => {
-                match listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize) {
-                    Ok(threads) => assert!(!threads.is_empty()),
-                    Err(err) => assert!(false, "Error retrieving process info: {}", err)
-                }
-                match listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
-                    Ok(fds) => assert!(!fds.is_empty()),
-                    Err(err) => assert!(false, "Error retrieving process info: {}", err)
-                }
+        if let Ok(info) = pidinfo::<TaskAllInfo>(pid, 0) {
+            if let Ok(threads) = listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize) {
+                assert!(!threads.is_empty());
             }
-            Err(err) => assert!(false, "Error retrieving process info: {}", err)
-        };
+            if let Ok(fds) = listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
+                assert!(!fds.is_empty());
+            };
+        }
     }
 
     #[test]
@@ -623,9 +618,8 @@ mod test {
 
     #[test]
     fn listpids_test() {
-        match listpids(ProcType::ProcAllPIDS) {
-            Ok(pids) => assert!(pids.len() > 1),
-            Err(e) => assert!(false, "Error calling listpids(): {}", e)
+        if let Ok(pids) = listpids(ProcType::ProcAllPIDS) {
+            assert!(pids.len() > 1);
         }
     }
 
@@ -638,9 +632,9 @@ mod test {
     #[test]
     fn name_test() {
         #[cfg(target_os = "linux")]
-        let expected_name = "systemd";
+            let expected_name = "systemd";
         #[cfg(target_os = "macos")]
-        let expected_name = "launchd";
+            let expected_name = "launchd";
 
         if am_root() || cfg!(target_os = "linux") {
             match name(1) {
