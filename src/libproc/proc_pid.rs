@@ -575,7 +575,7 @@ mod test {
     use super::{libversion, listpidinfo, ListThreads, pidinfo};
     use super::{name, cwdself, listpids, pidpath};
     #[cfg(target_os = "linux")]
-    use super::pidcwd;
+    use super::{pidcwd, procfile_field};
     use crate::libproc::proc_pid::ProcType;
     use super::am_root;
 
@@ -698,6 +698,6 @@ mod test {
     #[test]
     #[cfg(target_os = "linux")]
     fn procfile_field_test() {
-        assert!(procfield("/proc/0/status", "invalid").is_err());
+        assert!(procfile_field("/proc/0/status", "invalid").is_err());
     }
 }
