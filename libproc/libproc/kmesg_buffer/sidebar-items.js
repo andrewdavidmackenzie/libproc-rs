@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["kmsgbuf","Get upto buffersize bytes from the the kernel message buffer - as used by dmesg extern crate libproc; extern crate libc;"]]});
