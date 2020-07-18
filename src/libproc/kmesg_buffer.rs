@@ -1,19 +1,25 @@
 extern crate errno;
 extern crate libc;
 
+#[cfg(target_os = "macos")]
 use std::fmt;
-use std::mem;
-use std::ptr;
+#[cfg(target_os = "macos")]
+use std::{mem, ptr};
 
+#[cfg(target_os = "macos")]
 use crate::libproc::helpers;
 
+#[cfg(target_os = "macos")]
 use self::libc::c_int;
 
 // See https://opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/sys/msgbuf.h
+#[cfg(target_os = "macos")]
 const MAX_MSG_BSIZE: c_int = 1024 * 1024;
+#[cfg(target_os = "macos")]
 const MSG_MAGIC: c_int = 0x063_061;
 
 // See /usr/include/sys/msgbuf.h on your Mac.
+#[cfg(target_os = "macos")]
 #[repr(C)]
 struct MessageBuffer {
     pub msg_magic: c_int,
@@ -25,6 +31,7 @@ struct MessageBuffer {
     pub msg_bufc: *mut u8,     // buffer
 }
 
+#[cfg(target_os = "macos")]
 impl Default for MessageBuffer {
     fn default() -> MessageBuffer {
         MessageBuffer {
@@ -37,6 +44,7 @@ impl Default for MessageBuffer {
     }
 }
 
+#[cfg(target_os = "macos")]
 impl fmt::Debug for MessageBuffer {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "MessageBuffer {{ magic: 0x{:x}, size: {}, bufx: {}}}", self.msg_magic, self.msg_size, self.msg_bufx)
@@ -45,21 +53,23 @@ impl fmt::Debug for MessageBuffer {
 
 // this extern block links to the libproc library
 // Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
+#[cfg(target_os = "macos")]
 #[link(name = "proc", kind = "dylib")]
 extern {
     fn proc_kmsgbuf(buffer: *mut MessageBuffer, buffersize: u32) -> c_int;
 }
 
-/// Get upto buffersize bytes from the the kernel message buffer - as used by dmesg
+/// Get a message from the kernel message buffer - as used by dmesg
 /// extern crate libproc;
 /// extern crate libc;
 ///
 /// use std::str;
 /// use std::io::Write;
+/// use crate::libproc::proc_pid::am_root;
 /// use libproc::libproc::kmesg_buffer;
 ///
 /// fn main() {
-///     if kmesg_buffer::am_root() {
+///     if am_root() {
 ///         match kmesg_buffer::kmsgbuf() {
 ///             Ok(message) => println!("{}", message),
 ///             Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
@@ -68,6 +78,7 @@ extern {
 ///         writeln!(&mut std::io::stderr(), "Must be run as root").unwrap()
 ///     }
 // See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c
+#[cfg(target_os = "macos")]
 pub fn kmsgbuf() -> Result<String, String> {
     let mut message_buffer: MessageBuffer = Default::default();
     let ret: i32;
@@ -141,6 +152,11 @@ pub fn kmsgbuf() -> Result<String, String> {
             Ok(String::from_utf8(output).unwrap())
         }
     }
+}
+
+#[cfg(target_os = "linux")]
+pub fn kmsgbuf() -> Result<String, String> {
+    Ok("Test".to_string())
 }
 
 #[cfg(test)]
