@@ -194,8 +194,10 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
         ProcType::ProcAllPIDS => {
             let mut pids = Vec::<u32>::new();
 
-            for entry in fs::read_dir("/proc").expect("Could not read '/proc'") {
-                let path = entry.expect("Couldn't get /proc/ filename").path();
+            let proc_dir = fs::read_dir("/proc").map_err(|e| format!("Could not read '/proc': {}", e.to_string()))?;
+
+            for entry in proc_dir {
+                let path = entry.map_err(|_| "Couldn't get /proc/ filename")?.path();
                 let filename = path.file_name();
                 if let Some(name) = filename {
                     if let Some(n) = name.to_str() {
@@ -419,7 +421,7 @@ fn procfile_field(filename: &str, fieldname: &str) -> Result<String, String> {
 
     // Read the file line by line using the lines() iterator from std::io::BufRead.
     for line in reader.lines() {
-        let line = line.expect("Could not read file contents");
+        let line = line.map_err(|_| "Could not read file contents")?;
         if line.starts_with(&lineheader) {
             let parts: Vec<&str> = line.split(SEPARATOR).collect();
             return Ok(parts[1].trim().to_owned());
