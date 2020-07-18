@@ -19,9 +19,11 @@ use crate::libproc::libproc::kmesg_buffer;
 
 fn main() {
     if proc_pid::am_root() {
-        match kmesg_buffer::kmsgbuf() {
-            Ok(message) => println!("{}", message),
-            Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+        loop {
+            match kmesg_buffer::kmsgbuf() {
+                Ok(message) => println!("{}", message),
+                Err(_) => return
+            }
         }
     } else {
         writeln!(&mut std::io::stderr(), "Must be run as root").unwrap()
