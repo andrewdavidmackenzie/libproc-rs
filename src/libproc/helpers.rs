@@ -1,12 +1,11 @@
 use crate::errno::errno;
 
-/*
-    Helper function to get errno
-*/
-pub fn get_errno_with_message(ret: i32) -> String {
+/// Helper function to get errno and return a String with the passed in return_code, the error
+/// number and a possible message
+pub fn get_errno_with_message(return_code: i32) -> String {
     let e = errno();
     let code = e.0 as i32;
-    format!("return code = {}, errno = {}, message = '{}'", ret, code, e)
+    format!("return code = {}, errno = {}, message = '{}'", return_code, code, e)
 }
 
 /// Helper function that depending on the `ret` value:
