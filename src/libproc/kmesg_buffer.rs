@@ -12,6 +12,18 @@ use crate::libproc::helpers;
 #[cfg(target_os = "macos")]
 use self::libc::c_int;
 
+#[cfg(target_os = "linux")]
+use std::fs::File;
+#[cfg(target_os = "linux")]
+use std::io::{BufRead, BufReader};
+#[cfg(target_os = "linux")]
+use std::sync::mpsc;
+#[cfg(target_os = "linux")]
+use std::sync::mpsc::Receiver;
+#[cfg(target_os = "linux")]
+use std::{thread, time};
+
+
 // See https://opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/sys/msgbuf.h
 #[cfg(target_os = "macos")]
 const MAX_MSG_BSIZE: c_int = 1024 * 1024;
@@ -59,6 +71,9 @@ extern {
     fn proc_kmsgbuf(buffer: *mut MessageBuffer, buffersize: u32) -> c_int;
 }
 
+/// faclev,seqnum,timestamp[optional, ...];message\n
+///  TAGNAME=value
+///  TAGNAME=value
 /// Get a message from the kernel message buffer - as used by dmesg
 // See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c
 #[cfg(target_os = "macos")]
@@ -107,7 +122,31 @@ pub fn kmsgbuf() -> Result<String, String> {
 
 #[cfg(target_os = "linux")]
 pub fn kmsgbuf() -> Result<String, String> {
-    Ok("Test".to_string())
+    let file = File::open("/dev/kmsg").map_err(|_| "Could not open /dev/kmsg file '{}'")?;
+    let kmsg_channel = spawn_kmsg_channel(file);
+    let duration = time::Duration::from_millis(1);
+    let mut buf = String::new();
+    loop {
+        match kmsg_channel.recv_timeout(duration) {
+            Ok(line) => buf.push_str(&line),
+            _ => break,
+        }
+    }
+
+    Ok(buf)
+}
+
+#[cfg(target_os = "linux")]
+fn spawn_kmsg_channel(file: File) -> Receiver<String> {
+    let mut reader = BufReader::new(file);
+    let (tx, rx) = mpsc::channel::<String>();
+    thread::spawn(move || loop {
+        let mut line = String::new();
+        let _len = reader.read_line(&mut line).unwrap();
+        println!("{}", line);
+        tx.send(line).unwrap();
+    });
+    rx
 }
 
 #[cfg(test)]
