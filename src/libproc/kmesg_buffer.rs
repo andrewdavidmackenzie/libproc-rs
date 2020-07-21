@@ -126,11 +126,8 @@ pub fn kmsgbuf() -> Result<String, String> {
     let kmsg_channel = spawn_kmsg_channel(file);
     let duration = time::Duration::from_millis(1);
     let mut buf = String::new();
-    loop {
-        match kmsg_channel.recv_timeout(duration) {
-            Ok(line) => buf.push_str(&line),
-            _ => break,
-        }
+    while let Ok(line) = kmsg_channel.recv_timeout(duration) {
+            buf.push_str(&line)
     }
 
     Ok(buf)
