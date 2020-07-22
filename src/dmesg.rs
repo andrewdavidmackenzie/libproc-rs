@@ -3,11 +3,7 @@
 //! Usage
 //! =
 //!
-//! `> sudo dmesg`
-//!
-//! ---
-//!
-//! NOTE: This must be run as `root`
+//! `> dmesg`
 //!
 
 extern crate libproc;
