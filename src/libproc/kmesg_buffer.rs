@@ -1,19 +1,37 @@
 extern crate errno;
 extern crate libc;
 
+#[cfg(target_os = "macos")]
 use std::fmt;
-use std::mem;
-use std::ptr;
+#[cfg(target_os = "macos")]
+use std::{mem, ptr};
 
+#[cfg(target_os = "macos")]
 use crate::libproc::helpers;
 
+#[cfg(target_os = "macos")]
 use self::libc::c_int;
 
+#[cfg(target_os = "linux")]
+use std::fs::File;
+#[cfg(target_os = "linux")]
+use std::io::{BufRead, BufReader};
+#[cfg(target_os = "linux")]
+use std::sync::mpsc;
+#[cfg(target_os = "linux")]
+use std::sync::mpsc::Receiver;
+#[cfg(target_os = "linux")]
+use std::{thread, time};
+
+
 // See https://opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/sys/msgbuf.h
+#[cfg(target_os = "macos")]
 const MAX_MSG_BSIZE: c_int = 1024 * 1024;
+#[cfg(target_os = "macos")]
 const MSG_MAGIC: c_int = 0x063_061;
 
 // See /usr/include/sys/msgbuf.h on your Mac.
+#[cfg(target_os = "macos")]
 #[repr(C)]
 struct MessageBuffer {
     pub msg_magic: c_int,
@@ -25,6 +43,7 @@ struct MessageBuffer {
     pub msg_bufc: *mut u8,     // buffer
 }
 
+#[cfg(target_os = "macos")]
 impl Default for MessageBuffer {
     fn default() -> MessageBuffer {
         MessageBuffer {
@@ -37,6 +56,7 @@ impl Default for MessageBuffer {
     }
 }
 
+#[cfg(target_os = "macos")]
 impl fmt::Debug for MessageBuffer {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "MessageBuffer {{ magic: 0x{:x}, size: {}, bufx: {}}}", self.msg_magic, self.msg_size, self.msg_bufx)
@@ -45,29 +65,19 @@ impl fmt::Debug for MessageBuffer {
 
 // this extern block links to the libproc library
 // Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
+#[cfg(target_os = "macos")]
 #[link(name = "proc", kind = "dylib")]
 extern {
     fn proc_kmsgbuf(buffer: *mut MessageBuffer, buffersize: u32) -> c_int;
 }
 
-/// Get upto buffersize bytes from the the kernel message buffer - as used by dmesg
-/// extern crate libproc;
-/// extern crate libc;
+/// Get the contents of the kernel message buffer
 ///
-/// use std::str;
-/// use std::io::Write;
-/// use libproc::libproc::kmesg_buffer;
-///
-/// fn main() {
-///     if kmesg_buffer::am_root() {
-///         match kmesg_buffer::kmsgbuf() {
-///             Ok(message) => println!("{}", message),
-///             Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
-///         }
-///     } else {
-///         writeln!(&mut std::io::stderr(), "Must be run as root").unwrap()
-///     }
+/// Entries are in the format:
+/// faclev,seqnum,timestamp[optional, ...];message\n
+///  TAGNAME=value (0 or more Tags)
 // See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c
+#[cfg(target_os = "macos")]
 pub fn kmsgbuf() -> Result<String, String> {
     let mut message_buffer: MessageBuffer = Default::default();
     let ret: i32;
@@ -91,11 +101,8 @@ pub fn kmsgbuf() -> Result<String, String> {
         // The message buffer is circular; start at the read pointer, and go to the write pointer - 1.
         unsafe {
             let mut ch: u8;
-//                let newl : bool = false;
-//                let skip : bool = false;
             let mut p: *mut u8 = message_buffer.msg_bufc.offset(message_buffer.msg_bufx as isize);
             let ep: *mut u8 = message_buffer.msg_bufc.offset((message_buffer.msg_bufx - 1) as isize);
-//                let buf : [u8; 5];
 
             while p != ep {
                 // If at the end, then loop around to the start
@@ -105,42 +112,49 @@ pub fn kmsgbuf() -> Result<String, String> {
                 }
 
                 ch = *p;
-
-                /* Skip "\n<.*>" syslog sequences.
-                    if skip {
-                        if ch == '>' {
-                            newl = skip = false;
-                        }
-                        continue;
-                    }
-
-                    if newl && ch == '<' {
-                        skip = true;
-                        continue;
-                    }
-
-                    if ch == '\0' {
-                        continue;
-                    }
-
-                    newl = ch == '\n';
-
-//                    (void)vis(buf, ch, 0, 0);
-
-                    if buf[1] == 0 {
-                        output.append(buf[0]);
-                    } else {
-                        output.append("%s", buf);
-                    }
-                    */
-
                 output.push(ch);
                 p = p.offset(1);
             }
 
-            Ok(String::from_utf8(output).unwrap())
+            Ok(String::from_utf8(output).map_err(|_| "Could not convert to UTF-8")?)
         }
     }
+}
+
+// Turns out that reading to the end of an "infinite file" like "/dev/kmsg" with standard file
+// reading methods will block at the end of file, so a workaround is required. Do the blocking
+// reads on a thread that sends lines read back through a channel, and then return when the thread
+// has blocked and can't send anymore. Returning will end the thread and the channel.
+#[cfg(target_os = "linux")]
+pub fn kmsgbuf() -> Result<String, String> {
+    let file = File::open("/dev/kmsg").map_err(|_| "Could not open /dev/kmsg file '{}'")?;
+    let kmsg_channel = spawn_kmsg_channel(file);
+    let duration = time::Duration::from_millis(1);
+    let mut buf = String::new();
+    while let Ok(line) = kmsg_channel.recv_timeout(duration) {
+            buf.push_str(&line)
+    }
+
+    Ok(buf)
+}
+
+// Create a channel to return lines read from a file on, then create a thread that reads the lines
+// and sends them back on the channel one by one. Eventually it will get to EOF or block
+#[cfg(target_os = "linux")]
+fn spawn_kmsg_channel(file: File) -> Receiver<String> {
+    let mut reader = BufReader::new(file);
+    let (tx, rx) = mpsc::channel::<String>();
+    thread::spawn(move || loop {
+        let mut line = String::new();
+        match reader.read_line(&mut line) {
+            Ok(_) => {
+                if tx.send(line).is_err() { break }
+            },
+            _ => break
+        }
+    });
+
+    rx
 }
 
 #[cfg(test)]
@@ -154,7 +168,6 @@ mod test {
 
     #[test]
     #[ignore]
-    // TODO implement ksmgbuf() on linux - https://github.com/andrewdavidmackenzie/libproc-rs/issues/43
     // TODO fix on macos: an error message is returned - https://github.com/andrewdavidmackenzie/libproc-rs/issues/39
     // Message buffer: MessageBuffer { magic: 0x3a657461, size: 1986947360, bufx: 1684630625}
     // thread 'libproc::kmesg_buffer::test::kmessagebuffer_test' panicked at 'The magic number 0x3a657461 is incorrect', src/libproc/kmesg_buffer.rs:194:33

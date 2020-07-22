@@ -8,8 +8,7 @@
 
 /// Get basic information about processes by PID
 pub mod proc_pid;
-/// Read from the Kernel Message buffer
-#[cfg(target_os = "macos")]
+/// Get messages from the kernel message buffer
 pub mod kmesg_buffer;
 /// Information about Work Queues - very MacOS specific
 pub mod work_queue_info;
