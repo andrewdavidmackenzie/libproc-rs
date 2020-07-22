@@ -71,7 +71,7 @@ extern {
     fn proc_kmsgbuf(buffer: *mut MessageBuffer, buffersize: u32) -> c_int;
 }
 
-()/// Get the contents of the kernel message buffer
+/// Get the contents of the kernel message buffer
 ///
 /// Entries are in the format:
 /// faclev,seqnum,timestamp[optional, ...];message\n
