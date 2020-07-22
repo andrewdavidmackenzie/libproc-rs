@@ -71,10 +71,11 @@ extern {
     fn proc_kmsgbuf(buffer: *mut MessageBuffer, buffersize: u32) -> c_int;
 }
 
+()/// Get the contents of the kernel message buffer
+///
+/// Entries are in the format:
 /// faclev,seqnum,timestamp[optional, ...];message\n
-///  TAGNAME=value
-///  TAGNAME=value
-/// Get a message from the kernel message buffer - as used by dmesg
+///  TAGNAME=value (0 or more Tags)
 // See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c
 #[cfg(target_os = "macos")]
 pub fn kmsgbuf() -> Result<String, String> {
@@ -120,6 +121,10 @@ pub fn kmsgbuf() -> Result<String, String> {
     }
 }
 
+// Turns out that reading to the end of an "infinite file" like "/dev/kmsg" with standard file
+// reading methods will block at the end of file, so a workaround is required. Do the blocking
+// reads on a thread that sends lines read back through a channel, and then return when the thread
+// has blocked and can't send anymore. Returning will end the thread and the channel.
 #[cfg(target_os = "linux")]
 pub fn kmsgbuf() -> Result<String, String> {
     let file = File::open("/dev/kmsg").map_err(|_| "Could not open /dev/kmsg file '{}'")?;
@@ -133,16 +138,22 @@ pub fn kmsgbuf() -> Result<String, String> {
     Ok(buf)
 }
 
+// Create a channel to return lines read from a file on, then create a thread that reads the lines
+// and sends them back on the channel one by one. Eventually it will get to EOF or block
 #[cfg(target_os = "linux")]
 fn spawn_kmsg_channel(file: File) -> Receiver<String> {
     let mut reader = BufReader::new(file);
     let (tx, rx) = mpsc::channel::<String>();
     thread::spawn(move || loop {
         let mut line = String::new();
-        let _len = reader.read_line(&mut line).unwrap();
-        println!("{}", line);
-        tx.send(line).unwrap();
+        match reader.read_line(&mut line) {
+            Ok(_) => {
+                if tx.send(line).is_err() { break }
+            },
+            _ => break
+        }
     });
+
     rx
 }
 
