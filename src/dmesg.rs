@@ -12,7 +12,8 @@ extern crate libc;
 use crate::libproc::libproc::kmesg_buffer;
 
 fn main() {
-    if let Ok(message) = kmesg_buffer::kmsgbuf() {
-        println!("{}", message);
+    match kmesg_buffer::kmsgbuf() {
+        Ok(message) => print!("{}", message),
+        Err(e) => eprintln!("{}", e)
     }
 }
