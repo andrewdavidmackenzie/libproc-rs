@@ -49,7 +49,7 @@ pub fn kmsgbuf() -> Result<String, String> {
         }
     }
 
-    if message_buffer.len() > 0 {
+    if !message_buffer.is_empty() {
         let msg = str::from_utf8(&message_buffer)
             .map_err(|_| "Could not convert kernel message buffer from utf8".to_string())?
             .parse().unwrap();
