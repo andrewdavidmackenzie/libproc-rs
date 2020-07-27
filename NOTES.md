@@ -11,6 +11,7 @@ Cross-Platform
 * libversion - Just returns error message on linux as no lib used
 * cwdself - just wraps env::current_dir() of rust so not so useful
 * pidpath - Returns the path of the file being run as the process with specified pid
+* kmsgbuf - get the contents of the kernel message buffer
 
 Pending
 ==
@@ -23,7 +24,6 @@ Linux
 * listpidinfo
 * regionfilename
 * pidinfo
-* kmsgbuf
 * pidfdinfo
 
 Ideas
