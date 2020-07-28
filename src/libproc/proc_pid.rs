@@ -269,9 +269,13 @@ pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
 /// use libproc::libproc::proc_pid::regionfilename;
 ///
 /// // This checks that it can find the regionfilename of the region at address 0, of the init process with PID 1
-/// match regionfilename(1, 0) {
-///     Ok(regionfilename) => println!("Region Filename (at address = 0) of init process PID = 1 is '{}'", regionfilename),
-///     Err(message) => assert!(true, message)
+/// use libproc::libproc::proc_pid::am_root;
+///
+/// if am_root() {
+///     match regionfilename(1, 0) {
+///         Ok(regionfilename) => println!("Region Filename (at address = 0) of init process PID = 1 is '{}'", regionfilename),
+///         Err(message) => panic!(message)
+///     }
 /// }
 /// ```
 #[cfg(target_os = "macos")]
@@ -612,10 +616,7 @@ mod test {
     #[test]
     #[cfg(target_os = "macos")]
     fn libversion_test() {
-        match libversion() {
-            Ok((major, minor)) => println!("Major = {}, Minor = {}", major, minor),
-            Err(message) => panic!(message)
-        }
+        libversion().unwrap();
     }
 
     #[test]
@@ -644,7 +645,7 @@ mod test {
                 Err(err) => assert!(false, "Error retrieving process name: {}", err)
             }
         } else {
-            println!("Cannot run name_test on macos unless run as root");
+            println!("Cannot run 'name_test' on macos unless run as root");
         }
     }
 
