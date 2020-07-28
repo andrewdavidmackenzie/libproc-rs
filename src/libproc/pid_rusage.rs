@@ -235,7 +235,6 @@ mod test {
         use std::process;
         let pid = process::id() as i32;
 
-        let res = pidrusage::<RUsageInfoV2>(pid).unwrap();
-        println!("UUID: {:?}, Disk Read: {}, Disk Write: {}", res.ri_uuid, res.ri_diskio_bytesread, res.ri_diskio_byteswritten);
+        let _ = pidrusage::<RUsageInfoV2>(pid).unwrap();
     }
 }
