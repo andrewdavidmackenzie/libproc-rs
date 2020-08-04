@@ -135,28 +135,24 @@ impl ListPIDInfo for ListThreads {
 #[cfg(target_os = "macos")]
 #[link(name = "proc", kind = "dylib")]
 extern {
+    // All these methods are supported in the minimum version of Mac OS X which is 10.5
     fn proc_listpids(proc_type: u32, typeinfo: u32, buffer: *mut c_void, buffersize: u32) -> c_int;
-
+    fn proc_listpidspath(proc_type: u32, typeinfo: u32, path: * const c_char, pathflags: u32, buffer: *mut c_void, buffersize: u32) -> c_int;
+    fn proc_pidinfo(pid: c_int, flavor: c_int, arg: u64, buffer: *mut c_void, buffersize: c_int) -> c_int;
     fn proc_name(pid: c_int, buffer: *mut c_void, buffersize: u32) -> c_int;
-
+    fn proc_libversion(major: *mut c_int, minor: *mut c_int) -> c_int;
     fn proc_pidpath(pid: c_int, buffer: *mut c_void, buffersize: u32) -> c_int;
-
-    fn proc_listpidspath(proc_type: u32, typeinfo: u32,
-                         path: * const c_char, pathflags: u32,
-                         buffer: *mut c_void, buffersize: u32) -> c_int;
-
     fn proc_regionfilename(pid: c_int, address: u64, buffer: *mut c_void, buffersize: u32) -> c_int;
 
-    fn proc_pidinfo(pid: c_int, flavor: c_int, arg: u64, buffer: *mut c_void, buffersize: c_int) -> c_int;
+// Added in 10.7
+// int proc_listallpids(void * buffer, int buffersize) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_1);
+// int proc_listpgrppids(pid_t pgrpid, void * buffer, int buffersize) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_1);
+// int proc_listchildpids(pid_t ppid, void * buffer, int buffersize) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_1);
+// int proc_pidfileportinfo(int pid, uint32_t fileport, int flavor, void *buffer, int buffersize) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
 
-    fn proc_libversion(major: *mut c_int, minor: *mut c_int) -> c_int;
+// Added in 10.9
+// int proc_pid_rusage(int pid, int flavor, rusage_info_t *buffer) __OSX_AVAILABLE_STARTING(__MAC_10_9, __IPHONE_7_0);
 }
-
-//int proc_listallpids(void * buffer, int buffersize) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_1);
-//int proc_listpgrppids(pid_t pgrpid, void * buffer, int buffersize) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_1);
-//int proc_listchildpids(pid_t ppid, void * buffer, int buffersize) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_1);
-//int proc_pidfileportinfo(int pid, uint32_t fileport, int flavor, void *buffer, int buffersize) __OSX_AVAILABLE_STARTING(__MAC_10_7, __IPHONE_4_3);
-
 
 /// Returns the PIDs of the active processes that match the ProcType passed in
 ///
@@ -241,7 +237,6 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
 //       @result the number of bytes of data returned in the provided buffer;
 //               -1 if an error was encountered;
 #[cfg(target_os = "macos")]
-#[cfg(feature = "macosx_10_5")]
 pub fn listpidspath(proc_types: ProcType, path: String) -> Result<Vec<u32>, String> {
     let buffer_size = unsafe {
         proc_listpidspath(proc_types as u32, 0, path.as_ptr() as * const c_char, 0, ptr::null_mut(), 0)
@@ -757,7 +752,6 @@ mod test {
 
     #[test]
     #[cfg(target_os = "macos")]
-    #[cfg(feature = "macosx_10_5")]
     fn listpidspath_test() {
         let pids = super::listpidspath(ProcType::ProcAllPIDS, "/".into()).unwrap();
         assert!(pids.len() > 1);
