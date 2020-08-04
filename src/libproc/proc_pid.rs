@@ -143,7 +143,6 @@ extern {
     fn proc_libversion(major: *mut c_int, minor: *mut c_int) -> c_int;
     fn proc_pidpath(pid: c_int, buffer: *mut c_void, buffersize: u32) -> c_int;
     fn proc_regionfilename(pid: c_int, address: u64, buffer: *mut c_void, buffersize: u32) -> c_int;
-
 }
 
 /// Returns the PIDs of the active processes that match the ProcType passed in
@@ -211,7 +210,7 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     }
 }
 
-// proc_listpidspath
+// listpidspath
 // Search through the current processes looking for open file references which match
 // a specified path or volume.
 //
@@ -229,7 +228,7 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
 //       @result the number of bytes of data returned in the provided buffer;
 //               -1 if an error was encountered;
 #[cfg(target_os = "macos")]
-pub fn listpidspath(proc_types: ProcType, path: String) -> Result<Vec<u32>, String> {
+pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String> {
     let buffer_size = unsafe {
         proc_listpidspath(proc_types as u32, 0, path.as_ptr() as * const c_char, 0, ptr::null_mut(), 0)
     };
@@ -745,7 +744,7 @@ mod test {
     #[test]
     #[cfg(target_os = "macos")]
     fn listpidspath_test() {
-        let pids = super::listpidspath(ProcType::ProcAllPIDS, "/".into()).unwrap();
+        let pids = super::listpidspath(ProcType::ProcAllPIDS, "/").unwrap();
         assert!(pids.len() > 1);
     }
 }

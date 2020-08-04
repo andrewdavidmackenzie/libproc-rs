@@ -30,6 +30,9 @@ At the moment these methods have been implemented:
 pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> (macos) (linux)
 ```
 ```
+pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String> (macos) (linux)
+```
+```
 pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> (macos)
 ```
 ```
