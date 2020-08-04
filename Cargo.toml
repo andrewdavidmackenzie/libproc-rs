@@ -17,6 +17,11 @@ libc = "^0.2.62"
 name = "libproc"
 path = "src/lib.rs"
 
+[features]
+default = ["macosx_10_5", "macosx_10_7"]
+macosx_10_5 = []
+macosx_10_7 = ["macosx_10_5"]
+
 [[bin]]
 name = "procinfo"
 path = "src/procinfo.rs"

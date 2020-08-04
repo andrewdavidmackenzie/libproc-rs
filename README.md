@@ -75,7 +75,25 @@ pub fn kmsgbuf() -> Result<String, String>
 - `dmesg` is a version of dmesg implemented in rust that uses libproc-rs.
 
 # Platforms
-Mac OS X and work started on Linux.
+Mac OS X and Linux.
+
+## Mac OS X Versions
+Calls were aded to libproc in Mac OS X 10.5 and again in 10.7. 
+This library can be compiled to not include those calls by using rust `features`
+to enable/disable support for those versions.
+
+The default build for Mac OS 10.7 or later includes both.
+See 
+```toml
+[features]
+default = ["macosx_10_5", "macosx_10_7"]
+``` 
+in `Cargo.toml`
+
+To build for versions prior to Mac OS 10.5 disable the default features by passing `--no-default-features` to `cargo`.
+
+To build for Mac OS X 10.5 (or 10.6) you can enable that feature alone using
+`--no-default-features --features "macosx_10_5"` 
 
 # Build and Test
 `cargo test` should build and test as usual for rust projects.
