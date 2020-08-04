@@ -75,7 +75,7 @@ pub fn kmsgbuf() -> Result<String, String>
 - `dmesg` is a version of dmesg implemented in rust that uses libproc-rs.
 
 # Platforms
-Mac OS X and work started on Linux.
+Mac OS X (10.5 and above) and Linux.
 
 # Build and Test
 `cargo test` should build and test as usual for rust projects.

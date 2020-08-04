@@ -13,6 +13,7 @@ use self::libc::{c_int, c_void};
 #[cfg(target_os = "macos")]
 #[link(name = "proc", kind = "dylib")]
 extern {
+    // This method is supported in the minimum version of Mac OS X which is 10.5
     fn proc_pidfdinfo(pid: c_int, fd: c_int, flavor: c_int, buffer: *mut c_void, buffersize: c_int) -> c_int;
 }
 

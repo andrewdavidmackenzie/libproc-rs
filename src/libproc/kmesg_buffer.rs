@@ -27,6 +27,7 @@ const MAX_MSG_BSIZE: usize = 1024 * 1024;
 #[cfg(target_os = "macos")]
 #[link(name = "proc", kind = "dylib")]
 extern {
+    // This method is supported in the minimum version of Mac OS X which is 10.5
     fn proc_kmsgbuf(buffer: *mut c_void, buffersize: u32) -> c_int;
 }
 

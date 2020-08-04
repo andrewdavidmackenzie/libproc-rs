@@ -28,7 +28,7 @@ use crate::libproc::work_queue_info::WorkQueueInfo;
 #[cfg(target_os = "linux")]
 use self::libc::{c_char, readlink};
 #[cfg(target_os = "macos")]
-use self::libc::{c_int, c_void};
+use self::libc::{c_int, c_void, c_char};
 
 // Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
 // See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
@@ -135,21 +135,18 @@ impl ListPIDInfo for ListThreads {
 #[cfg(target_os = "macos")]
 #[link(name = "proc", kind = "dylib")]
 extern {
+    // All these methods are supported in the minimum version of Mac OS X which is 10.5
     fn proc_listpids(proc_type: u32, typeinfo: u32, buffer: *mut c_void, buffersize: u32) -> c_int;
-
+    fn proc_listpidspath(proc_type: u32, typeinfo: u32, path: * const c_char, pathflags: u32, buffer: *mut c_void, buffersize: u32) -> c_int;
     fn proc_pidinfo(pid: c_int, flavor: c_int, arg: u64, buffer: *mut c_void, buffersize: c_int) -> c_int;
-
     fn proc_name(pid: c_int, buffer: *mut c_void, buffersize: u32) -> c_int;
-
+    fn proc_libversion(major: *mut c_int, minor: *mut c_int) -> c_int;
+    fn proc_pidpath(pid: c_int, buffer: *mut c_void, buffersize: u32) -> c_int;
     fn proc_regionfilename(pid: c_int, address: u64, buffer: *mut c_void, buffersize: u32) -> c_int;
 
-    fn proc_pidpath(pid: c_int, buffer: *mut c_void, buffersize: u32) -> c_int;
-
-    fn proc_libversion(major: *mut c_int, minor: *mut c_int) -> c_int;
 }
 
-
-/// Returns the PIDs of the processes active that match the ProcType passed in
+/// Returns the PIDs of the active processes that match the ProcType passed in
 ///
 /// # Examples
 ///
@@ -211,6 +208,52 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
             Ok(pids)
         }
         _ => Err("Unsupported ProcType".to_owned())
+    }
+}
+
+// proc_listpidspath
+// Search through the current processes looking for open file references which match
+// a specified path or volume.
+//
+//       @param type types of processes to be searched (see proc_listpids)
+//       @param typeinfo adjunct information for type
+//       @param path file or volume path
+//       @param pathflags flags to control which files should be considered
+//               during the process search.
+//       @param buffer a C array of int-sized values to be filled with
+//               process identifiers that hold an open file reference
+//               matching the specified path or volume.  Pass NULL to
+//               obtain the minimum buffer size needed to hold the
+//               currently active processes.
+//       @param buffersize the size (in bytes) of the provided buffer.
+//       @result the number of bytes of data returned in the provided buffer;
+//               -1 if an error was encountered;
+#[cfg(target_os = "macos")]
+pub fn listpidspath(proc_types: ProcType, path: String) -> Result<Vec<u32>, String> {
+    let buffer_size = unsafe {
+        proc_listpidspath(proc_types as u32, 0, path.as_ptr() as * const c_char, 0, ptr::null_mut(), 0)
+    };
+    if buffer_size <= 0 {
+        return Err(helpers::get_errno_with_message(buffer_size));
+    }
+
+    let capacity = buffer_size as usize / mem::size_of::<u32>();
+    let mut pids: Vec<u32> = Vec::with_capacity(capacity);
+    let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
+
+    let ret = unsafe {
+        proc_listpidspath(proc_types as u32, 0, path.as_ptr() as * const c_char, 0, buffer_ptr, buffer_size as u32)
+    };
+
+    if ret <= 0 {
+        Err(helpers::get_errno_with_message(ret))
+    } else {
+        let items_count = ret as usize / mem::size_of::<u32>() - 1;
+        unsafe {
+            pids.set_len(items_count);
+        }
+
+        Ok(pids)
     }
 }
 
@@ -621,9 +664,8 @@ mod test {
 
     #[test]
     fn listpids_test() {
-        if let Ok(pids) = listpids(ProcType::ProcAllPIDS) {
-            assert!(pids.len() > 1);
-        }
+        let pids = listpids(ProcType::ProcAllPIDS).unwrap();
+        assert!(pids.len() > 1);
     }
 
     #[test]
@@ -698,5 +740,12 @@ mod test {
         if am_root() {
             assert!(procfile_field("/proc/1/status", "invalid").is_err());
         }
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn listpidspath_test() {
+        let pids = super::listpidspath(ProcType::ProcAllPIDS, "/".into()).unwrap();
+        assert!(pids.len() > 1);
     }
 }
