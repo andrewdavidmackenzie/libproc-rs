@@ -19,7 +19,8 @@ pub mod task_info;
 /// BSD specific information - very MacOS specific
 pub mod bsd_info;
 #[cfg(target_os = "macos")]
-/// Information about Process Resource Usage
+#[cfg(feature = "macosx_10_9")]
+/// Information about Process Resource Usage - added in Mac OS X 10.9
 pub mod pid_rusage;
 /// Information about Files and File Descriptors used by processes
 #[cfg(target_os = "macos")]
