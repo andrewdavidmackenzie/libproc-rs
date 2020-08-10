@@ -9,12 +9,8 @@ This is a library for getting information about running processes for Mac OS X a
 extern crate libproc;
 use libproc::libproc::proc_pid;
 
-...
-
 match proc_pid::pidpath(pid) {
-    Ok(path) => {
-        println!("PID {}: has path {}", pid, path);
-    },
+    Ok(path) => println!("PID {}: has path {}", pid, path),
     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
 }
 ```
