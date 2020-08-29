@@ -30,6 +30,9 @@ use self::libc::{c_char, readlink};
 #[cfg(target_os = "macos")]
 use self::libc::{c_int, c_void, c_char};
 
+#[cfg(target_os = "macos")]
+use std::ffi::CString;
+
 // Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
 // See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
 // buffersize must be more than PROC_PIDPATHINFO_SIZE
@@ -229,8 +232,10 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
 //               -1 if an error was encountered;
 #[cfg(target_os = "macos")]
 pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String> {
+    let c_path = CString::new(path).map_err(|_| "CString::new failed".to_string())?;
+
     let buffer_size = unsafe {
-        proc_listpidspath(proc_types as u32, 0, path.as_ptr() as * const c_char, 0, ptr::null_mut(), 0)
+        proc_listpidspath(proc_types as u32, 0, c_path.as_ptr() as * const c_char, 0, ptr::null_mut(), 0)
     };
     if buffer_size <= 0 {
         return Err(helpers::get_errno_with_message(buffer_size));
@@ -241,7 +246,7 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
     let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
 
     let ret = unsafe {
-        proc_listpidspath(proc_types as u32, 0, path.as_ptr() as * const c_char, 0, buffer_ptr, buffer_size as u32)
+        proc_listpidspath(proc_types as u32, 0, c_path.as_ptr() as * const c_char, 0, buffer_ptr, buffer_size as u32)
     };
 
     if ret <= 0 {
