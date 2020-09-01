@@ -1,5 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `src/libproc/net_info.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>net_info.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../libproc/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
-                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `src/libproc/net_info.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>net_info.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../libproc/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -362,7 +361,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">PIDFDInfo</span> <span class="kw">for</span> <span class="ident">SocketFDInfo</span> {
-    <span class="kw">fn</span> <span class="ident">flavor</span>() <span class="op">-&gt;</span> <span class="ident">PIDFDInfoFlavor</span> { <span class="ident">PIDFDInfoFlavor</span>::<span class="ident">SocketInfo</span> }
+    <span class="kw">fn</span> <span class="ident">flavor</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PIDFDInfoFlavor</span> { <span class="ident">PIDFDInfoFlavor</span>::<span class="ident">SocketInfo</span> }
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
@@ -385,16 +384,16 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">c_int</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SocketInfoKind</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">value</span>: <span class="ident">c_int</span>) <span class="op">-&gt;</span> <span class="ident">SocketInfoKind</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">value</span>: <span class="ident">c_int</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SocketInfoKind</span> {
         <span class="kw">match</span> <span class="ident">value</span> {
-            <span class="number">0</span> <span class="op">=&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">Generic</span>,
-            <span class="number">1</span> <span class="op">=&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">In</span>,
-            <span class="number">2</span> <span class="op">=&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">Tcp</span>,
-            <span class="number">3</span> <span class="op">=&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">Un</span>,
-            <span class="number">4</span> <span class="op">=&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">Ndrv</span>,
-            <span class="number">5</span> <span class="op">=&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">KernEvent</span>,
-            <span class="number">6</span> <span class="op">=&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">KernCtl</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">Unknown</span>,
+            <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">Generic</span>,
+            <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">In</span>,
+            <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">Tcp</span>,
+            <span class="number">3</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">Un</span>,
+            <span class="number">4</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">Ndrv</span>,
+            <span class="number">5</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">KernEvent</span>,
+            <span class="number">6</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">KernCtl</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SocketInfoKind</span>::<span class="ident">Unknown</span>,
         }
     }
 }
@@ -473,7 +472,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">SocketInfoProto</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="ident">SocketInfoProto</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SocketInfoProto</span> {
         <span class="ident">SocketInfoProto</span> {
             <span class="ident">pri_in</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
         }
@@ -488,7 +487,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">In4In6Addr</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="ident">In4In6Addr</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">In4In6Addr</span> {
         <span class="ident">In4In6Addr</span> {
             <span class="ident">i46a_pad32</span>: [<span class="number">0</span>; <span class="number">3</span>],
             <span class="ident">i46a_addr4</span>: <span class="ident">in_addr</span> { <span class="ident">s_addr</span>: <span class="number">0</span> },
@@ -536,7 +535,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">InSIAddr</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="ident">InSIAddr</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">InSIAddr</span> {
         <span class="ident">InSIAddr</span> {
             <span class="ident">ina_46</span>: <span class="ident">Default</span>::<span class="ident">default</span>(),
         }
@@ -574,21 +573,21 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">c_int</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">TcpSIState</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">value</span>: <span class="ident">c_int</span>) <span class="op">-&gt;</span> <span class="ident">TcpSIState</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">value</span>: <span class="ident">c_int</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span> {
         <span class="kw">match</span> <span class="ident">value</span> {
-            <span class="number">0</span> <span class="op">=&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">Closed</span>,
-            <span class="number">1</span> <span class="op">=&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">Listen</span>,
-            <span class="number">2</span> <span class="op">=&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">SynSent</span>,
-            <span class="number">3</span> <span class="op">=&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">SynReceived</span>,
-            <span class="number">4</span> <span class="op">=&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">Established</span>,
-            <span class="number">5</span> <span class="op">=&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">CloseWait</span>,
-            <span class="number">6</span> <span class="op">=&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">FinWait1</span>,
-            <span class="number">7</span> <span class="op">=&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">Closing</span>,
-            <span class="number">8</span> <span class="op">=&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">LastAck</span>,
-            <span class="number">9</span> <span class="op">=&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">FinWait2</span>,
-            <span class="number">10</span> <span class="op">=&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">TimeWait</span>,
-            <span class="number">11</span> <span class="op">=&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">Reserved</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">Unknown</span>,
+            <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">Closed</span>,
+            <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">Listen</span>,
+            <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">SynSent</span>,
+            <span class="number">3</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">SynReceived</span>,
+            <span class="number">4</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">Established</span>,
+            <span class="number">5</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">CloseWait</span>,
+            <span class="number">6</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">FinWait1</span>,
+            <span class="number">7</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">Closing</span>,
+            <span class="number">8</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">LastAck</span>,
+            <span class="number">9</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">FinWait2</span>,
+            <span class="number">10</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">TimeWait</span>,
+            <span class="number">11</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">Reserved</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TcpSIState</span>::<span class="ident">Unknown</span>,
         }
     }
 }
@@ -624,7 +623,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">UnSIAddr</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="ident">UnSIAddr</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">UnSIAddr</span> {
         <span class="ident">UnSIAddr</span> {
             <span class="ident">ua_dummy</span>: [<span class="number">0</span>; <span class="ident">SOCK_MAXADDRLEN</span> <span class="kw">as</span> <span class="ident">usize</span>],
         }
@@ -662,7 +661,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">KernCtlInfo</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="ident">KernCtlInfo</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">KernCtlInfo</span> {
         <span class="ident">KernCtlInfo</span> {
             <span class="ident">kcsi_id</span>: <span class="number">0</span>,
             <span class="ident">kcsi_reg_unit</span>: <span class="number">0</span>,
