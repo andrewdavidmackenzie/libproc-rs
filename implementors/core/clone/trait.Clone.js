@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["libproc"] = [{"text":"impl Clone for ProcType","synthetic":false,"types":[]}];
+implementors["libproc"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html\" title=\"trait core::clone::Clone\">Clone</a> for <a class=\"enum\" href=\"libproc/libproc/proc_pid/enum.ProcType.html\" title=\"enum libproc::libproc::proc_pid::ProcType\">ProcType</a>","synthetic":false,"types":["libproc::libproc::proc_pid::ProcType"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
