@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["libproc"] = [{"text":"impl From&lt;u32&gt; for ProcFDType","synthetic":false,"types":[]},{"text":"impl From&lt;i32&gt; for SocketInfoKind","synthetic":false,"types":[]},{"text":"impl From&lt;i32&gt; for TcpSIState","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

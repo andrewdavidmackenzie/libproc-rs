@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["kmsgbuf",""]]});
+initSidebarItems({"fn":[["kmsgbuf","Get the contents of the kernel message buffer"]]});
