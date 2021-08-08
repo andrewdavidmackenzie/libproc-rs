@@ -1,0 +1,76 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule: # Build every day at 5PM UTC
+    - cron: '0 17 * * *'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        build: [ linux, macos ]
+        include:
+          - build: linux-nightly
+            os: ubuntu-latest
+            rust: nightly
+          - build: macos-nightly
+            os: macos-latest
+            rust: nightly
+          - build: linux-stable
+            os: ubuntu-latest
+            rust: stable
+          - build: macos-stable
+            os: macos-latest
+            rust: stable
+          - build: linux-beta
+            os: ubuntu-latest
+            rust: beta
+          - build: macos-beta
+            os: macos-latest
+            rust: beta
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Clippy
+      run: |
+        rustup component add clippy
+        cargo clippy --all --all-targets --all-features -- -D warnings
+
+    - name: ConfigureCoverage
+      if: matrix.build == 'linux-nightly'
+      run: |
+        cargo install grcov
+        rustup component add llvm-tools-preview
+        echo RUSTFLAGS="-Zinstrument-coverage" >> "$GITHUB_ENV"
+        echo LLVM_PROFILE_FILE="flow-%p-%m.profraw" >> "$GITHUB_ENV"
+
+    - name: Test
+      run: |
+        - RUST_BACKTRACE=full sudo env "PATH=$PATH" cargo test
+
+    - name: UploadCoverage
+      if: matrix.build == 'linux-nightly'
+      run: |
+        grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
+        bash <(curl -s https://codecov.io/bash) -f lcov.info
+        rm -f lcov.info
+
+    - name: Doc
+      run: cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
+
+    - name: DeployDocsToGHPages
+      uses: JamesIves/github-pages-deploy-action@4.1.4
+      if: matrix.build == 'linux-nightly' && github.ref == 'refs/heads/master'
+      with:
+        branch: gh-pages
+        folder: target/html
