@@ -25,12 +25,8 @@ jobs:
       with:
         rust-version: ${{ matrix.rust }}
         components: clippy
-    - name: Test
-      run: cargo test
-
     - name: Clippy
       run: cargo clippy --all --all-targets --all-features -- -D warnings
-
     - name: ConfigureCoverage
       if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
       run: |
@@ -38,9 +34,11 @@ jobs:
         rustup component add llvm-tools-preview
         echo RUSTFLAGS="-Zinstrument-coverage" >> "$GITHUB_ENV"
         echo LLVM_PROFILE_FILE="flow-%p-%m.profraw" >> "$GITHUB_ENV"
+    - name: Run Tests
+      run: cargo test
 
     - name: Test
-      run: RUST_BACKTRACE=full sudo env "PATH=$PATH" cargo test
+      run: sudo env "PATH=$PATH" cargo test
 
     - name: UploadCoverage
       if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
