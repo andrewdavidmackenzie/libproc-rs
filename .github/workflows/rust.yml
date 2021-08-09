@@ -24,10 +24,9 @@ jobs:
       with:
         rust-version: ${{ matrix.rust }}
         components: clippy
+
     - name: Clippy
-      run: |
-        rustup component add clippy
-        cargo clippy --all --all-targets --all-features -- -D warnings
+      run: cargo clippy --all --all-targets --all-features -- -D warnings
 
     - name: ConfigureCoverage
       if: matrix.build == 'linux-nightly'
