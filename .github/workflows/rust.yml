@@ -55,8 +55,7 @@ jobs:
         echo LLVM_PROFILE_FILE="flow-%p-%m.profraw" >> "$GITHUB_ENV"
 
     - name: Test
-      run: |
-        - RUST_BACKTRACE=full sudo cargo test
+      run: RUST_BACKTRACE=full sudo env "PATH=$PATH" cargo test
 
     - name: UploadCoverage
       if: matrix.build == 'linux-nightly'
