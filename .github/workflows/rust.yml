@@ -13,34 +13,18 @@ env:
 
 jobs:
   build:
-
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        build: [ linux-nightly, macos-nightly, linux-stable, macos-stable, linux-beta, macos-beta ]
-        include:
-          - build: linux-nightly
-            os: ubuntu-latest
-            rust: nightly
-          - build: macos-nightly
-            os: macos-latest
-            rust: nightly
-          - build: linux-stable
-            os: ubuntu-latest
-            rust: stable
-          - build: macos-stable
-            os: macos-latest
-            rust: stable
-          - build: linux-beta
-            os: ubuntu-latest
-            rust: beta
-          - build: macos-beta
-            os: macos-latest
-            rust: beta
+        os: [ubuntu-latest, macos-latest]
+        rust: [stable, beta, nightly]
+
+      - uses: actions/checkout@v2
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: ${{ matrix.rust }}
 
     steps:
-    - uses: actions/checkout@v2
-
     - name: Clippy
       run: |
         rustup component add clippy
@@ -55,7 +39,7 @@ jobs:
         echo LLVM_PROFILE_FILE="flow-%p-%m.profraw" >> "$GITHUB_ENV"
 
     - name: Test
-      run: RUST_BACKTRACE=full sudo env "PATH=$PATH" cargo test +${{ matrix.rust }}
+      run: RUST_BACKTRACE=full sudo env "PATH=$PATH" cargo test
 
     - name: UploadCoverage
       if: matrix.build == 'linux-nightly'
