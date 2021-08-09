@@ -38,7 +38,7 @@ jobs:
       run: cargo test
 
     - name: Test
-      run: sudo env "PATH=$PATH" cargo test
+      run: RUST_BACKTRACE=full env "PATH=$PATH" cargo test
 
     - name: UploadCoverage
       if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
