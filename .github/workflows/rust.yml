@@ -28,6 +28,9 @@ jobs:
         rust-version: ${{ matrix.rust }}
         components: clippy
 
+    - name: Checks
+      run: whoami
+
     - name: Clippy
       run: cargo clippy --all --all-targets --all-features -- -D warnings
 
