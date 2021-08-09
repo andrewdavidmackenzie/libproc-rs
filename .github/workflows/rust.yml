@@ -10,6 +10,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: full
 
 jobs:
   build:
@@ -28,9 +29,6 @@ jobs:
         rust-version: ${{ matrix.rust }}
         components: clippy
 
-    - name: Checks
-      run: whoami
-
     - name: Clippy
       run: cargo clippy --all --all-targets --all-features -- -D warnings
 
@@ -42,8 +40,8 @@ jobs:
         echo RUSTFLAGS="-Zinstrument-coverage" >> "$GITHUB_ENV"
         echo LLVM_PROFILE_FILE="flow-%p-%m.profraw" >> "$GITHUB_ENV"
 
-    - name: Test
-      run: RUST_BACKTRACE=full env "PATH=$PATH" cargo test
+    - name: Run Tests
+      run:  env "PATH=$PATH" cargo test
 
     - name: UploadCoverage
       if: matrix.rust == 'nightly'
@@ -56,7 +54,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
       run: cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
 
-    - name: DeployDocsToGHPages
+    - name: DeployDocsToGHPagesFromMaster
       uses: JamesIves/github-pages-deploy-action@4.1.4
       if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable' && github.ref == 'refs/heads/master'
       with:
