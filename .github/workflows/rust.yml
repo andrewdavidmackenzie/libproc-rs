@@ -1,0 +1,66 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule: # Build every day at 5PM UTC
+    - cron: '0 17 * * *'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: full
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        rust: [stable, beta, nightly]
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 2
+    - uses: hecrj/setup-rust-action@v1.3.4
+      with:
+        rust-version: ${{ matrix.rust }}
+        components: clippy
+
+    - name: Clippy
+      run: cargo clippy --all --all-targets --all-features -- -D warnings
+
+    - name: ConfigureCoverage
+      if: matrix.rust == 'nightly'
+      run: |
+        cargo install grcov
+        rustup component add llvm-tools-preview
+        echo RUSTFLAGS="-Zinstrument-coverage" >> "$GITHUB_ENV"
+        echo LLVM_PROFILE_FILE="flow-%p-%m.profraw" >> "$GITHUB_ENV"
+
+    - name: Run Tests
+      run:  env "PATH=$PATH" cargo test
+
+    - name: Run Tests as Root on Mac
+      if: matrix.os == 'macos-latest'
+      run:  sudo env "PATH=$PATH" cargo test
+
+    - name: UploadCoverage
+      if: matrix.rust == 'nightly'
+      run: |
+        grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
+        bash <(curl -s https://codecov.io/bash) -f lcov.info
+        rm -f lcov.info
+
+    - name: CheckDocsBuild
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
+      run: cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
+
+    - name: DeployDocsToGHPagesFromMaster
+      uses: JamesIves/github-pages-deploy-action@4.1.4
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable' && github.ref == 'refs/heads/master'
+      with:
+        branch: gh-pages
+        folder: target/doc
