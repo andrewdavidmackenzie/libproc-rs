@@ -25,29 +25,30 @@ jobs:
       with:
         rust-version: ${{ matrix.rust }}
         components: clippy
+
     - name: Clippy
       run: cargo clippy --all --all-targets --all-features -- -D warnings
+
     - name: ConfigureCoverage
-      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'nightly'
       run: |
         cargo install grcov
         rustup component add llvm-tools-preview
         echo RUSTFLAGS="-Zinstrument-coverage" >> "$GITHUB_ENV"
         echo LLVM_PROFILE_FILE="flow-%p-%m.profraw" >> "$GITHUB_ENV"
-    - name: Run Tests
-      run: cargo test
 
     - name: Test
       run: RUST_BACKTRACE=full env "PATH=$PATH" cargo test
 
     - name: UploadCoverage
-      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'nightly'
       run: |
         grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
         bash <(curl -s https://codecov.io/bash) -f lcov.info
         rm -f lcov.info
 
-    - name: Doc
+    - name: CheckDocsBuild
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
       run: cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
 
     - name: DeployDocsToGHPages
@@ -55,4 +56,4 @@ jobs:
       if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable' && github.ref == 'refs/heads/master'
       with:
         branch: gh-pages
-        folder: target/html
+        folder: target/doc
