@@ -111,7 +111,7 @@ mod test {
         if am_root() {
             match kmsgbuf() {
                 Ok(_) => { },
-                Err(message) => panic!(message)
+                Err(message) => panic!("{}", message)
             }
         } else {
             writeln!(&mut io::stdout(), "test libproc::kmesg_buffer::kmessagebuffer_test ... skipped as it needs to be run as root").unwrap();

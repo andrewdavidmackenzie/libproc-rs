@@ -640,7 +640,7 @@ mod test {
 
         match pidinfo::<BSDInfo>(pid, 0) {
             Ok(info) => assert_eq!(info.pbi_pid as i32, pid),
-            Err(err) => assert!(false, "Error retrieving process info: {}", err)
+            Err(_) => panic!("Error retrieving process info")
         };
     }
 
@@ -688,7 +688,7 @@ mod test {
         if am_root() || cfg!(target_os = "linux") {
             match name(1) {
                 Ok(name) => assert_eq!(expected_name, name),
-                Err(err) => assert!(false, "Error retrieving process name: {}", err)
+                Err(_) => panic!("Error retrieving process name")
             }
         } else {
             println!("Cannot run 'name_test' on macos unless run as root");
@@ -704,7 +704,7 @@ mod test {
             let error_message = "No such file or directory";
 
         match pidpath(-1) {
-            Ok(path) => assert!(false, "It found the path of process Pwith ID = -1 (path = {}), that's not possible\n", path),
+            Ok(path) => panic!("It found the path of process Pwith ID = -1 (path = {}), that's not possible\n", path),
             Err(message) => assert!(message.contains(error_message)),
         }
     }
