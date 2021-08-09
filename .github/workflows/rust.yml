@@ -30,7 +30,7 @@ jobs:
       run: cargo clippy --all --all-targets --all-features -- -D warnings
 
     - name: ConfigureCoverage
-      if: matrix.build == 'linux-latest' && matrix.rust == 'stable'
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
       run: |
         cargo install grcov
         rustup component add llvm-tools-preview
@@ -41,7 +41,7 @@ jobs:
       run: RUST_BACKTRACE=full sudo env "PATH=$PATH" cargo test
 
     - name: UploadCoverage
-      if: matrix.build == 'linux-latest' && matrix.rust == 'stable'
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
       run: |
         grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
         bash <(curl -s https://codecov.io/bash) -f lcov.info
@@ -52,7 +52,7 @@ jobs:
 
     - name: DeployDocsToGHPages
       uses: JamesIves/github-pages-deploy-action@4.1.4
-      if: matrix.build == 'linux-latest' && matrix.rust == 'stable' && github.ref == 'refs/heads/master'
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable' && github.ref == 'refs/heads/master'
       with:
         branch: gh-pages
         folder: target/html
