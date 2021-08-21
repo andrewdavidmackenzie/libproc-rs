@@ -7,19 +7,31 @@ use self::libc::{c_char};
 // from http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h
 const MAXTHREADNAMESIZE : usize = 64;
 
+/// Darwin Kernel C struct representing Information about a Thread
 #[repr(C)]
 pub struct ThreadInfo {
-    pub pth_user_time           : u64,                     // user run time
-    pub pth_system_time         : u64,                     // system run time
-    pub pth_cpu_usage           : i32,                      // scaled cpu usage percentage
-    pub pth_policy              : i32,                      // scheduling policy in effect
-    pub pth_run_state           : i32,                      // run state (see below)
-    pub pth_flags               : i32,                      // various flags (see below)
-    pub pth_sleep_time          : i32,                      // number of seconds that thread
-    pub pth_curpri              : i32,                      // cur priority
-    pub pth_priority            : i32,                      // priority
-    pub pth_maxpriority         : i32,                      // max priority
-    pub pth_name                : [c_char; MAXTHREADNAMESIZE]   // thread name, if any
+    /// user run time
+    pub pth_user_time           : u64,
+    /// system run time
+    pub pth_system_time         : u64,
+    /// scaled cpu usage percentage
+    pub pth_cpu_usage           : i32,
+    /// scheduling policy in effect
+    pub pth_policy              : i32,
+    /// run state (see below)
+    pub pth_run_state           : i32,
+    /// various flags (see below)
+    pub pth_flags               : i32,
+    /// number of seconds that thread
+    pub pth_sleep_time          : i32,
+    /// cur priority
+    pub pth_curpri              : i32,
+    /// priority
+    pub pth_priority            : i32,
+    /// max priority
+    pub pth_maxpriority         : i32,
+    /// thread name, if any
+    pub pth_name                : [c_char; MAXTHREADNAMESIZE]
 }
 
 impl PIDInfo for ThreadInfo {

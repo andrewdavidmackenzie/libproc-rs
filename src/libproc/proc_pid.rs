@@ -33,18 +33,18 @@ use self::libc::{c_int, c_void, c_char};
 #[cfg(target_os = "macos")]
 use std::ffi::CString;
 
-// Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
-// See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
-// buffersize must be more than PROC_PIDPATHINFO_SIZE
-// buffersize must be less than PROC_PIDPATHINFO_MAXSIZE
-//
-// See http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h
-// #define PROC_PIDPATHINFO_SIZE		(MAXPATHLEN)
-// #define PROC_PIDPATHINFO_MAXSIZE	(4*MAXPATHLEN)
-// in http://opensource.apple.com//source/xnu/xnu-1504.7.4/bsd/sys/param.h
-// #define	MAXPATHLEN	PATH_MAX
-// in https://opensource.apple.com/source/xnu/xnu-792.25.20/bsd/sys/syslimits.h
-// #define	PATH_MAX		 1024
+/// Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
+/// See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
+/// buffersize must be more than PROC_PIDPATHINFO_SIZE
+/// buffersize must be less than PROC_PIDPATHINFO_MAXSIZE
+///
+/// See http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h
+/// #define PROC_PIDPATHINFO_SIZE		(MAXPATHLEN)
+/// #define PROC_PIDPATHINFO_MAXSIZE	(4 * MAXPATHLEN)
+/// in http://opensource.apple.com//source/xnu/xnu-1504.7.4/bsd/sys/param.h
+/// #define	MAXPATHLEN	PATH_MAX
+/// in https://opensource.apple.com/source/xnu/xnu-792.25.20/bsd/sys/syslimits.h
+/// #define	PATH_MAX		 1024
 #[cfg(target_os = "macos")]
 const MAXPATHLEN: usize = 1024;
 #[cfg(target_os = "macos")]
@@ -56,46 +56,54 @@ const PROC_PIDPATHINFO_MAXSIZE: usize = 4 * MAXPATHLEN;
 /// in in other calls, such as `listpids`.
 #[derive(Copy, Clone)]
 pub enum ProcType {
-    // All processes
+    /// All processes
     ProcAllPIDS = 1,
+    /// Only PGRP Processes
     ProcPGRPOnly = 2,
+    /// Only TTY Processes
     ProcTTYOnly = 3,
+    /// Only UID Processes
     ProcUIDOnly = 4,
+    /// Only RUID Processes
     ProcRUIDOnly = 5,
+    /// Only PPID Processes
     ProcPPIDOnly = 6,
 }
 
-// This trait is needed for polymorphism on pidinfo types, also abstracting flavor in order to provide
-// type-guaranteed flavor correctness
+/// The `PIDInfo` trait is needed for polymorphism on pidinfo types, also abstracting flavor in order to provide
+/// type-guaranteed flavor correctness
 pub trait PIDInfo: Default {
+    /// Return the `PidInfoFlavor` of the implementing struct
     fn flavor() -> PidInfoFlavor;
 }
 
-// From http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c
 /// An enum used to specify what type of information about a process is referenced
+/// See http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c
 pub enum PidInfoFlavor {
+    /// List of File Descriptors
     ListFDs = 1,
-    // list of ints?
+    /// struct proc_taskallinfo
     TaskAllInfo = 2,
-    // struct proc_taskallinfo
+    /// struct proc_bsdinfo
     TBSDInfo = 3,
-    // struct proc_bsdinfo
+    /// struct proc_taskinfo
     TaskInfo = 4,
-    // struct proc_taskinfo
+    /// struct proc_threadinfo
     ThreadInfo = 5,
-    // struct proc_threadinfo
+    /// list if int thread ids
     ListThreads = 6,
-    // list if int thread ids
+    /// TBD what type RegionInfo is - string?
     RegionInfo = 7,
+    /// Region Path info strings
     RegionPathInfo = 8,
-    // string?
+    /// Strings
     VNodePathInfo = 9,
-    // string?
+    /// Strings
     ThreadPathInfo = 10,
-    // String?
+    /// Strings
     PathInfo = 11,
-    // String
-    WorkQueueInfo = 12,    // struct proc_workqueueinfo
+    /// struct proc_workqueueinfo
+    WorkQueueInfo = 12,
 }
 
 /// The `PidInfo` enum contains a piece of information about a processes
@@ -103,29 +111,40 @@ pub enum PidInfoFlavor {
 pub enum PidInfo {
     /// File Descriptors used by Process
     ListFDs(Vec<i32>),
+    /// Get all Task Info
     TaskAllInfo(TaskAllInfo),
+    /// Get TBSDInfo - TODO doc this
     TBSDInfo(BSDInfo),
+    /// Single Task Info
     TaskInfo(TaskInfo),
+    /// ThreadInfo
     ThreadInfo(ThreadInfo),
     /// A list of Thread IDs
     ListThreads(Vec<i32>),
+    /// RegionInfo
     RegionInfo(String),
-    // String??
+    /// RegionPathInfo
     RegionPathInfo(String),
+    /// VNodePathInfo
     VNodePathInfo(String),
+    /// ThreadPathInfo
     ThreadPathInfo(String),
     /// The path of the executable being run as the process
     PathInfo(String),
+    /// WorkQueueInfo
     WorkQueueInfo(WorkQueueInfo),
 }
 
-// This trait is needed for polymorphism on listpidinfo types, also abstracting flavor in order to provide
-// type-guaranteed flavor correctness
+/// The `ListPIDInfo` trait is needed for polymorphism on listpidinfo types, also abstracting flavor in order to provide
+/// type-guaranteed flavor correctness
 pub trait ListPIDInfo {
+    /// Item
     type Item;
+    /// Return the PidInfoFlavor of the implementing struct
     fn flavor() -> PidInfoFlavor;
 }
 
+/// Struct for List of Threads
 pub struct ListThreads;
 
 impl ListPIDInfo for ListThreads {
@@ -187,6 +206,20 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     }
 }
 
+/// Returns the PIDs of the active processes that match the ProcType passed in
+///
+/// # Examples
+///
+/// Get the list of running process IDs using `listpids`
+///
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::proc_pid;
+///
+/// if let Ok(pids) = proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
+///     println!("Found {} processes using listpids()", pids.len());
+/// }
+/// ```
 #[cfg(target_os = "linux")]
 pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     match proc_types {
@@ -213,23 +246,22 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     }
 }
 
-// listpidspath
-// Search through the current processes looking for open file references which match
-// a specified path or volume.
-//
-//       @param type types of processes to be searched (see proc_listpids)
-//       @param typeinfo adjunct information for type
-//       @param path file or volume path
-//       @param pathflags flags to control which files should be considered
-//               during the process search.
-//       @param buffer a C array of int-sized values to be filled with
-//               process identifiers that hold an open file reference
-//               matching the specified path or volume.  Pass NULL to
-//               obtain the minimum buffer size needed to hold the
-//               currently active processes.
-//       @param buffersize the size (in bytes) of the provided buffer.
-//       @result the number of bytes of data returned in the provided buffer;
-//               -1 if an error was encountered;
+/// Search through the current processes looking for open file references which match
+/// a specified path or volume.
+///
+///       @param type types of processes to be searched (see proc_listpids)
+///       @param typeinfo adjunct information for type
+///       @param path file or volume path
+///       @param pathflags flags to control which files should be considered
+///               during the process search.
+///       @param buffer a C array of int-sized values to be filled with
+///               process identifiers that hold an open file reference
+///               matching the specified path or volume.  Pass NULL to
+///               obtain the minimum buffer size needed to hold the
+///               currently active processes.
+///       @param buffersize the size (in bytes) of the provided buffer.
+///       @result the number of bytes of data returned in the provided buffer;
+///               -1 if an error was encountered;
 #[cfg(target_os = "macos")]
 pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String> {
     let c_path = CString::new(path).map_err(|_| "CString::new failed".to_string())?;
@@ -303,6 +335,7 @@ pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
     }
 }
 
+/// pidinfo not implemented on linux - Pull Requests welcome - TODO
 #[cfg(not(target_os = "macos"))]
 pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
     unimplemented!()
@@ -339,6 +372,23 @@ pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
     helpers::check_errno(ret, &mut buf)
 }
 
+/// Get the filename associated with a memory region
+///
+/// # Examples
+///
+/// ```
+/// use libproc::libproc::proc_pid::regionfilename;
+///
+/// // This checks that it can find the regionfilename of the region at address 0, of the init process with PID 1
+/// use libproc::libproc::proc_pid::am_root;
+///
+/// if am_root() {
+///     match regionfilename(1, 0) {
+///         Ok(regionfilename) => println!("Region Filename (at address = 0) of init process PID = 1 is '{}'", regionfilename),
+///         Err(message) => panic!(message)
+///     }
+/// }
+/// ```
 #[cfg(not(target_os = "macos"))]
 pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
     Err("'regionfilename' not implemented on linux".to_owned())
@@ -353,7 +403,7 @@ pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
 ///
 /// match pidpath(1) {
 ///     Ok(path) => println!("Path of init process with PID = 1 is '{}'", path),
-///     Err(message) => assert!(false, message)
+///     Err(message) => assert!(false, "{}", message)
 /// }
 /// ```
 #[cfg(target_os = "macos")]
@@ -370,9 +420,24 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
     helpers::check_errno(ret, &mut buf)
 }
 
+/// Get the path of the executable file being run for a process
+///
+/// # Examples
+///
+/// ```
+/// use libproc::libproc::proc_pid::{pidpath, am_root};
+///
+/// match pidpath(1) {
+///     Ok(path) => println!("Path of init process with PID = 1 is '{}'", path),
+///     Err(_) if !am_root() => println!("pidpath() needs to be run as root"),
+///     Err(message) if am_root() => assert!(false, "{}", message),
+///     _ => assert!(false, "Unknown error")
+/// }
+/// ```
 #[cfg(target_os = "linux")]
 pub fn pidpath(pid: i32) -> Result<String, String> {
-    let exe_path = CString::new(format!("/proc/{}/exe", pid)).unwrap();
+    let exe_path = CString::new(format!("/proc/{}/exe", pid))
+        .map_err(|_| "Could not create CString")?;
     let mut buf: Vec<u8> = Vec::with_capacity(PATH_MAX as usize - 1);
     let buffer_ptr = buf.as_mut_ptr() as *mut c_char;
     let buffer_size = buf.capacity();
@@ -414,6 +479,19 @@ pub fn libversion() -> Result<(i32, i32), String> {
     }
 }
 
+/// Get the major and minor version numbers of the native libproc library (Mac OS X)
+///
+/// # Examples
+///
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::proc_pid;
+///
+/// match proc_pid::libversion() {
+///     Ok((major, minor)) => println!("Libversion: {}.{}", major, minor),
+///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+/// }
+/// ```
 #[cfg(not(target_os = "macos"))]
 pub fn libversion() -> Result<(i32, i32), String> {
     Err("Linux does not use a library, so no library version number".to_owned())
@@ -458,13 +536,13 @@ pub fn name(pid: i32) -> Result<String, String> {
 }
 
 /*
-    A helper function for filding named fields in specific /proc FS files for processes
+    A helper function for finding named fields in specific /proc FS files for processes
     This will be more useful when implementing more linux functions
 */
 #[cfg(target_os = "linux")]
-fn procfile_field(filename: &str, fieldname: &str) -> Result<String, String> {
+fn procfile_field(filename: &str, field_name: &str) -> Result<String, String> {
     const SEPARATOR: &str = ":";
-    let lineheader = format!("{}{}", fieldname, SEPARATOR);
+    let line_header = format!("{}{}", field_name, SEPARATOR);
 
     // Open the file in read-only mode (ignoring errors).
     let file = File::open(filename).map_err(|_| format!("Could not open /proc file '{}'", filename))?;
@@ -473,15 +551,16 @@ fn procfile_field(filename: &str, fieldname: &str) -> Result<String, String> {
     // Read the file line by line using the lines() iterator from std::io::BufRead.
     for line in reader.lines() {
         let line = line.map_err(|_| "Could not read file contents")?;
-        if line.starts_with(&lineheader) {
+        if line.starts_with(&line_header) {
             let parts: Vec<&str> = line.split(SEPARATOR).collect();
             return Ok(parts[1].trim().to_owned());
         }
     }
 
-    Err(format!("Could not find the field named '{}' in the /proc FS file name '{}'", fieldname, filename))
+    Err(format!("Could not find the field named '{}' in the /proc FS file name '{}'", field_name, filename))
 }
 
+/// Get the name of a Process using it's Pid
 #[cfg(target_os = "linux")]
 pub fn name(pid: i32) -> Result<String, String> {
     procfile_field(&format!("/proc/{}/status", pid), "Name")
@@ -537,11 +616,13 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
     }
 }
 
+/// listpidinfo is not implemented on Linux - Pull Requests welcome - TODO
 #[cfg(not(target_os = "macos"))]
 pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::Item>, String> {
     unimplemented!()
 }
 
+#[cfg(target_os = "macos")]
 /// Gets the path of current working directory for the process with the provided pid.
 ///
 /// # Examples
@@ -555,12 +636,24 @@ pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::
 ///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
 /// }
 /// ```
-#[cfg(target_os = "macos")]
 pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
     Err("pidcwd is not implemented for macos".into())
 }
 
 #[cfg(target_os = "linux")]
+/// Gets the path of current working directory for the process with the provided pid.
+///
+/// # Examples
+///
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::proc_pid::pidcwd;
+///
+/// match pidcwd(1) {
+///     Ok(cwd) => println!("The CWD of the process with pid=1 is '{}'", cwd.display()),
+///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+/// }
+/// ```
 pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
     fs::read_link(format!("/proc/{}/cwd", pid)).map_err(|e| {
         e.to_string()
@@ -604,6 +697,7 @@ pub fn am_root() -> bool {
     unsafe { libc::getuid() == 0 }
 }
 
+/// Return true if the calling process is being run by the root user, false otherwise
 #[cfg(target_os = "linux")]
 pub fn am_root() -> bool {
     // when this becomes stable in rust libc then we can remove this function or combine for mac and linux
@@ -696,7 +790,7 @@ mod test {
     }
 
     #[test]
-    // This checks that it cannot find the path of the process with pid -1 and returns correct error messaage
+    // This checks that it cannot find the path of the process with pid -1 and returns correct error message
     fn pidpath_test_unknown_pid_test() {
         #[cfg(target_os = "macos")]
             let error_message = "No such process";
@@ -704,7 +798,7 @@ mod test {
             let error_message = "No such file or directory";
 
         match pidpath(-1) {
-            Ok(path) => panic!("It found the path of process Pwith ID = -1 (path = {}), that's not possible\n", path),
+            Ok(path) => panic!("It found the path of process with ID = -1 (path = {}), that's not possible\n", path),
             Err(message) => assert!(message.contains(error_message)),
         }
     }

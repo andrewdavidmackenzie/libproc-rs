@@ -61,10 +61,11 @@ pub fn kmsgbuf() -> Result<String, String> {
     }
 }
 
-// Turns out that reading to the end of an "infinite file" like "/dev/kmsg" with standard file
-// reading methods will block at the end of file, so a workaround is required. Do the blocking
-// reads on a thread that sends lines read back through a channel, and then return when the thread
-// has blocked and can't send anymore. Returning will end the thread and the channel.
+/// Get a message (String) from the kernel message ring buffer
+/// Turns out that reading to the end of an "infinite file" like "/dev/kmsg" with standard file
+/// reading methods will block at the end of file, so a workaround is required. Do the blocking
+/// reads on a thread that sends lines read back through a channel, and then return when the thread
+/// has blocked and can't send anymore. Returning will end the thread and the channel.
 #[cfg(target_os = "linux")]
 pub fn kmsgbuf() -> Result<String, String> {
     let file = File::open("/dev/kmsg").map_err(|_| "Could not open /dev/kmsg file '{}'")?;
@@ -107,14 +108,14 @@ mod test {
     use super::kmsgbuf;
 
     #[test]
-    fn kmessagebuffer_test() {
+    fn kmessage_buffer_test() {
         if am_root() {
             match kmsgbuf() {
                 Ok(_) => { },
                 Err(message) => panic!("{}", message)
             }
         } else {
-            writeln!(&mut io::stdout(), "test libproc::kmesg_buffer::kmessagebuffer_test ... skipped as it needs to be run as root").unwrap();
+            writeln!(&mut io::stdout(), "test libproc::kmesg_buffer::kmessage_buffer_test ... skipped as it needs to be run as root").unwrap();
         }
     }
 }
