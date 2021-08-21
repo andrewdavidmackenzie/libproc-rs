@@ -376,6 +376,6 @@ mod test {
         use std::process;
         let pid = process::id() as i32;
 
-        let _ = pidrusage::<RUsageInfoV2>(pid).unwrap();
+        let _ = pidrusage::<RUsageInfoV2>(pid).expect("pidrusage() failed");
     }
 }

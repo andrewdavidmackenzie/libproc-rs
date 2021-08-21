@@ -762,7 +762,7 @@ mod test {
 
     #[test]
     fn listpids_test() {
-        let pids = listpids(ProcType::ProcAllPIDS).unwrap();
+        let pids = listpids(ProcType::ProcAllPIDS).expect("Could not list pids");
         assert!(pids.len() > 1);
     }
 
@@ -814,13 +814,15 @@ mod test {
     // should check it can be called and returns correct value
     #[test]
     fn cwd_self_test() {
-        assert_eq!(env::current_dir().unwrap(), cwdself().unwrap());
+        assert_eq!(env::current_dir().expect("Could not get current directory"),
+                   cwdself().expect("cwdself() failed"));
     }
 
     #[cfg(target_os = "linux")]
     #[test]
     fn pidcwd_of_self_test() {
-        assert_eq!(env::current_dir().unwrap(), pidcwd(process::id() as i32).unwrap());
+        assert_eq!(env::current_dir().expect("Could not get current directory"),
+                   pidcwd(process::id() as i32).expect("pidcwd() failed"));
     }
 
     #[test]
