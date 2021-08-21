@@ -31,8 +31,6 @@
 <span id="29">29</span>
 <span id="30">30</span>
 <span id="31">31</span>
-<span id="32">32</span>
-<span id="33">33</span>
 </pre><pre class="rust">
 <span class="doccomment">//! `libproc` module provides library methods for getting various types of</span>
 <span class="doccomment">//! information about running processes.</span>
@@ -54,8 +52,6 @@
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">task_info</span>;
 <span class="doccomment">/// BSD specific information - very MacOS specific</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">bsd_info</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macosx_10_9&quot;</span>)]</span>
 <span class="doccomment">/// Information about Process Resource Usage - added in Mac OS X 10.9</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">pid_rusage</span>;
 <span class="doccomment">/// Information about Files and File Descriptors used by processes</span>

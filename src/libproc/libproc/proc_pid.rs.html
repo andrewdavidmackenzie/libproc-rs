@@ -755,6 +755,102 @@
 <span id="753">753</span>
 <span id="754">754</span>
 <span id="755">755</span>
+<span id="756">756</span>
+<span id="757">757</span>
+<span id="758">758</span>
+<span id="759">759</span>
+<span id="760">760</span>
+<span id="761">761</span>
+<span id="762">762</span>
+<span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
 </pre><pre class="rust">
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
@@ -791,18 +887,18 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::ffi::CString</span>;
 
-<span class="comment">// Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple&#39;s source code</span>
-<span class="comment">// See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c</span>
-<span class="comment">// buffersize must be more than PROC_PIDPATHINFO_SIZE</span>
-<span class="comment">// buffersize must be less than PROC_PIDPATHINFO_MAXSIZE</span>
-<span class="comment">//</span>
-<span class="comment">// See http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h</span>
-<span class="comment">// #define PROC_PIDPATHINFO_SIZE		(MAXPATHLEN)</span>
-<span class="comment">// #define PROC_PIDPATHINFO_MAXSIZE	(4*MAXPATHLEN)</span>
-<span class="comment">// in http://opensource.apple.com//source/xnu/xnu-1504.7.4/bsd/sys/param.h</span>
-<span class="comment">// #define	MAXPATHLEN	PATH_MAX</span>
-<span class="comment">// in https://opensource.apple.com/source/xnu/xnu-792.25.20/bsd/sys/syslimits.h</span>
-<span class="comment">// #define	PATH_MAX		 1024</span>
+<span class="doccomment">/// Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple&#39;s source code</span>
+<span class="doccomment">/// See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c</span>
+<span class="doccomment">/// buffersize must be more than PROC_PIDPATHINFO_SIZE</span>
+<span class="doccomment">/// buffersize must be less than PROC_PIDPATHINFO_MAXSIZE</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h</span>
+<span class="doccomment">/// #define PROC_PIDPATHINFO_SIZE		(MAXPATHLEN)</span>
+<span class="doccomment">/// #define PROC_PIDPATHINFO_MAXSIZE	(4 * MAXPATHLEN)</span>
+<span class="doccomment">/// in http://opensource.apple.com//source/xnu/xnu-1504.7.4/bsd/sys/param.h</span>
+<span class="doccomment">/// #define	MAXPATHLEN	PATH_MAX</span>
+<span class="doccomment">/// in https://opensource.apple.com/source/xnu/xnu-792.25.20/bsd/sys/syslimits.h</span>
+<span class="doccomment">/// #define	PATH_MAX		 1024</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">const</span> <span class="ident">MAXPATHLEN</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">1024</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
@@ -814,46 +910,54 @@
 <span class="doccomment">/// in in other calls, such as `listpids`.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ProcType</span> {
-    <span class="comment">// All processes</span>
+    <span class="doccomment">/// All processes</span>
     <span class="ident">ProcAllPIDS</span> <span class="op">=</span> <span class="number">1</span>,
+    <span class="doccomment">/// Only PGRP Processes</span>
     <span class="ident">ProcPGRPOnly</span> <span class="op">=</span> <span class="number">2</span>,
+    <span class="doccomment">/// Only TTY Processes</span>
     <span class="ident">ProcTTYOnly</span> <span class="op">=</span> <span class="number">3</span>,
+    <span class="doccomment">/// Only UID Processes</span>
     <span class="ident">ProcUIDOnly</span> <span class="op">=</span> <span class="number">4</span>,
+    <span class="doccomment">/// Only RUID Processes</span>
     <span class="ident">ProcRUIDOnly</span> <span class="op">=</span> <span class="number">5</span>,
+    <span class="doccomment">/// Only PPID Processes</span>
     <span class="ident">ProcPPIDOnly</span> <span class="op">=</span> <span class="number">6</span>,
 }
 
-<span class="comment">// This trait is needed for polymorphism on pidinfo types, also abstracting flavor in order to provide</span>
-<span class="comment">// type-guaranteed flavor correctness</span>
+<span class="doccomment">/// The `PIDInfo` trait is needed for polymorphism on pidinfo types, also abstracting flavor in order to provide</span>
+<span class="doccomment">/// type-guaranteed flavor correctness</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">PIDInfo</span>: <span class="ident">Default</span> {
+    <span class="doccomment">/// Return the `PidInfoFlavor` of the implementing struct</span>
     <span class="kw">fn</span> <span class="ident">flavor</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PidInfoFlavor</span>;
 }
 
-<span class="comment">// From http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c</span>
 <span class="doccomment">/// An enum used to specify what type of information about a process is referenced</span>
+<span class="doccomment">/// See http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PidInfoFlavor</span> {
+    <span class="doccomment">/// List of File Descriptors</span>
     <span class="ident">ListFDs</span> <span class="op">=</span> <span class="number">1</span>,
-    <span class="comment">// list of ints?</span>
+    <span class="doccomment">/// struct proc_taskallinfo</span>
     <span class="ident">TaskAllInfo</span> <span class="op">=</span> <span class="number">2</span>,
-    <span class="comment">// struct proc_taskallinfo</span>
+    <span class="doccomment">/// struct proc_bsdinfo</span>
     <span class="ident">TBSDInfo</span> <span class="op">=</span> <span class="number">3</span>,
-    <span class="comment">// struct proc_bsdinfo</span>
+    <span class="doccomment">/// struct proc_taskinfo</span>
     <span class="ident">TaskInfo</span> <span class="op">=</span> <span class="number">4</span>,
-    <span class="comment">// struct proc_taskinfo</span>
+    <span class="doccomment">/// struct proc_threadinfo</span>
     <span class="ident">ThreadInfo</span> <span class="op">=</span> <span class="number">5</span>,
-    <span class="comment">// struct proc_threadinfo</span>
+    <span class="doccomment">/// list if int thread ids</span>
     <span class="ident">ListThreads</span> <span class="op">=</span> <span class="number">6</span>,
-    <span class="comment">// list if int thread ids</span>
+    <span class="doccomment">/// TBD what type RegionInfo is - string?</span>
     <span class="ident">RegionInfo</span> <span class="op">=</span> <span class="number">7</span>,
+    <span class="doccomment">/// Region Path info strings</span>
     <span class="ident">RegionPathInfo</span> <span class="op">=</span> <span class="number">8</span>,
-    <span class="comment">// string?</span>
+    <span class="doccomment">/// Strings</span>
     <span class="ident">VNodePathInfo</span> <span class="op">=</span> <span class="number">9</span>,
-    <span class="comment">// string?</span>
+    <span class="doccomment">/// Strings</span>
     <span class="ident">ThreadPathInfo</span> <span class="op">=</span> <span class="number">10</span>,
-    <span class="comment">// String?</span>
+    <span class="doccomment">/// Strings</span>
     <span class="ident">PathInfo</span> <span class="op">=</span> <span class="number">11</span>,
-    <span class="comment">// String</span>
-    <span class="ident">WorkQueueInfo</span> <span class="op">=</span> <span class="number">12</span>,    <span class="comment">// struct proc_workqueueinfo</span>
+    <span class="doccomment">/// struct proc_workqueueinfo</span>
+    <span class="ident">WorkQueueInfo</span> <span class="op">=</span> <span class="number">12</span>,
 }
 
 <span class="doccomment">/// The `PidInfo` enum contains a piece of information about a processes</span>
@@ -861,29 +965,40 @@
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PidInfo</span> {
     <span class="doccomment">/// File Descriptors used by Process</span>
     <span class="ident">ListFDs</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>),
+    <span class="doccomment">/// Get all Task Info</span>
     <span class="ident">TaskAllInfo</span>(<span class="ident">TaskAllInfo</span>),
+    <span class="doccomment">/// Get TBSDInfo - TODO doc this</span>
     <span class="ident">TBSDInfo</span>(<span class="ident">BSDInfo</span>),
+    <span class="doccomment">/// Single Task Info</span>
     <span class="ident">TaskInfo</span>(<span class="ident">TaskInfo</span>),
+    <span class="doccomment">/// ThreadInfo</span>
     <span class="ident">ThreadInfo</span>(<span class="ident">ThreadInfo</span>),
     <span class="doccomment">/// A list of Thread IDs</span>
     <span class="ident">ListThreads</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>),
+    <span class="doccomment">/// RegionInfo</span>
     <span class="ident">RegionInfo</span>(<span class="ident">String</span>),
-    <span class="comment">// String??</span>
+    <span class="doccomment">/// RegionPathInfo</span>
     <span class="ident">RegionPathInfo</span>(<span class="ident">String</span>),
+    <span class="doccomment">/// VNodePathInfo</span>
     <span class="ident">VNodePathInfo</span>(<span class="ident">String</span>),
+    <span class="doccomment">/// ThreadPathInfo</span>
     <span class="ident">ThreadPathInfo</span>(<span class="ident">String</span>),
     <span class="doccomment">/// The path of the executable being run as the process</span>
     <span class="ident">PathInfo</span>(<span class="ident">String</span>),
+    <span class="doccomment">/// WorkQueueInfo</span>
     <span class="ident">WorkQueueInfo</span>(<span class="ident">WorkQueueInfo</span>),
 }
 
-<span class="comment">// This trait is needed for polymorphism on listpidinfo types, also abstracting flavor in order to provide</span>
-<span class="comment">// type-guaranteed flavor correctness</span>
+<span class="doccomment">/// The `ListPIDInfo` trait is needed for polymorphism on listpidinfo types, also abstracting flavor in order to provide</span>
+<span class="doccomment">/// type-guaranteed flavor correctness</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ListPIDInfo</span> {
+    <span class="doccomment">/// Item</span>
     <span class="kw">type</span> <span class="ident">Item</span>;
+    <span class="doccomment">/// Return the PidInfoFlavor of the implementing struct</span>
     <span class="kw">fn</span> <span class="ident">flavor</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PidInfoFlavor</span>;
 }
 
+<span class="doccomment">/// Struct for List of Threads</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ListThreads</span>;
 
 <span class="kw">impl</span> <span class="ident">ListPIDInfo</span> <span class="kw">for</span> <span class="ident">ListThreads</span> {
@@ -945,6 +1060,20 @@
     }
 }
 
+<span class="doccomment">/// Returns the PIDs of the active processes that match the ProcType passed in</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Get the list of running process IDs using `listpids`</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use std::io::Write;</span>
+<span class="doccomment">/// use libproc::libproc::proc_pid;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// if let Ok(pids) = proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {</span>
+<span class="doccomment">///     println!(&quot;Found {} processes using listpids()&quot;, pids.len());</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listpids</span>(<span class="ident">proc_types</span>: <span class="ident">ProcType</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">proc_types</span> {
@@ -971,23 +1100,22 @@
     }
 }
 
-<span class="comment">// listpidspath</span>
-<span class="comment">// Search through the current processes looking for open file references which match</span>
-<span class="comment">// a specified path or volume.</span>
-<span class="comment">//</span>
-<span class="comment">//       @param type types of processes to be searched (see proc_listpids)</span>
-<span class="comment">//       @param typeinfo adjunct information for type</span>
-<span class="comment">//       @param path file or volume path</span>
-<span class="comment">//       @param pathflags flags to control which files should be considered</span>
-<span class="comment">//               during the process search.</span>
-<span class="comment">//       @param buffer a C array of int-sized values to be filled with</span>
-<span class="comment">//               process identifiers that hold an open file reference</span>
-<span class="comment">//               matching the specified path or volume.  Pass NULL to</span>
-<span class="comment">//               obtain the minimum buffer size needed to hold the</span>
-<span class="comment">//               currently active processes.</span>
-<span class="comment">//       @param buffersize the size (in bytes) of the provided buffer.</span>
-<span class="comment">//       @result the number of bytes of data returned in the provided buffer;</span>
-<span class="comment">//               -1 if an error was encountered;</span>
+<span class="doccomment">/// Search through the current processes looking for open file references which match</span>
+<span class="doccomment">/// a specified path or volume.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///       @param type types of processes to be searched (see proc_listpids)</span>
+<span class="doccomment">///       @param typeinfo adjunct information for type</span>
+<span class="doccomment">///       @param path file or volume path</span>
+<span class="doccomment">///       @param pathflags flags to control which files should be considered</span>
+<span class="doccomment">///               during the process search.</span>
+<span class="doccomment">///       @param buffer a C array of int-sized values to be filled with</span>
+<span class="doccomment">///               process identifiers that hold an open file reference</span>
+<span class="doccomment">///               matching the specified path or volume.  Pass NULL to</span>
+<span class="doccomment">///               obtain the minimum buffer size needed to hold the</span>
+<span class="doccomment">///               currently active processes.</span>
+<span class="doccomment">///       @param buffersize the size (in bytes) of the provided buffer.</span>
+<span class="doccomment">///       @result the number of bytes of data returned in the provided buffer;</span>
+<span class="doccomment">///               -1 if an error was encountered;</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listpidspath</span>(<span class="ident">proc_types</span>: <span class="ident">ProcType</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">c_path</span> <span class="op">=</span> <span class="ident">CString::new</span>(<span class="ident">path</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;CString::new failed&quot;</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
@@ -1061,6 +1189,7 @@
     }
 }
 
+<span class="doccomment">/// pidinfo not implemented on linux - Pull Requests welcome - TODO</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>))]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pidinfo</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PIDInfo</span><span class="op">&gt;</span>(<span class="ident">_pid</span>: <span class="ident">i32</span>, <span class="ident">_arg</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="macro">unimplemented!</span>()
@@ -1097,6 +1226,23 @@
     <span class="ident">helpers::check_errno</span>(<span class="ident">ret</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>)
 }
 
+<span class="doccomment">/// Get the filename associated with a memory region</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use libproc::libproc::proc_pid::regionfilename;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // This checks that it can find the regionfilename of the region at address 0, of the init process with PID 1</span>
+<span class="doccomment">/// use libproc::libproc::proc_pid::am_root;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// if am_root() {</span>
+<span class="doccomment">///     match regionfilename(1, 0) {</span>
+<span class="doccomment">///         Ok(regionfilename) =&gt; println!(&quot;Region Filename (at address = 0) of init process PID = 1 is &#39;{}&#39;&quot;, regionfilename),</span>
+<span class="doccomment">///         Err(message) =&gt; panic!(message)</span>
+<span class="doccomment">///     }</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>))]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">regionfilename</span>(<span class="ident">_pid</span>: <span class="ident">i32</span>, <span class="ident">_address</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="prelude-val">Err</span>(<span class="string">&quot;&#39;regionfilename&#39; not implemented on linux&quot;</span>.<span class="ident">to_owned</span>())
@@ -1111,7 +1257,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// match pidpath(1) {</span>
 <span class="doccomment">///     Ok(path) =&gt; println!(&quot;Path of init process with PID = 1 is &#39;{}&#39;&quot;, path),</span>
-<span class="doccomment">///     Err(message) =&gt; assert!(false, message)</span>
+<span class="doccomment">///     Err(message) =&gt; assert!(false, &quot;{}&quot;, message)</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
@@ -1128,9 +1274,24 @@
     <span class="ident">helpers::check_errno</span>(<span class="ident">ret</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>)
 }
 
+<span class="doccomment">/// Get the path of the executable file being run for a process</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use libproc::libproc::proc_pid::{pidpath, am_root};</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// match pidpath(1) {</span>
+<span class="doccomment">///     Ok(path) =&gt; println!(&quot;Path of init process with PID = 1 is &#39;{}&#39;&quot;, path),</span>
+<span class="doccomment">///     Err(_) if !am_root() =&gt; println!(&quot;pidpath() needs to be run as root&quot;),</span>
+<span class="doccomment">///     Err(message) if am_root() =&gt; assert!(false, &quot;{}&quot;, message),</span>
+<span class="doccomment">///     _ =&gt; assert!(false, &quot;Unknown error&quot;)</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pidpath</span>(<span class="ident">pid</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">exe_path</span> <span class="op">=</span> <span class="ident">CString::new</span>(<span class="macro">format!</span>(<span class="string">&quot;/proc/{}/exe&quot;</span>, <span class="ident">pid</span>)).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">exe_path</span> <span class="op">=</span> <span class="ident">CString::new</span>(<span class="macro">format!</span>(<span class="string">&quot;/proc/{}/exe&quot;</span>, <span class="ident">pid</span>))
+        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;Could not create CString&quot;</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">PATH_MAX</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="number">1</span>);
     <span class="kw">let</span> <span class="ident">buffer_ptr</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span>;
     <span class="kw">let</span> <span class="ident">buffer_size</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">capacity</span>();
@@ -1172,6 +1333,19 @@
     }
 }
 
+<span class="doccomment">/// Get the major and minor version numbers of the native libproc library (Mac OS X)</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use std::io::Write;</span>
+<span class="doccomment">/// use libproc::libproc::proc_pid;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// match proc_pid::libversion() {</span>
+<span class="doccomment">///     Ok((major, minor)) =&gt; println!(&quot;Libversion: {}.{}&quot;, major, minor),</span>
+<span class="doccomment">///     Err(err) =&gt; writeln!(&amp;mut std::io::stderr(), &quot;Error: {}&quot;, err).unwrap()</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>))]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">libversion</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">i32</span>, <span class="ident">i32</span>), <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="prelude-val">Err</span>(<span class="string">&quot;Linux does not use a library, so no library version number&quot;</span>.<span class="ident">to_owned</span>())
@@ -1216,13 +1390,13 @@
 }
 
 <span class="comment">/*
-    A helper function for filding named fields in specific /proc FS files for processes
+    A helper function for finding named fields in specific /proc FS files for processes
     This will be more useful when implementing more linux functions
 */</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">procfile_field</span>(<span class="ident">filename</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">fieldname</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">procfile_field</span>(<span class="ident">filename</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">field_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">const</span> <span class="ident">SEPARATOR</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;:&quot;</span>;
-    <span class="kw">let</span> <span class="ident">lineheader</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">fieldname</span>, <span class="ident">SEPARATOR</span>);
+    <span class="kw">let</span> <span class="ident">line_header</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">field_name</span>, <span class="ident">SEPARATOR</span>);
 
     <span class="comment">// Open the file in read-only mode (ignoring errors).</span>
     <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">File::open</span>(<span class="ident">filename</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Could not open /proc file &#39;{}&#39;&quot;</span>, <span class="ident">filename</span>))<span class="question-mark">?</span>;
@@ -1231,15 +1405,16 @@
     <span class="comment">// Read the file line by line using the lines() iterator from std::io::BufRead.</span>
     <span class="kw">for</span> <span class="ident">line</span> <span class="kw">in</span> <span class="ident">reader</span>.<span class="ident">lines</span>() {
         <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="ident">line</span>.<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;Could not read file contents&quot;</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="ident">line</span>.<span class="ident">starts_with</span>(<span class="kw-2">&amp;</span><span class="ident">lineheader</span>) {
+        <span class="kw">if</span> <span class="ident">line</span>.<span class="ident">starts_with</span>(<span class="kw-2">&amp;</span><span class="ident">line_header</span>) {
             <span class="kw">let</span> <span class="ident">parts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">line</span>.<span class="ident">split</span>(<span class="ident">SEPARATOR</span>).<span class="ident">collect</span>();
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">parts</span>[<span class="number">1</span>].<span class="ident">trim</span>().<span class="ident">to_owned</span>());
         }
     }
 
-    <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not find the field named &#39;{}&#39; in the /proc FS file name &#39;{}&#39;&quot;</span>, <span class="ident">fieldname</span>, <span class="ident">filename</span>))
+    <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not find the field named &#39;{}&#39; in the /proc FS file name &#39;{}&#39;&quot;</span>, <span class="ident">field_name</span>, <span class="ident">filename</span>))
 }
 
+<span class="doccomment">/// Get the name of a Process using it&#39;s Pid</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="ident">pid</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="ident">procfile_field</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;/proc/{}/status&quot;</span>, <span class="ident">pid</span>), <span class="string">&quot;Name&quot;</span>)
@@ -1295,11 +1470,13 @@
     }
 }
 
+<span class="doccomment">/// listpidinfo is not implemented on Linux - Pull Requests welcome - TODO</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>))]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">listpidinfo</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ListPIDInfo</span><span class="op">&gt;</span>(<span class="ident">_pid</span>: <span class="ident">i32</span>, <span class="ident">_max_len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T::Item</span><span class="op">&gt;</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="macro">unimplemented!</span>()
 }
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="doccomment">/// Gets the path of current working directory for the process with the provided pid.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
@@ -1313,12 +1490,24 @@
 <span class="doccomment">///     Err(err) =&gt; writeln!(&amp;mut std::io::stderr(), &quot;Error: {}&quot;, err).unwrap()</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pidcwd</span>(<span class="ident">_pid</span>: <span class="ident">pid_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="prelude-val">Err</span>(<span class="string">&quot;pidcwd is not implemented for macos&quot;</span>.<span class="ident">into</span>())
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
+<span class="doccomment">/// Gets the path of current working directory for the process with the provided pid.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use std::io::Write;</span>
+<span class="doccomment">/// use libproc::libproc::proc_pid::pidcwd;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// match pidcwd(1) {</span>
+<span class="doccomment">///     Ok(cwd) =&gt; println!(&quot;The CWD of the process with pid=1 is &#39;{}&#39;&quot;, cwd.display()),</span>
+<span class="doccomment">///     Err(err) =&gt; writeln!(&amp;mut std::io::stderr(), &quot;Error: {}&quot;, err).unwrap()</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pidcwd</span>(<span class="ident">pid</span>: <span class="ident">pid_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="ident">fs::read_link</span>(<span class="macro">format!</span>(<span class="string">&quot;/proc/{}/cwd&quot;</span>, <span class="ident">pid</span>)).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
         <span class="ident">e</span>.<span class="ident">to_string</span>()
@@ -1362,6 +1551,7 @@
     <span class="kw">unsafe</span> { <span class="ident">libc::getuid</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> }
 }
 
+<span class="doccomment">/// Return true if the calling process is being run by the root user, false otherwise</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">am_root</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="comment">// when this becomes stable in rust libc then we can remove this function or combine for mac and linux</span>
@@ -1426,7 +1616,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">listpids_test</span>() {
-        <span class="kw">let</span> <span class="ident">pids</span> <span class="op">=</span> <span class="ident">listpids</span>(<span class="ident">ProcType::ProcAllPIDS</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">pids</span> <span class="op">=</span> <span class="ident">listpids</span>(<span class="ident">ProcType::ProcAllPIDS</span>).<span class="ident">expect</span>(<span class="string">&quot;Could not list pids&quot;</span>);
         <span class="macro">assert!</span>(<span class="ident">pids</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span>);
     }
 
@@ -1454,7 +1644,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="comment">// This checks that it cannot find the path of the process with pid -1 and returns correct error messaage</span>
+    <span class="comment">// This checks that it cannot find the path of the process with pid -1 and returns correct error message</span>
     <span class="kw">fn</span> <span class="ident">pidpath_test_unknown_pid_test</span>() {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
             <span class="kw">let</span> <span class="ident">error_message</span> <span class="op">=</span> <span class="string">&quot;No such process&quot;</span>;
@@ -1462,7 +1652,7 @@
             <span class="kw">let</span> <span class="ident">error_message</span> <span class="op">=</span> <span class="string">&quot;No such file or directory&quot;</span>;
 
         <span class="kw">match</span> <span class="ident">pidpath</span>(<span class="op">-</span><span class="number">1</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">path</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;It found the path of process Pwith ID = -1 (path = {}), that&#39;s not possible\n&quot;</span>, <span class="ident">path</span>),
+            <span class="prelude-val">Ok</span>(<span class="ident">path</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic!</span>(<span class="string">&quot;It found the path of process with ID = -1 (path = {}), that&#39;s not possible\n&quot;</span>, <span class="ident">path</span>),
             <span class="prelude-val">Err</span>(<span class="ident">message</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert!</span>(<span class="ident">message</span>.<span class="ident">contains</span>(<span class="ident">error_message</span>)),
         }
     }
@@ -1478,13 +1668,15 @@
     <span class="comment">// should check it can be called and returns correct value</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">cwd_self_test</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">env::current_dir</span>().<span class="ident">unwrap</span>(), <span class="ident">cwdself</span>().<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">env::current_dir</span>().<span class="ident">expect</span>(<span class="string">&quot;Could not get current directory&quot;</span>),
+                   <span class="ident">cwdself</span>().<span class="ident">expect</span>(<span class="string">&quot;cwdself() failed&quot;</span>));
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">pidcwd_of_self_test</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">env::current_dir</span>().<span class="ident">unwrap</span>(), <span class="ident">pidcwd</span>(<span class="ident">process::id</span>() <span class="kw">as</span> <span class="ident">i32</span>).<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">env::current_dir</span>().<span class="ident">expect</span>(<span class="string">&quot;Could not get current directory&quot;</span>),
+                   <span class="ident">pidcwd</span>(<span class="ident">process::id</span>() <span class="kw">as</span> <span class="ident">i32</span>).<span class="ident">expect</span>(<span class="string">&quot;pidcwd() failed&quot;</span>));
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>

@@ -10,9 +10,13 @@
 <span id="8"> 8</span>
 <span id="9"> 9</span>
 <span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
 </pre><pre class="rust">
-<span class="doccomment">//! `libproc` is a library for getting information about running processes</span>
-<span class="doccomment">//! for Mac and Linux.</span>
+<span class="attribute">#![<span class="ident">deny</span>(<span class="ident">missing_docs</span>)]</span>
+<span class="attribute">#![<span class="ident">warn</span>(<span class="ident">clippy::unwrap_used</span>)]</span>
+
+<span class="doccomment">//! `libproc` is a library for getting information about running processes on Mac and Linux.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Not all methods are available on both Operating Systems yet, but more will</span>
 <span class="doccomment">//! be made cross-platform over time.</span>

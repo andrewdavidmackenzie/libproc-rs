@@ -43,44 +43,86 @@
 <span id="41">41</span>
 <span id="42">42</span>
 <span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
 </pre><pre class="rust">
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::libproc::proc_pid</span>::{<span class="ident">PIDInfo</span>, <span class="ident">PidInfoFlavor</span>};
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::libproc::bsd_info::BSDInfo</span>;
 
-<span class="comment">// structures from http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h</span>
+<span class="doccomment">/// TaskInfo structure see http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TaskInfo</span> {
-    <span class="kw">pub</span> <span class="ident">pti_virtual_size</span>        : <span class="ident">u64</span>,     <span class="comment">// virtual memory size (bytes)</span>
-    <span class="kw">pub</span> <span class="ident">pti_resident_size</span>       : <span class="ident">u64</span>,     <span class="comment">// resident memory size (bytes)</span>
-    <span class="kw">pub</span> <span class="ident">pti_total_user</span>          : <span class="ident">u64</span>,     <span class="comment">// total time</span>
+    <span class="doccomment">/// virtual memory size (bytes)</span>
+    <span class="kw">pub</span> <span class="ident">pti_virtual_size</span>        : <span class="ident">u64</span>,
+    <span class="doccomment">/// resident memory size (bytes)</span>
+    <span class="kw">pub</span> <span class="ident">pti_resident_size</span>       : <span class="ident">u64</span>,
+    <span class="doccomment">/// total user time</span>
+    <span class="kw">pub</span> <span class="ident">pti_total_user</span>          : <span class="ident">u64</span>,
+    <span class="doccomment">/// total system time</span>
     <span class="kw">pub</span> <span class="ident">pti_total_system</span>        : <span class="ident">u64</span>,
-    <span class="kw">pub</span> <span class="ident">pti_threads_user</span>        : <span class="ident">u64</span>,     <span class="comment">// existing threads only</span>
+    <span class="doccomment">/// existing threads only</span>
+    <span class="kw">pub</span> <span class="ident">pti_threads_user</span>        : <span class="ident">u64</span>,
+    <span class="doccomment">/// number of system threads</span>
     <span class="kw">pub</span> <span class="ident">pti_threads_system</span>      : <span class="ident">u64</span>,
-    <span class="kw">pub</span> <span class="ident">pti_policy</span>              : <span class="ident">i32</span>,      <span class="comment">// default policy for new threads</span>
-    <span class="kw">pub</span> <span class="ident">pti_faults</span>              : <span class="ident">i32</span>,      <span class="comment">// number of page faults</span>
-    <span class="kw">pub</span> <span class="ident">pti_pageins</span>             : <span class="ident">i32</span>,      <span class="comment">// number of actual pageins</span>
-    <span class="kw">pub</span> <span class="ident">pti_cow_faults</span>          : <span class="ident">i32</span>,      <span class="comment">// number of copy-on-write faults</span>
-    <span class="kw">pub</span> <span class="ident">pti_messages_sent</span>       : <span class="ident">i32</span>,      <span class="comment">// number of messages sent</span>
-    <span class="kw">pub</span> <span class="ident">pti_messages_received</span>   : <span class="ident">i32</span>,      <span class="comment">// number of messages received</span>
-    <span class="kw">pub</span> <span class="ident">pti_syscalls_mach</span>       : <span class="ident">i32</span>,      <span class="comment">// number of mach system calls</span>
-    <span class="kw">pub</span> <span class="ident">pti_syscalls_unix</span>       : <span class="ident">i32</span>,      <span class="comment">// number of unix system calls</span>
-    <span class="kw">pub</span> <span class="ident">pti_csw</span>                 : <span class="ident">i32</span>,      <span class="comment">// number of context switches</span>
-    <span class="kw">pub</span> <span class="ident">pti_threadnum</span>           : <span class="ident">i32</span>,      <span class="comment">// number of threads in the task</span>
-    <span class="kw">pub</span> <span class="ident">pti_numrunning</span>          : <span class="ident">i32</span>,      <span class="comment">// number of running threads</span>
-    <span class="kw">pub</span> <span class="ident">pti_priority</span>            : <span class="ident">i32</span>       <span class="comment">// task priority</span>
+    <span class="doccomment">/// default policy for new threads</span>
+    <span class="kw">pub</span> <span class="ident">pti_policy</span>              : <span class="ident">i32</span>,
+    <span class="doccomment">/// number of page faults</span>
+    <span class="kw">pub</span> <span class="ident">pti_faults</span>              : <span class="ident">i32</span>,
+    <span class="doccomment">/// number of actual pageins</span>
+    <span class="kw">pub</span> <span class="ident">pti_pageins</span>             : <span class="ident">i32</span>,
+    <span class="doccomment">/// number of copy-on-write faults</span>
+    <span class="kw">pub</span> <span class="ident">pti_cow_faults</span>          : <span class="ident">i32</span>,
+    <span class="doccomment">/// number of messages sent</span>
+    <span class="kw">pub</span> <span class="ident">pti_messages_sent</span>       : <span class="ident">i32</span>,
+    <span class="doccomment">/// number of messages received</span>
+    <span class="kw">pub</span> <span class="ident">pti_messages_received</span>   : <span class="ident">i32</span>,
+    <span class="doccomment">/// number of mach system calls</span>
+    <span class="kw">pub</span> <span class="ident">pti_syscalls_mach</span>       : <span class="ident">i32</span>,
+    <span class="doccomment">/// number of unix system calls</span>
+    <span class="kw">pub</span> <span class="ident">pti_syscalls_unix</span>       : <span class="ident">i32</span>,
+    <span class="doccomment">/// number of context switches</span>
+    <span class="kw">pub</span> <span class="ident">pti_csw</span>                 : <span class="ident">i32</span>,
+    <span class="doccomment">/// number of threads in the task</span>
+    <span class="kw">pub</span> <span class="ident">pti_threadnum</span>           : <span class="ident">i32</span>,
+    <span class="doccomment">/// number of running threads</span>
+    <span class="kw">pub</span> <span class="ident">pti_numrunning</span>          : <span class="ident">i32</span>,
+    <span class="doccomment">/// task priority</span>
+    <span class="kw">pub</span> <span class="ident">pti_priority</span>            : <span class="ident">i32</span>
 }
 
 <span class="kw">impl</span> <span class="ident">PIDInfo</span> <span class="kw">for</span> <span class="ident">TaskInfo</span> {
     <span class="kw">fn</span> <span class="ident">flavor</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PidInfoFlavor</span> { <span class="ident">PidInfoFlavor::TaskInfo</span> }
 }
 
+<span class="doccomment">/// Struct for info on all Tasks</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TaskAllInfo</span> {
+    <span class="doccomment">/// BSDInfo</span>
     <span class="kw">pub</span> <span class="ident">pbsd</span> : <span class="ident">BSDInfo</span>,
+    <span class="doccomment">/// TaskInfo</span>
     <span class="kw">pub</span> <span class="ident">ptinfo</span> : <span class="ident">TaskInfo</span>
 }
 

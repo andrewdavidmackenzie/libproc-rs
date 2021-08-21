@@ -15,17 +15,27 @@
 <span id="13">13</span>
 <span id="14">14</span>
 <span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
 </pre><pre class="rust">
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span><span class="ident">::libproc::proc_pid</span>::{<span class="ident">PIDInfo</span>, <span class="ident">PidInfoFlavor</span>};
 
+<span class="doccomment">/// Structure for work queue items</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WorkQueueInfo</span> {
-    <span class="kw">pub</span> <span class="ident">pwq_nthreads</span>            : <span class="ident">u32</span>,     <span class="comment">// total number of workqueue threads</span>
-    <span class="kw">pub</span> <span class="ident">pwq_runthreads</span>          : <span class="ident">u32</span>,     <span class="comment">// total number of running workqueue threads</span>
-    <span class="kw">pub</span> <span class="ident">pwq_blockedthreads</span>      : <span class="ident">u32</span>,     <span class="comment">// total number of blocked workqueue threads</span>
-    <span class="kw">pub</span> <span class="ident">reserved</span>                : [<span class="ident">u32</span>;<span class="number">1</span>]  <span class="comment">// reserved for future use</span>
+    <span class="doccomment">/// total number of workqueue threads</span>
+    <span class="kw">pub</span> <span class="ident">pwq_nthreads</span>            : <span class="ident">u32</span>,
+    <span class="doccomment">/// total number of running workqueue threads</span>
+    <span class="kw">pub</span> <span class="ident">pwq_runthreads</span>          : <span class="ident">u32</span>,
+    <span class="doccomment">/// total number of blocked workqueue threads</span>
+    <span class="kw">pub</span> <span class="ident">pwq_blockedthreads</span>      : <span class="ident">u32</span>,
+    <span class="doccomment">/// reserved for future use</span>
+    <span class="kw">pub</span> <span class="ident">reserved</span>                : [<span class="ident">u32</span>;<span class="number">1</span>]
 }
 
 <span class="kw">impl</span> <span class="ident">PIDInfo</span> <span class="kw">for</span> <span class="ident">WorkQueueInfo</span> {

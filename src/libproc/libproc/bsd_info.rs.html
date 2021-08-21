@@ -39,6 +39,29 @@
 <span id="37">37</span>
 <span id="38">38</span>
 <span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
 </pre><pre class="rust">
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
@@ -49,30 +72,53 @@
 <span class="comment">// from http://opensource.apple.com//source/xnu/xnu-1504.7.4/bsd/sys/param.h</span>
 <span class="kw">const</span> <span class="ident">MAXCOMLEN</span>	: <span class="ident">usize</span> <span class="op">=</span> <span class="number">16</span>;
 
+<span class="doccomment">/// Struct for BSDInfo about a process</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BSDInfo</span> {
-    <span class="kw">pub</span> <span class="ident">pbi_flags</span>               : <span class="ident">u32</span>,                 <span class="comment">// 64bit; emulated etc</span>
+    <span class="doccomment">/// 64bit; emulated etc</span>
+    <span class="kw">pub</span> <span class="ident">pbi_flags</span>               : <span class="ident">u32</span>,
+    <span class="doccomment">/// status</span>
     <span class="kw">pub</span> <span class="ident">pbi_status</span>              : <span class="ident">u32</span>,
+    <span class="doccomment">/// x status</span>
     <span class="kw">pub</span> <span class="ident">pbi_xstatus</span>             : <span class="ident">u32</span>,
+    <span class="doccomment">/// PID</span>
     <span class="kw">pub</span> <span class="ident">pbi_pid</span>                 : <span class="ident">u32</span>,
+    <span class="doccomment">/// PPID</span>
     <span class="kw">pub</span> <span class="ident">pbi_ppid</span>                : <span class="ident">u32</span>,
+    <span class="doccomment">/// UID - User ID</span>
     <span class="kw">pub</span> <span class="ident">pbi_uid</span>                 : <span class="ident">uid_t</span>,
+    <span class="doccomment">/// GID - Group ID</span>
     <span class="kw">pub</span> <span class="ident">pbi_gid</span>                 : <span class="ident">gid_t</span>,
+    <span class="doccomment">/// RUID</span>
     <span class="kw">pub</span> <span class="ident">pbi_ruid</span>                : <span class="ident">uid_t</span>,
+    <span class="doccomment">/// RGID</span>
     <span class="kw">pub</span> <span class="ident">pbi_rgid</span>                : <span class="ident">gid_t</span>,
+    <span class="doccomment">/// RGID</span>
     <span class="kw">pub</span> <span class="ident">pbi_svuid</span>               : <span class="ident">uid_t</span>,
+    <span class="doccomment">/// SVUID</span>
     <span class="kw">pub</span> <span class="ident">pbi_svgid</span>               : <span class="ident">gid_t</span>,
-    <span class="kw">pub</span> <span class="ident">rfu_1</span>                   : <span class="ident">u32</span>,                 <span class="comment">// reserved</span>
+    <span class="doccomment">/// reserved for future use</span>
+    <span class="kw">pub</span> <span class="ident">rfu_1</span>                   : <span class="ident">u32</span>,
+    <span class="doccomment">/// Comm</span>
     <span class="kw">pub</span> <span class="ident">pbi_comm</span>                : [<span class="ident">c_char</span>; <span class="ident">MAXCOMLEN</span>],
-    <span class="kw">pub</span> <span class="ident">pbi_name</span>                : [<span class="ident">c_char</span>; <span class="number">2</span> <span class="op">*</span> <span class="ident">MAXCOMLEN</span>],  <span class="comment">// empty if no name is registered</span>
+    <span class="doccomment">/// empty if no name is registered</span>
+    <span class="kw">pub</span> <span class="ident">pbi_name</span>                : [<span class="ident">c_char</span>; <span class="number">2</span> <span class="op">*</span> <span class="ident">MAXCOMLEN</span>],
+    <span class="doccomment">/// nfile - Number of files</span>
     <span class="kw">pub</span> <span class="ident">pbi_nfiles</span>              : <span class="ident">u32</span>,
+    <span class="doccomment">/// PGID</span>
     <span class="kw">pub</span> <span class="ident">pbi_pgid</span>                : <span class="ident">u32</span>,
+    <span class="doccomment">/// PJOBC</span>
     <span class="kw">pub</span> <span class="ident">pbi_pjobc</span>               : <span class="ident">u32</span>,
-    <span class="kw">pub</span> <span class="ident">e_tdev</span>                  : <span class="ident">u32</span>,                 <span class="comment">// controlling tty dev</span>
-    <span class="kw">pub</span> <span class="ident">e_tpgid</span>                 : <span class="ident">u32</span>,                 <span class="comment">// tty process group id</span>
+    <span class="doccomment">/// controlling tty dev</span>
+    <span class="kw">pub</span> <span class="ident">e_tdev</span>                  : <span class="ident">u32</span>,
+    <span class="doccomment">/// tty process group id</span>
+    <span class="kw">pub</span> <span class="ident">e_tpgid</span>                 : <span class="ident">u32</span>,
+    <span class="doccomment">/// Nice</span>
     <span class="kw">pub</span> <span class="ident">pbi_nice</span>                : <span class="ident">u32</span>,
+    <span class="doccomment">/// Start tv sec</span>
     <span class="kw">pub</span> <span class="ident">pbi_start_tvsec</span>         : <span class="ident">u64</span>,
+    <span class="doccomment">/// Start tv micro sec</span>
     <span class="kw">pub</span> <span class="ident">pbi_start_tvusec</span>        : <span class="ident">u64</span>
 }
 

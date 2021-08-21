@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["BSDInfo",""]]});
+initSidebarItems({"struct":[["BSDInfo","Struct for BSDInfo about a process"]]});
