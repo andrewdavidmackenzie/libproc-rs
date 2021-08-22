@@ -376,10 +376,11 @@ pub fn pidrusage(pid : i32) -> Result<RUsageInfoV0, String> {
 #[cfg(test)]
 mod test {
     use super::pidrusage;
+    use crate::libproc::pid_rusage::RUsageInfoV0;
 
     #[test]
     fn pidrusage_test() {
-        let usage = pidrusage(std::process::id() as i32).expect("pidrusage() failed");
+        let usage: RUsageInfoV0 = pidrusage(std::process::id() as i32).expect("pidrusage() failed");
         assert!(usage.ri_resident_size > 0, "Resident size reports 0")
     }
 }
