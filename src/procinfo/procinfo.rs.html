@@ -90,6 +90,12 @@
 <span id="88">88</span>
 <span id="89">89</span>
 <span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
 </pre><pre class="rust">
 <span class="doccomment">//! `procinfo` is a simple program to demonstrate the use of the [`libproc`](../libproc/index.html)</span>
 <span class="doccomment">//! library functions.</span>
@@ -122,6 +128,7 @@
 <span class="kw">use</span> <span class="ident">std::env</span>;
 <span class="kw">use</span> <span class="ident">std::io::Write</span>;
 <span class="kw">use</span> <span class="ident">libproc::libproc::proc_pid</span>;
+<span class="kw">use</span> <span class="ident">libproc::libproc::pid_rusage</span>::{<span class="ident">pidrusage</span>, <span class="ident">RUsageInfoV0</span>};
 
 <span class="kw">mod</span> <span class="ident">c</span> {
     <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
@@ -146,6 +153,11 @@
 
     <span class="kw">match</span> <span class="ident">proc_pid::pidpath</span>(<span class="ident">pid</span>) {
         <span class="prelude-val">Ok</span>(<span class="ident">path</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">println!</span>(<span class="string">&quot;Path: {}&quot;</span>, <span class="ident">path</span>),
+        <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">writeln!</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">std::io::stderr</span>(), <span class="string">&quot;Error: {}&quot;</span>, <span class="ident">err</span>).<span class="ident">unwrap</span>()
+    }
+
+    <span class="kw">match</span> <span class="ident">pidrusage</span>::<span class="op">&lt;</span><span class="ident">RUsageInfoV0</span><span class="op">&gt;</span>(<span class="ident">pid</span>) {
+        <span class="prelude-val">Ok</span>(<span class="ident">resource_usage</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">println!</span>(<span class="string">&quot;Memory Used: {} Bytes&quot;</span>, <span class="ident">resource_usage</span>.<span class="ident">ri_resident_size</span>),
         <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">writeln!</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">std::io::stderr</span>(), <span class="string">&quot;Error: {}&quot;</span>, <span class="ident">err</span>).<span class="ident">unwrap</span>()
     }
 
