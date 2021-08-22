@@ -58,7 +58,7 @@ pub fn procfile_field(filename: &str, field_name: &str) -> Result<String, String
 /// e.g. 220844 kB -->
 pub fn parse_memory_string(line: &str) -> Result<u64, String> {
     let parts: Vec<&str> = line.trim().split(' ').collect();
-    if parts.len() < 1 {
+    if parts.is_empty() {
         return Err(format!("Could not parse Memory String: {}", line))
     }
     let multiplier: u64 = if parts.len() == 2 {
