@@ -14,6 +14,10 @@ use crate::libproc::helpers::{procfile_field, parse_memory_string};
 pub trait PIDRUsage: Default {
     /// Return the `PidRUsageFlavor` for the implementing struct
     fn flavor() -> PidRUsageFlavor;
+    /// Memory used in bytes
+    fn memory_used(&self) -> u64;
+    /// Memory used in bytes
+    fn set_memory_used(&mut self, used: u64);
 }
 
 /// `PidRUsageFlavor` From https://opensource.apple.com/source/xnu/xnu-4903.221.2/bsd/sys/resource.h
@@ -68,6 +72,14 @@ pub struct RUsageInfoV0 {
 
 impl PIDRUsage for RUsageInfoV0 {
     fn flavor() -> PidRUsageFlavor { PidRUsageFlavor::V0 }
+
+    fn memory_used(&self) -> u64 {
+        self.ri_resident_size
+    }
+
+    fn set_memory_used(&mut self, used: u64) {
+        self.ri_resident_size =  used
+    }
 }
 
 /// C struct for Resource Usage Version 1
@@ -112,6 +124,14 @@ pub struct RUsageInfoV1 {
 
 impl PIDRUsage for RUsageInfoV1 {
     fn flavor() -> PidRUsageFlavor { PidRUsageFlavor::V1 }
+
+    fn memory_used(&self) -> u64 {
+        self.ri_resident_size
+    }
+
+    fn set_memory_used(&mut self, used: u64) {
+        self.ri_resident_size =  used
+    }
 }
 
 /// C struct for Resource Usage Version 2
@@ -160,6 +180,14 @@ pub struct RUsageInfoV2 {
 
 impl PIDRUsage for RUsageInfoV2 {
     fn flavor() -> PidRUsageFlavor { PidRUsageFlavor::V2 }
+
+    fn memory_used(&self) -> u64 {
+        self.ri_resident_size
+    }
+
+    fn set_memory_used(&mut self, used: u64) {
+        self.ri_resident_size =  used
+    }
 }
 
 /// C struct for Resource Usage Version 3
@@ -226,6 +254,14 @@ pub struct RUsageInfoV3 {
 
 impl PIDRUsage for RUsageInfoV3 {
     fn flavor() -> PidRUsageFlavor { PidRUsageFlavor::V3 }
+
+    fn memory_used(&self) -> u64 {
+        self.ri_resident_size
+    }
+
+    fn set_memory_used(&mut self, used: u64) {
+        self.ri_resident_size =  used
+    }
 }
 
 /// C struct for Resource Usage Version 4
@@ -308,6 +344,14 @@ pub struct RUsageInfoV4 {
 
 impl PIDRUsage for RUsageInfoV4 {
     fn flavor() -> PidRUsageFlavor { PidRUsageFlavor::V4 }
+
+    fn memory_used(&self) -> u64 {
+        self.ri_resident_size
+    }
+
+    fn set_memory_used(&mut self, used: u64) {
+        self.ri_resident_size =  used
+    }
 }
 
 #[cfg(target_os = "macos")]
@@ -354,21 +398,21 @@ pub fn pidrusage<T: PIDRUsage>(pid : i32) -> Result<T, String> {
 ///
 /// ```
 /// use std::io::Write;
-/// use libproc::libproc::pid_rusage::{pidrusage, RUsageInfoV2};
+/// use libproc::libproc::pid_rusage::{pidrusage, RUsageInfoV2, RUsageInfoV0, PIDRUsage};
 ///
 /// fn pidrusage_test() {
 ///     use std::process;
 ///     let pid = process::id() as i32;
 ///
-///     if let Ok(res) = pidrusage(pid) {
-///         println!("VmSize (resident_size): {}", res.ri_resident_size );
+///     if let Ok(res) = pidrusage::<RUsageInfoV0>(pid) {
+///         println!("VmSize (resident_size): {}", res.memory_used() );
 ///     }
 /// }
 /// ```
-pub fn pidrusage(pid : i32) -> Result<RUsageInfoV0, String> {
-    let mut pidrusage = RUsageInfoV0::default();
-    let vmsize = procfile_field(&format!("/proc/{}/status", pid), "VmSize")?;
-    pidrusage.ri_resident_size = parse_memory_string(&vmsize)?;
+pub fn pidrusage<T: PIDRUsage>(pid : i32) -> Result<T, String> {
+    let mut pidrusage = T::default();
+    let vm_size = procfile_field(&format!("/proc/{}/status", pid), "VmSize")?;
+    pidrusage.set_memory_used(parse_memory_string(&vm_size)?);
 
     Ok(pidrusage)
 }

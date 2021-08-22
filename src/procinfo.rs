@@ -29,6 +29,7 @@ extern crate libc;
 use std::env;
 use std::io::Write;
 use libproc::libproc::proc_pid;
+use libproc::libproc::pid_rusage::{pidrusage, RUsageInfoV0};
 
 mod c {
     extern crate libc;
@@ -53,6 +54,11 @@ fn procinfo(pid: i32) {
 
     match proc_pid::pidpath(pid) {
         Ok(path) => println!("Path: {}", path),
+        Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+    }
+
+    match pidrusage::<RUsageInfoV0>(pid) {
+        Ok(resource_usage) => println!("Memory Used: {} Bytes", resource_usage.ri_resident_size),
         Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
     }
 
