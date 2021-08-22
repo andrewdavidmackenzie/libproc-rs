@@ -74,6 +74,9 @@ pub fn kmsgbuf() -> Result<String, String>
 - `procinfo` that takes a PID as an optional argument (uses it's own pid if none supplied) and returns information about the process on stdout
 - `dmesg` is a version of dmesg implemented in rust that uses libproc-rs.
 
+# Rust Versions
+The Github Actions CI matrix tests for rust `stable`, `beta` and `nightly` on all platforms
+
 # Platforms
 Mac OS X (10.5 and above) and Linux.
 
@@ -105,6 +108,10 @@ between using `cargo test` and `sudo cargo test`. To fix that run `sudo cargo cl
 
 In order to have tests pass when run as `root` or not, some tests need to check if they are `root` at run-time 
 (using our own `am_root()` function is handy) and avoid failing if *not* run as `root`. 
+
+# CI Testing
+Continuous Integration testing has been moved from travis-ci to GitHub Actions. For details see the 
+[rust.yml](`.github/workflows/rust.yml`) GitHub Actions workflow
 
 # Input Requested
 * Suggestions for API, module re-org and cross-platform abstractions are welcome.
