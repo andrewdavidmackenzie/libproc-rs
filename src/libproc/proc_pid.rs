@@ -6,10 +6,6 @@ use std::mem;
 use std::ffi::CString;
 #[cfg(target_os = "linux")]
 use std::fs;
-#[cfg(target_os = "linux")]
-use std::fs::File;
-#[cfg(target_os = "linux")]
-use std::io::{BufRead, BufReader};
 use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use std::ptr;
@@ -521,35 +517,11 @@ pub fn name(pid: i32) -> Result<String, String> {
     }
 }
 
-/*
-    A helper function for finding named fields in specific /proc FS files for processes
-    This will be more useful when implementing more linux functions
-*/
-#[cfg(target_os = "linux")]
-fn procfile_field(filename: &str, field_name: &str) -> Result<String, String> {
-    const SEPARATOR: &str = ":";
-    let line_header = format!("{}{}", field_name, SEPARATOR);
-
-    // Open the file in read-only mode (ignoring errors).
-    let file = File::open(filename).map_err(|_| format!("Could not open /proc file '{}'", filename))?;
-    let reader = BufReader::new(file);
-
-    // Read the file line by line using the lines() iterator from std::io::BufRead.
-    for line in reader.lines() {
-        let line = line.map_err(|_| "Could not read file contents")?;
-        if line.starts_with(&line_header) {
-            let parts: Vec<&str> = line.split(SEPARATOR).collect();
-            return Ok(parts[1].trim().to_owned());
-        }
-    }
-
-    Err(format!("Could not find the field named '{}' in the /proc FS file name '{}'", field_name, filename))
-}
 
 /// Get the name of a Process using it's Pid
 #[cfg(target_os = "linux")]
 pub fn name(pid: i32) -> Result<String, String> {
-    procfile_field(&format!("/proc/{}/status", pid), "Name")
+    helpers::procfile_field(&format!("/proc/{}/status", pid), "Name")
 }
 
 /// Get information on all running processes.
@@ -708,9 +680,11 @@ mod test {
     use super::{libversion, listpidinfo, ListThreads, pidinfo};
     use super::{name, cwdself, listpids, pidpath};
     #[cfg(target_os = "linux")]
-    use super::{pidcwd, procfile_field};
+    use super::pidcwd;
     use crate::libproc::proc_pid::ProcType;
     use super::am_root;
+    #[cfg(target_os = "linux")]
+    use crate::libproc::helpers;
 
     #[cfg(target_os = "macos")]
     #[test]
@@ -824,7 +798,7 @@ mod test {
     #[cfg(target_os = "linux")]
     fn procfile_field_test() {
         if am_root() {
-            assert!(procfile_field("/proc/1/status", "invalid").is_err());
+            assert!(helpers::procfile_field("/proc/1/status", "invalid").is_err());
         }
     }
 
