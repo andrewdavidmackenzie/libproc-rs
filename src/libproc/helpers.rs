@@ -82,31 +82,35 @@ pub fn parse_memory_string(line: &str) -> Result<u64, String> {
 mod test {
     use crate::errno::{set_errno, Errno};
     use super::check_errno;
-    use crate::libproc::helpers::parse_memory_string;
 
-    #[test]
-    fn test_valid_memory_string() {
-        assert_eq!(parse_memory_string("220844 kB"), Ok(226144256));
-    }
+    #[cfg(target_os = "linux")]
+    mod linux {
+        use crate::libproc::helpers::parse_memory_string;
 
-    #[test]
-    fn test_valid_memory_string_spaces() {
-        assert_eq!(parse_memory_string("  220844 kB  "), Ok(226144256));
-    }
+        #[test]
+        fn test_valid_memory_string() {
+            assert_eq!(parse_memory_string("220844 kB"), Ok(226144256));
+        }
 
-    #[test]
-    fn test_invalid_memory_string_units() {
-        assert!(parse_memory_string("  220844 THz  ").is_err());
-    }
+        #[test]
+        fn test_valid_memory_string_spaces() {
+            assert_eq!(parse_memory_string("  220844 kB  "), Ok(226144256));
+        }
 
-    #[test]
-    fn test_invalid_memory_string() {
-        assert!(parse_memory_string("    ").is_err());
-    }
+        #[test]
+        fn test_invalid_memory_string_units() {
+            assert!(parse_memory_string("  220844 THz  ").is_err());
+        }
 
-    #[test]
-    fn test_invalid_memory_string_empty() {
-        assert!(parse_memory_string("gobble dee gook").is_err())
+        #[test]
+        fn test_invalid_memory_string() {
+            assert!(parse_memory_string("    ").is_err());
+        }
+
+        #[test]
+        fn test_invalid_memory_string_empty() {
+            assert!(parse_memory_string("gobble dee gook").is_err())
+        }
     }
 
     #[test]

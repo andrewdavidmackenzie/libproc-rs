@@ -5,6 +5,8 @@ use crate::libproc::helpers;
 
 #[cfg(target_os = "macos")]
 use self::libc::{c_void, c_int};
+
+#[cfg(target_os = "linux")]
 use crate::libproc::helpers::{procfile_field, parse_memory_string};
 
 /// The `PIDRUsage` trait is needed for polymorphism on pidrusage types, also abstracting flavor in order to provide
