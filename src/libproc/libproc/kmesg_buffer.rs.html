@@ -160,7 +160,7 @@
 <span class="doccomment">/// Entries are in the format:</span>
 <span class="doccomment">/// faclev,seqnum,timestamp[optional, ...];message\n</span>
 <span class="doccomment">///  TAGNAME=value (0 or more Tags)</span>
-<span class="comment">// See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c// See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c</span>
+<span class="doccomment">/// See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c// See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">kmsgbuf</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">message_buffer</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">MAX_MSG_BSIZE</span>);
@@ -177,7 +177,7 @@
     <span class="kw">if</span> <span class="op">!</span><span class="ident">message_buffer</span>.<span class="ident">is_empty</span>() {
         <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">str::from_utf8</span>(<span class="kw-2">&amp;</span><span class="ident">message_buffer</span>)
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;Could not convert kernel message buffer from utf8&quot;</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>
-            .<span class="ident">parse</span>().<span class="ident">unwrap</span>();
+            .<span class="ident">parse</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;Could not parse kernel message&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="ident">msg</span>)
     } <span class="kw">else</span> {
