@@ -17,17 +17,27 @@ extern {
     fn proc_pidfdinfo(pid: c_int, fd: c_int, flavor: c_int, buffer: *mut c_void, buffersize: c_int) -> c_int;
 }
 
+/// Flavor of Pid FileDescriptor info for different types of File Descriptors
 pub enum PIDFDInfoFlavor {
+    /// VNode Info
     VNodeInfo = 1,
+    /// VNode Path Info
     VNodePathInfo = 2,
+    /// Socket info
     SocketInfo = 3,
+    /// PSEM Info
     PSEMInfo = 4,
+    /// PSHM Info
     PSHMInfo = 5,
+    /// Pipe Info
     PipeInfo = 6,
+    /// KQueue Info
     KQueueInfo = 7,
+    /// Apple Talk Info
     ATalkInfo = 8,
 }
 
+/// Struct for Listing File Descriptors
 pub struct ListFDs;
 
 impl ListPIDInfo for ListFDs {
@@ -35,12 +45,16 @@ impl ListPIDInfo for ListFDs {
     fn flavor() -> PidInfoFlavor { PidInfoFlavor::ListFDs }
 }
 
+/// Struct to hold info about a Processes FileDescriptor Info
 #[repr(C)]
 pub struct ProcFDInfo {
+    /// File Descriptor
     pub proc_fd: i32,
+    /// File Descriptor type
     pub proc_fdtype: u32,
 }
 
+/// Enum for different File Descriptor types
 #[derive(Copy, Clone, Debug)]
 pub enum ProcFDType {
     /// AppleTalk
@@ -79,9 +93,10 @@ impl From<u32> for ProcFDType {
     }
 }
 
-// This trait is needed for polymorphism on pidfdinfo types, also abstracting flavor in order to provide
-// type-guaranteed flavor correctness
+/// The `PIDFDInfo` trait is needed for polymorphism on pidfdinfo types, also abstracting flavor in order to provide
+/// type-guaranteed flavor correctness
 pub trait PIDFDInfo: Default {
+    /// Return the Pid File Descriptor Info flavor of the implementing struct
     fn flavor() -> PIDFDInfoFlavor;
 }
 
@@ -183,11 +198,11 @@ mod test {
 
         let _listener = TcpListener::bind("127.0.0.1:65535");
 
-        let info = pidinfo::<BSDInfo>(pid, 0).unwrap();
-        let fds = listpidinfo::<ListFDs>(pid, info.pbi_nfiles as usize).unwrap();
+        let info = pidinfo::<BSDInfo>(pid, 0).expect("pidinfo() failed");
+        let fds = listpidinfo::<ListFDs>(pid, info.pbi_nfiles as usize).expect("listpidinfo() failed");
         for fd in fds {
             if let ProcFDType::Socket = fd.proc_fdtype.into() {
-                let socket = pidfdinfo::<SocketFDInfo>(pid, fd.proc_fd).unwrap();
+                let socket = pidfdinfo::<SocketFDInfo>(pid, fd.proc_fd).expect("pidfdinfo() failed");
                 if let SocketInfoKind::Tcp = socket.psi.soi_kind.into() {
                     unsafe {
                         let info = socket.psi.soi_proto.pri_tcp;

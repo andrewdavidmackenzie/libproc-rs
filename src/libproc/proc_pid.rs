@@ -39,12 +39,12 @@ use std::ffi::CString;
 /// buffersize must be less than PROC_PIDPATHINFO_MAXSIZE
 ///
 /// See http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h
-/// #define PROC_PIDPATHINFO_SIZE		(MAXPATHLEN)
-/// #define PROC_PIDPATHINFO_MAXSIZE	(4 * MAXPATHLEN)
+/// #define PROC_PIDPATHINFO_SIZE (MAXPATHLEN)
+/// #define PROC_PIDPATHINFO_MAXSIZE (4 * MAXPATHLEN)
 /// in http://opensource.apple.com//source/xnu/xnu-1504.7.4/bsd/sys/param.h
-/// #define	MAXPATHLEN	PATH_MAX
+/// #define MAXPATHLEN PATH_MAX
 /// in https://opensource.apple.com/source/xnu/xnu-792.25.20/bsd/sys/syslimits.h
-/// #define	PATH_MAX		 1024
+/// #define PATH_MAX 1024
 #[cfg(target_os = "macos")]
 const MAXPATHLEN: usize = 1024;
 #[cfg(target_os = "macos")]
@@ -248,20 +248,6 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
 
 /// Search through the current processes looking for open file references which match
 /// a specified path or volume.
-///
-///       @param type types of processes to be searched (see proc_listpids)
-///       @param typeinfo adjunct information for type
-///       @param path file or volume path
-///       @param pathflags flags to control which files should be considered
-///               during the process search.
-///       @param buffer a C array of int-sized values to be filled with
-///               process identifiers that hold an open file reference
-///               matching the specified path or volume.  Pass NULL to
-///               obtain the minimum buffer size needed to hold the
-///               currently active processes.
-///       @param buffersize the size (in bytes) of the provided buffer.
-///       @result the number of bytes of data returned in the provided buffer;
-///               -1 if an error was encountered;
 #[cfg(target_os = "macos")]
 pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String> {
     let c_path = CString::new(path).map_err(|_| "CString::new failed".to_string())?;
@@ -757,7 +743,7 @@ mod test {
     #[test]
     #[cfg(target_os = "macos")]
     fn libversion_test() {
-        libversion().unwrap();
+        libversion().expect("libversion() failed");
     }
 
     #[test]
@@ -807,7 +793,7 @@ mod test {
     #[cfg(target_os = "macos")]
     // This checks that it cannot find the path of the process with pid 1
     fn pidpath_test() {
-        assert_eq!("/sbin/launchd", pidpath(1).unwrap());
+        assert_eq!("/sbin/launchd", pidpath(1).expect("pidpath() failed"));
     }
 
     // Pretty useless test as it uses the exact same code as the function - but I guess we
@@ -845,7 +831,8 @@ mod test {
     #[test]
     #[cfg(target_os = "macos")]
     fn listpidspath_test() {
-        let pids = super::listpidspath(ProcType::ProcAllPIDS, "/").unwrap();
+        let pids = super::listpidspath(ProcType::ProcAllPIDS, "/")
+            .expect("listpidspath() failed");
         assert!(pids.len() > 1);
     }
 }
