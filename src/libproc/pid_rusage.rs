@@ -5,6 +5,7 @@ use crate::libproc::helpers;
 
 #[cfg(target_os = "macos")]
 use self::libc::{c_void, c_int};
+use crate::libproc::helpers::{procfile_field, parse_memory_string};
 
 /// The `PIDRUsage` trait is needed for polymorphism on pidrusage types, also abstracting flavor in order to provide
 /// type-guaranteed flavor correctness
@@ -33,65 +34,6 @@ pub enum PidRUsageFlavor {
 #[link(name = "proc", kind = "dylib")]
 extern {
     fn proc_pid_rusage(pid: c_int, flavor: c_int, buffer: *mut c_void) -> c_int;
-}
-
-/// Returns the information about resources of the process that match pid passed in.
-///
-/// # Examples
-///
-/// ```
-/// use std::io::Write;
-/// use libproc::libproc::pid_rusage::{pidrusage, RUsageInfoV2};
-///
-/// fn pidrusage_test() {
-///     use std::process;
-///     let pid = process::id() as i32;
-///
-///     if let Ok(res) = pidrusage::<RUsageInfoV2>(pid) {
-///         println!("UUID: {:?}, Disk Read: {}, Disk Write: {}", res.ri_uuid, res.ri_diskio_bytesread, res.ri_diskio_byteswritten);
-///     }
-/// }
-/// ```
-#[cfg(target_os = "macos")]
-#[cfg(feature = "macosx_10_9")]
-pub fn pidrusage<T: PIDRUsage>(pid : i32) -> Result<T, String> {
-    let flavor = T::flavor() as i32;
-    let mut pidrusage = T::default();
-    let buffer_ptr = &mut pidrusage as *mut _ as *mut c_void;
-    let ret: i32;
-
-    unsafe {
-        ret = proc_pid_rusage(pid, flavor, buffer_ptr);
-    };
-
-    if ret < 0 {
-        Err(helpers::get_errno_with_message(ret))
-    } else {
-        Ok(pidrusage)
-    }
-}
-
-/// Returns the information about resources of the process that match pid passed in.
-///
-/// # Examples
-///
-/// ```
-/// use std::io::Write;
-/// use libproc::libproc::pid_rusage::{pidrusage, RUsageInfoV2};
-///
-/// fn pidrusage_test() {
-///     use std::process;
-///     let pid = process::id() as i32;
-///
-///     if let Ok(res) = pidrusage::<RUsageInfoV2>(pid) {
-///         println!("UUID: {:?}, Disk Read: {}, Disk Write: {}", res.ri_uuid, res.ri_diskio_bytesread, res.ri_diskio_byteswritten);
-///     }
-/// }
-/// ```
-#[cfg(not(target_os = "macos"))]
-pub fn pidrusage<T: PIDRUsage>(_pid : i32) -> Result<T, String> {
-    let pidrusage = T::default();
-    Ok(pidrusage)
 }
 
 /// C struct for Resource Usage Version 0
@@ -366,16 +308,76 @@ impl PIDRUsage for RUsageInfoV4 {
     fn flavor() -> PidRUsageFlavor { PidRUsageFlavor::V4 }
 }
 
+#[cfg(target_os = "macos")]
+#[cfg(feature = "macosx_10_9")]
+/// Returns the information about resources of the process that match pid passed in.
+///
+/// # Examples
+///
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::pid_rusage::{pidrusage, RUsageInfoV2};
+///
+/// fn pidrusage_test() {
+///     use std::process;
+///     let pid = process::id() as i32;
+///
+/// #[cfg(target_os = "macos")]
+///     if let Ok(res) = pidrusage::<RUsageInfoV2>(pid) {
+///         println!("UUID: {:?}, Disk Read: {}, Disk Write: {}", res.ri_uuid, res.ri_diskio_bytesread, res.ri_diskio_byteswritten);
+///     }
+/// }
+/// ```
+pub fn pidrusage<T: PIDRUsage>(pid : i32) -> Result<T, String> {
+    let flavor = T::flavor() as i32;
+    let mut pidrusage = T::default();
+    let buffer_ptr = &mut pidrusage as *mut _ as *mut c_void;
+    let ret: i32;
+
+    unsafe {
+        ret = proc_pid_rusage(pid, flavor, buffer_ptr);
+    };
+
+    if ret < 0 {
+        Err(helpers::get_errno_with_message(ret))
+    } else {
+        Ok(pidrusage)
+    }
+}
+
+#[cfg(target_os = "linux")]
+/// Returns the information about resources of the process that match pid passed in.
+///
+/// # Examples
+///
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::pid_rusage::{pidrusage, RUsageInfoV2};
+///
+/// fn pidrusage_test() {
+///     use std::process;
+///     let pid = process::id() as i32;
+///
+///     if let Ok(res) = pidrusage(pid) {
+///         println!("VmSize (resident_size): {}", res.ri_resident_size );
+///     }
+/// }
+/// ```
+pub fn pidrusage(pid : i32) -> Result<RUsageInfoV0, String> {
+    let mut pidrusage = RUsageInfoV0::default();
+    let vmsize = procfile_field(&format!("/proc/{}/status", pid), "VmSize")?;
+    pidrusage.ri_resident_size = parse_memory_string(&vmsize)?;
+
+    Ok(pidrusage)
+}
+
 #[cfg(test)]
 mod test {
     use super::pidrusage;
-    use super::RUsageInfoV2;
 
     #[test]
     fn pidrusage_test() {
-        use std::process;
-        let pid = process::id() as i32;
-
-        let _ = pidrusage::<RUsageInfoV2>(pid).expect("pidrusage() failed");
+        let usage = pidrusage(std::process::id() as i32).expect("pidrusage() failed");
+        assert!(usage.ri_resident_size > 0, "Resident size reports 0")
     }
 }
