@@ -38,6 +38,9 @@ impl PIDInfo for ThreadInfo {
     fn flavor() -> PidInfoFlavor { PidInfoFlavor::ThreadInfo }
 }
 
+// Disable clippy warning as it incorrectly states it can derive this, but it cannot derive
+// Default for the `pub pth_name : [c_char; MAXTHREADNAMESIZE]` field
+#[allow(clippy::derivable_impls)]
 impl Default for ThreadInfo {
     fn default() -> ThreadInfo {
         ThreadInfo {
