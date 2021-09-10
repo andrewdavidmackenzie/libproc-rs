@@ -202,9 +202,6 @@ pub union SocketInfoProto {
     pub pri_kern_ctl: KernCtlInfo,
 }
 
-// Disable clippy warning as it incorrectly states it can derive this, but it cannot derive
-// it for unions
-#[allow(clippy::derivable_impls)]
 impl Default for SocketInfoProto {
     fn default() -> SocketInfoProto {
         SocketInfoProto {
@@ -294,9 +291,6 @@ pub union InSIAddr {
     pub ina_6: in6_addr,
 }
 
-// Disable clippy warning as it incorrectly states it can derive this, but it cannot derive
-// it for unions
-#[allow(clippy::derivable_impls)]
 impl Default for InSIAddr {
     fn default() -> InSIAddr {
         InSIAddr {
@@ -402,9 +396,6 @@ pub union UnSIAddr {
     pub ua_dummy: [c_char; SOCK_MAXADDRLEN as usize],
 }
 
-// Disable clippy warning as it incorrectly states it can derive this, but it cannot derive
-// it for unions
-#[allow(clippy::derivable_impls)]
 impl Default for UnSIAddr {
     fn default() -> UnSIAddr {
         UnSIAddr {
@@ -459,9 +450,6 @@ pub struct KernCtlInfo {
     pub kcsi_name: [c_char; MAX_KCTL_NAME],
 }
 
-// Disable clippy warning as it incorrectly states it can derive this, but it cannot derive
-// Default for the `kcsi_name: [0; MAX_KCTL_NAME],` field
-#[allow(clippy::derivable_impls)]
 impl Default for KernCtlInfo {
     fn default() -> KernCtlInfo {
         KernCtlInfo {
