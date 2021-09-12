@@ -16,10 +16,12 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest]
         rust: [stable, beta]
         experimental: [false]
+        name: ["stable and beta"]
         include:
           - rust: nightly
             experimental: true
