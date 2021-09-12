@@ -49,10 +49,11 @@ jobs:
         echo LLVM_PROFILE_FILE="flow-%p-%m.profraw" >> "$GITHUB_ENV"
 
     - name: Run Tests
+      if: matrix.os != 'macos-11'
       run:  env "PATH=$PATH" cargo test
 
     - name: Run Tests as Root on Mac
-      if: matrix.os == 'macos-latest'
+      if: matrix.os == 'macos-11'
       run:  sudo env "PATH=$PATH" cargo test
 
     - name: UploadCoverage
