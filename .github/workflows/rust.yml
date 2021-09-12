@@ -21,6 +21,10 @@ jobs:
         os: [ ubuntu-latest, macos-11 ]
         rust: [stable, beta]
         experimental: [false]
+        include:
+          - rust: nightly
+          - os: [ ubuntu-latest, macos-11 ]
+            experimental: true
 
     continue-on-error: ${{ matrix.experimental }}
 
