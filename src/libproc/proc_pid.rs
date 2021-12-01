@@ -222,7 +222,7 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
         ProcType::ProcAllPIDS => {
             let mut pids = Vec::<u32>::new();
 
-            let proc_dir = fs::read_dir("/proc").map_err(|e| format!("Could not read '/proc': {}", e.to_string()))?;
+            let proc_dir = fs::read_dir("/proc").map_err(|e| format!("Could not read '/proc': {}", e))?;
 
             for entry in proc_dir {
                 let path = entry.map_err(|_| "Couldn't get /proc/ filename")?.path();
