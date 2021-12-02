@@ -167,7 +167,7 @@
 
 <span class="doccomment">/// Helper function to get errno and return a String with the passed in return_code, the error</span>
 <span class="doccomment">/// number and a possible message</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_errno_with_message</span>(<span class="ident">return_code</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_errno_with_message</span>(<span class="ident">return_code</span>: <span class="ident">i32</span>) -&gt; <span class="ident">String</span> {
     <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">errno</span>();
     <span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="ident">e</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">i32</span>;
     <span class="macro">format!</span>(<span class="string">&quot;return code = {}, errno = {}, message = &#39;{}&#39;&quot;</span>, <span class="ident">return_code</span>, <span class="ident">code</span>, <span class="ident">e</span>)
@@ -176,7 +176,7 @@
 <span class="doccomment">/// Helper function that depending on the `ret` value:</span>
 <span class="doccomment">/// - is negative or 0, then form an error message from the `errno` value</span>
 <span class="doccomment">/// - is positive, take `ret` as the length of the success message in `buf` in bytes</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_errno</span>(<span class="ident">ret</span>: <span class="ident">i32</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_errno</span>(<span class="ident">ret</span>: <span class="ident">i32</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">ret</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0</span> {
         <span class="prelude-val">Err</span>(<span class="ident">get_errno_with_message</span>(<span class="ident">ret</span>))
     } <span class="kw">else</span> {
@@ -185,8 +185,8 @@
         }
 
         <span class="kw">match</span> <span class="ident">String::from_utf8</span>(<span class="ident">buf</span>.<span class="ident">to_vec</span>()) {
-            <span class="prelude-val">Ok</span>(<span class="ident">return_value</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">return_value</span>),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid UTF-8 sequence: {}&quot;</span>, <span class="ident">e</span>))
+            <span class="prelude-val">Ok</span>(<span class="ident">return_value</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">return_value</span>),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid UTF-8 sequence: {}&quot;</span>, <span class="ident">e</span>))
         }
     }
 }
@@ -194,7 +194,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="doccomment">/// A helper function for finding named fields in specific /proc FS files for processes</span>
 <span class="doccomment">/// This will be more useful when implementing more linux functions</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">procfile_field</span>(<span class="ident">filename</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">field_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">procfile_field</span>(<span class="ident">filename</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">field_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">const</span> <span class="ident">SEPARATOR</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;:&quot;</span>;
     <span class="kw">let</span> <span class="ident">line_header</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">field_name</span>, <span class="ident">SEPARATOR</span>);
 
@@ -217,17 +217,17 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="doccomment">/// Parse a memory amount string into integer number of bytes</span>
 <span class="doccomment">/// e.g. 220844 kB --&gt;</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_memory_string</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_memory_string</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">parts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">line</span>.<span class="ident">trim</span>().<span class="ident">split</span>(<span class="string">&#39; &#39;</span>).<span class="ident">collect</span>();
     <span class="kw">if</span> <span class="ident">parts</span>.<span class="ident">is_empty</span>() {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not parse Memory String: {}&quot;</span>, <span class="ident">line</span>))
     }
-    <span class="kw">let</span> <span class="ident">multiplier</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">parts</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">2</span> {
+    <span class="kw">let</span> <span class="ident">multiplier</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">parts</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">2</span> {
         <span class="kw">match</span> <span class="ident">parts</span>[<span class="number">1</span>] {
-            <span class="string">&quot;MB&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">1024</span> <span class="op">*</span> <span class="number">1024</span>,
-            <span class="string">&quot;kB&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">1024</span>,
-            <span class="string">&quot;B&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">1</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not parse units of Memory String: {}&quot;</span>, <span class="ident">line</span>))
+            <span class="string">&quot;MB&quot;</span> =&gt; <span class="number">1024</span> <span class="op">*</span> <span class="number">1024</span>,
+            <span class="string">&quot;kB&quot;</span> =&gt; <span class="number">1024</span>,
+            <span class="string">&quot;B&quot;</span> =&gt; <span class="number">1</span>,
+            <span class="kw">_</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not parse units of Memory String: {}&quot;</span>, <span class="ident">line</span>))
         }
     } <span class="kw">else</span> {
         <span class="number">1</span>

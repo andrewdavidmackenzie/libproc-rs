@@ -32,8 +32,8 @@
 
 <span class="kw">fn</span> <span class="ident">main</span>() {
     <span class="kw">match</span> <span class="ident">kmesg_buffer::kmsgbuf</span>() {
-        <span class="prelude-val">Ok</span>(<span class="ident">message</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">message</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">eprintln!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>)
+        <span class="prelude-val">Ok</span>(<span class="ident">message</span>) =&gt; <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">message</span>),
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="macro">eprintln!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">e</span>)
     }
 }</code></pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="dmesg" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>

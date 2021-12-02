@@ -443,9 +443,9 @@
 <span class="doccomment">/// type-guaranteed flavor correctness</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">PIDRUsage</span>: <span class="ident">Default</span> {
     <span class="doccomment">/// Return the `PidRUsageFlavor` for the implementing struct</span>
-    <span class="kw">fn</span> <span class="ident">flavor</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PidRUsageFlavor</span>;
+    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidRUsageFlavor</span>;
     <span class="doccomment">/// Memory used in bytes</span>
-    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span>;
+    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span>;
     <span class="doccomment">/// Memory used in bytes</span>
     <span class="kw">fn</span> <span class="ident">set_memory_used</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">used</span>: <span class="ident">u64</span>);
 }
@@ -469,7 +469,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="attribute">#[<span class="ident">link</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;proc&quot;</span>, <span class="ident">kind</span> <span class="op">=</span> <span class="string">&quot;dylib&quot;</span>)]</span>
 <span class="kw">extern</span> {
-    <span class="kw">fn</span> <span class="ident">proc_pid_rusage</span>(<span class="ident">pid</span>: <span class="ident">c_int</span>, <span class="ident">flavor</span>: <span class="ident">c_int</span>, <span class="ident">buffer</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
+    <span class="kw">fn</span> <span class="ident">proc_pid_rusage</span>(<span class="ident">pid</span>: <span class="ident">c_int</span>, <span class="ident">flavor</span>: <span class="ident">c_int</span>, <span class="ident">buffer</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>) -&gt; <span class="ident">c_int</span>;
 }
 
 <span class="doccomment">/// C struct for Resource Usage Version 0</span>
@@ -501,9 +501,9 @@
 }
 
 <span class="kw">impl</span> <span class="ident">PIDRUsage</span> <span class="kw">for</span> <span class="ident">RUsageInfoV0</span> {
-    <span class="kw">fn</span> <span class="ident">flavor</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V0</span> }
+    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V0</span> }
 
-    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">ri_resident_size</span>
     }
 
@@ -553,9 +553,9 @@
 }
 
 <span class="kw">impl</span> <span class="ident">PIDRUsage</span> <span class="kw">for</span> <span class="ident">RUsageInfoV1</span> {
-    <span class="kw">fn</span> <span class="ident">flavor</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V1</span> }
+    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V1</span> }
 
-    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">ri_resident_size</span>
     }
 
@@ -609,9 +609,9 @@
 }
 
 <span class="kw">impl</span> <span class="ident">PIDRUsage</span> <span class="kw">for</span> <span class="ident">RUsageInfoV2</span> {
-    <span class="kw">fn</span> <span class="ident">flavor</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V2</span> }
+    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V2</span> }
 
-    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">ri_resident_size</span>
     }
 
@@ -683,9 +683,9 @@
 }
 
 <span class="kw">impl</span> <span class="ident">PIDRUsage</span> <span class="kw">for</span> <span class="ident">RUsageInfoV3</span> {
-    <span class="kw">fn</span> <span class="ident">flavor</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V3</span> }
+    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V3</span> }
 
-    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">ri_resident_size</span>
     }
 
@@ -773,9 +773,9 @@
 }
 
 <span class="kw">impl</span> <span class="ident">PIDRUsage</span> <span class="kw">for</span> <span class="ident">RUsageInfoV4</span> {
-    <span class="kw">fn</span> <span class="ident">flavor</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V4</span> }
+    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V4</span> }
 
-    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">ri_resident_size</span>
     }
 
@@ -804,7 +804,7 @@
 <span class="doccomment">///     }</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pidrusage</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PIDRUsage</span><span class="op">&gt;</span>(<span class="ident">pid</span> : <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pidrusage</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PIDRUsage</span><span class="op">&gt;</span>(<span class="ident">pid</span> : <span class="ident">i32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">flavor</span> <span class="op">=</span> <span class="ident">T::flavor</span>() <span class="kw">as</span> <span class="ident">i32</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pidrusage</span> <span class="op">=</span> <span class="ident">T::default</span>();
     <span class="kw">let</span> <span class="ident">buffer_ptr</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">pidrusage</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>;
@@ -839,7 +839,7 @@
 <span class="doccomment">///     }</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pidrusage</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PIDRUsage</span><span class="op">&gt;</span>(<span class="ident">pid</span> : <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">String</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pidrusage</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PIDRUsage</span><span class="op">&gt;</span>(<span class="ident">pid</span> : <span class="ident">i32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pidrusage</span> <span class="op">=</span> <span class="ident">T::default</span>();
     <span class="kw">let</span> <span class="ident">vm_size</span> <span class="op">=</span> <span class="ident">procfile_field</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;/proc/{}/status&quot;</span>, <span class="ident">pid</span>), <span class="string">&quot;VmSize&quot;</span>)<span class="question-mark">?</span>;
     <span class="ident">pidrusage</span>.<span class="ident">set_memory_used</span>(<span class="ident">parse_memory_string</span>(<span class="kw-2">&amp;</span><span class="ident">vm_size</span>)<span class="question-mark">?</span>);
