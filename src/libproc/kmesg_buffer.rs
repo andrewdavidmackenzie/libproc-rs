@@ -5,7 +5,7 @@ extern crate libc;
 use std::str;
 
 #[cfg(target_os = "macos")]
-use self::libc::{c_int, c_void};
+use self::libc::c_void;
 
 #[cfg(target_os = "linux")]
 use std::fs::File;
@@ -18,18 +18,8 @@ use std::sync::mpsc::Receiver;
 #[cfg(target_os = "linux")]
 use std::{thread, time};
 
-// See https://opensource.apple.com/source/xnu/xnu-1456.1.26/bsd/sys/msgbuf.h
 #[cfg(target_os = "macos")]
-const MAX_MSG_BSIZE: usize = 1024 * 1024;
-
-// this extern block links to the libproc library
-// Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
-#[cfg(target_os = "macos")]
-#[link(name = "proc", kind = "dylib")]
-extern {
-    // This method is supported in the minimum version of Mac OS X which is 10.5
-    fn proc_kmsgbuf(buffer: *mut c_void, buffersize: u32) -> c_int;
-}
+use crate::osx_libproc_bindings::{MAXBSIZE as MAX_MSG_BSIZE, proc_kmsgbuf};
 
 /// Get the contents of the kernel message buffer
 ///
@@ -39,7 +29,7 @@ extern {
 /// See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c// See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c
 #[cfg(target_os = "macos")]
 pub fn kmsgbuf() -> Result<String, String> {
-    let mut message_buffer: Vec<u8> = Vec::with_capacity(MAX_MSG_BSIZE);
+    let mut message_buffer: Vec<u8> = Vec::with_capacity(MAX_MSG_BSIZE as _);
     let buffer_ptr = message_buffer.as_mut_ptr() as *mut c_void;
     let ret: i32;
 

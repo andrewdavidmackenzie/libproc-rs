@@ -6,16 +6,9 @@ use crate::libproc::helpers;
 use crate::libproc::proc_pid::{ListPIDInfo, PidInfoFlavor};
 
 #[cfg(target_os = "macos")]
-use self::libc::{c_int, c_void};
-
-// this extern block links to the libproc library
-// Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
+use self::libc::c_void;
 #[cfg(target_os = "macos")]
-#[link(name = "proc", kind = "dylib")]
-extern {
-    // This method is supported in the minimum version of Mac OS X which is 10.5
-    fn proc_pidfdinfo(pid: c_int, fd: c_int, flavor: c_int, buffer: *mut c_void, buffersize: c_int) -> c_int;
-}
+use crate::osx_libproc_bindings::proc_pidfdinfo;
 
 /// Flavor of Pid FileDescriptor info for different types of File Descriptors
 pub enum PIDFDInfoFlavor {

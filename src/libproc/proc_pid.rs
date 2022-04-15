@@ -1,53 +1,42 @@
 extern crate libc;
 
-#[cfg(target_os = "macos")]
-use std::mem;
+use std::env;
 #[cfg(target_os = "linux")]
 use std::ffi::CString;
 #[cfg(target_os = "linux")]
 use std::fs;
+#[cfg(target_os = "macos")]
+use std::mem;
 use std::path::PathBuf;
 #[cfg(target_os = "macos")]
 use std::ptr;
-use std::env;
 
+use libc::pid_t;
 #[cfg(target_os = "linux")]
 use libc::PATH_MAX;
-use libc::pid_t;
 
+#[cfg(target_os = "macos")]
 use crate::libproc::bsd_info::BSDInfo;
 use crate::libproc::helpers;
+#[cfg(target_os = "macos")]
 use crate::libproc::task_info::{TaskAllInfo, TaskInfo};
+#[cfg(target_os = "macos")]
 use crate::libproc::thread_info::ThreadInfo;
 use crate::libproc::work_queue_info::WorkQueueInfo;
+#[cfg(target_os = "macos")]
+use crate::osx_libproc_bindings::{
+    proc_libversion, proc_listpids, proc_listpidspath, proc_name, proc_pidinfo, proc_pidpath,
+    proc_regionfilename, PROC_PIDPATHINFO_MAXSIZE,
+};
 
+#[cfg(target_os = "macos")]
+use self::libc::{c_char, c_void};
 #[cfg(target_os = "linux")]
 use self::libc::{c_char, readlink};
-#[cfg(target_os = "macos")]
-use self::libc::{c_int, c_void, c_char};
 
 #[cfg(target_os = "macos")]
 use std::ffi::CString;
 
-/// Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple's source code
-/// See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
-/// buffersize must be more than PROC_PIDPATHINFO_SIZE
-/// buffersize must be less than PROC_PIDPATHINFO_MAXSIZE
-///
-/// See http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h
-/// #define PROC_PIDPATHINFO_SIZE (MAXPATHLEN)
-/// #define PROC_PIDPATHINFO_MAXSIZE (4 * MAXPATHLEN)
-/// in http://opensource.apple.com//source/xnu/xnu-1504.7.4/bsd/sys/param.h
-/// #define MAXPATHLEN PATH_MAX
-/// in https://opensource.apple.com/source/xnu/xnu-792.25.20/bsd/sys/syslimits.h
-/// #define PATH_MAX 1024
-#[cfg(target_os = "macos")]
-const MAXPATHLEN: usize = 1024;
-#[cfg(target_os = "macos")]
-const PROC_PIDPATHINFO_MAXSIZE: usize = 4 * MAXPATHLEN;
-
-// From http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h and
-// http://fxr.watson.org/fxr/source/bsd/sys/proc_info.h?v=xnu-2050.18.24
 /// The `ProcType` type. Used to specify what type of processes you are interested
 /// in in other calls, such as `listpids`.
 #[derive(Copy, Clone)]
@@ -68,7 +57,7 @@ pub enum ProcType {
 
 /// The `PIDInfo` trait is needed for polymorphism on pidinfo types, also abstracting flavor in order to provide
 /// type-guaranteed flavor correctness
-pub trait PIDInfo: Default {
+pub trait PIDInfo {
     /// Return the `PidInfoFlavor` of the implementing struct
     fn flavor() -> PidInfoFlavor;
 }
@@ -108,12 +97,16 @@ pub enum PidInfo {
     /// File Descriptors used by Process
     ListFDs(Vec<i32>),
     /// Get all Task Info
+    #[cfg(target_os = "macos")]
     TaskAllInfo(TaskAllInfo),
     /// Get TBSDInfo - TODO doc this
+    #[cfg(target_os = "macos")]
     TBSDInfo(BSDInfo),
     /// Single Task Info
+    #[cfg(target_os = "macos")]
     TaskInfo(TaskInfo),
     /// ThreadInfo
+    #[cfg(target_os = "macos")]
     ThreadInfo(ThreadInfo),
     /// A list of Thread IDs
     ListThreads(Vec<i32>),
@@ -145,22 +138,9 @@ pub struct ListThreads;
 
 impl ListPIDInfo for ListThreads {
     type Item = u64;
-    fn flavor() -> PidInfoFlavor { PidInfoFlavor::ListThreads }
-}
-
-// this extern block links to the libproc library
-// Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c
-#[cfg(target_os = "macos")]
-#[link(name = "proc", kind = "dylib")]
-extern {
-    // All these methods are supported in the minimum version of Mac OS X which is 10.5
-    fn proc_listpids(proc_type: u32, typeinfo: u32, buffer: *mut c_void, buffersize: u32) -> c_int;
-    fn proc_listpidspath(proc_type: u32, typeinfo: u32, path: * const c_char, pathflags: u32, buffer: *mut c_void, buffersize: u32) -> c_int;
-    fn proc_pidinfo(pid: c_int, flavor: c_int, arg: u64, buffer: *mut c_void, buffersize: c_int) -> c_int;
-    fn proc_name(pid: c_int, buffer: *mut c_void, buffersize: u32) -> c_int;
-    fn proc_libversion(major: *mut c_int, minor: *mut c_int) -> c_int;
-    fn proc_pidpath(pid: c_int, buffer: *mut c_void, buffersize: u32) -> c_int;
-    fn proc_regionfilename(pid: c_int, address: u64, buffer: *mut c_void, buffersize: u32) -> c_int;
+    fn flavor() -> PidInfoFlavor {
+        PidInfoFlavor::ListThreads
+    }
 }
 
 /// Returns the PIDs of the active processes that match the ProcType passed in
@@ -188,7 +168,7 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     let mut pids: Vec<u32> = Vec::with_capacity(capacity);
     let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
 
-    let ret = unsafe { proc_listpids(proc_types as u32, 0, buffer_ptr, buffer_size as u32) };
+    let ret = unsafe { proc_listpids(proc_types as u32, 0, buffer_ptr, buffer_size as i32) };
 
     if ret <= 0 {
         Err(helpers::get_errno_with_message(ret))
@@ -260,7 +240,14 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
     let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
 
     let ret = unsafe {
-        proc_listpidspath(proc_types as u32, 0, c_path.as_ptr() as * const c_char, 0, buffer_ptr, buffer_size as u32)
+        proc_listpidspath(
+            proc_types as u32,
+            0,
+            c_path.as_ptr() as *const c_char,
+            0,
+            buffer_ptr,
+            buffer_size as i32,
+        )
     };
 
     if ret <= 0 {
@@ -302,7 +289,7 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
     let flavor = T::flavor() as i32;
     let buffer_size = mem::size_of::<T>() as i32;
-    let mut pidinfo = T::default();
+    let mut pidinfo = unsafe { std::mem::zeroed() };
     let buffer_ptr = &mut pidinfo as *mut _ as *mut c_void;
     let ret: i32;
 
@@ -342,7 +329,7 @@ pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
 /// ```
 #[cfg(target_os = "macos")]
 pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
-    let mut buf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
+    let mut buf: Vec<u8> = Vec::with_capacity((PROC_PIDPATHINFO_MAXSIZE - 1) as _);
     let buffer_ptr = buf.as_mut_ptr() as *mut c_void;
     let buffer_size = buf.capacity() as u32;
     let ret: i32;
@@ -390,13 +377,13 @@ pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
 /// ```
 #[cfg(target_os = "macos")]
 pub fn pidpath(pid: i32) -> Result<String, String> {
-    let mut buf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
+    let mut buf: Vec<u8> = Vec::with_capacity((PROC_PIDPATHINFO_MAXSIZE - 1) as _);
     let buffer_ptr = buf.as_mut_ptr() as *mut c_void;
     let buffer_size = buf.capacity() as u32;
     let ret: i32;
 
     unsafe {
-        ret = proc_pidpath(pid, buffer_ptr, buffer_size);
+        ret = proc_pidpath(pid, buffer_ptr, buffer_size as _);
     };
 
     helpers::check_errno(ret, &mut buf)
@@ -494,7 +481,7 @@ pub fn libversion() -> Result<(i32, i32), String> {
 /// ```
 #[cfg(target_os = "macos")]
 pub fn name(pid: i32) -> Result<String, String> {
-    let mut namebuf: Vec<u8> = Vec::with_capacity(PROC_PIDPATHINFO_MAXSIZE - 1);
+    let mut namebuf: Vec<u8> = Vec::with_capacity((PROC_PIDPATHINFO_MAXSIZE - 1) as _);
     let buffer_ptr = namebuf.as_ptr() as *mut c_void;
     let buffer_size = namebuf.capacity() as u32;
     let ret: i32;
