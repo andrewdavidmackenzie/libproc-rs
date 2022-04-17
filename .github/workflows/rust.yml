@@ -41,7 +41,7 @@ jobs:
         components: clippy
 
     - name: Clippy
-      run: cargo clippy --all --all-targets --all-features -- -D warnings
+      run: cargo clippy --all --tests --all-targets --all-features -- -D warnings
 
     - name: ConfigureCoverage
       if: matrix.rust == 'nightly'
@@ -49,7 +49,7 @@ jobs:
         cargo install grcov
         rustup component add llvm-tools-preview
         echo RUSTFLAGS="-Zinstrument-coverage" >> "$GITHUB_ENV"
-        echo LLVM_PROFILE_FILE="flow-%p-%m.profraw" >> "$GITHUB_ENV"
+        echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
 
     - name: Run Tests
       if: matrix.os != 'macos-11'

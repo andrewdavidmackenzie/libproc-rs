@@ -275,13 +275,12 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
     }
 }
 
-/// Get info about a process
-///
-/// arg - is "heavily not documented" and need to look at code for each flavour
-/// [here](http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c)
-/// to figure out what it's doing.
-///
-/// Pull-Requests welcome!
+/// Get info about a process, task, thread or work queue by specifying the appropriate type for `T`:
+/// - `BSDInfo`
+/// - `TaskInfo`
+/// - `TaskAllInfo`
+/// - `ThreadInfo`
+/// - `WorkQueueInfo`
 ///
 /// # Examples
 ///
@@ -293,6 +292,7 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 ///
 /// let pid = process::id() as i32;
 ///
+/// // Get the `BSDInfo` for Process of pid 0
 /// match pidinfo::<BSDInfo>(pid, 0) {
 ///     Ok(info) => assert_eq!(info.pbi_pid as i32, pid),
 ///     Err(err) => assert!(false, "Error retrieving process info: {}", err)
@@ -685,6 +685,12 @@ mod test {
     use super::am_root;
     #[cfg(target_os = "linux")]
     use crate::libproc::helpers;
+    #[cfg(target_os = "macos")]
+    use crate::libproc::task_info::TaskInfo;
+    #[cfg(target_os = "macos")]
+    use crate::libproc::thread_info::ThreadInfo;
+    #[cfg(target_os = "macos")]
+    use crate::libproc::work_queue_info::WorkQueueInfo;
 
     #[cfg(target_os = "macos")]
     #[test]
@@ -694,7 +700,57 @@ mod test {
 
         match pidinfo::<BSDInfo>(pid, 0) {
             Ok(info) => assert_eq!(info.pbi_pid as i32, pid),
-            Err(_) => panic!("Error retrieving process info")
+            Err(e) => panic!("Error retrieving BSDInfo: {}", e)
+        };
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn taskinfo_test() {
+        use std::process;
+        let pid = process::id() as i32;
+
+        match pidinfo::<TaskInfo>(pid, 0) {
+            Ok(info) => assert!(info.pti_virtual_size > 0),
+            Err(e) => panic!("Error retrieving TaskInfo: {}", e)
+        };
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn taskallinfo_test() {
+        use std::process;
+        let pid = process::id() as i32;
+
+        match pidinfo::<TaskAllInfo>(pid, 0) {
+            Ok(info) => assert!(info.ptinfo.pti_virtual_size > 0),
+            Err(e) => panic!("Error retrieving TaskAllInfo: {}", e)
+        };
+    }
+
+    #[ignore]
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn threadinfo_test() {
+        use std::process;
+        let pid = process::id() as i32;
+
+        match pidinfo::<ThreadInfo>(pid, 0) {
+            Ok(info) => assert!(info.pth_user_time > 0),
+            Err(e) => panic!("Error retrieving ThreadInfo: {}", e)
+        };
+    }
+
+    #[ignore]
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn workqueueinfo_test() {
+        use std::process;
+        let pid = process::id() as i32;
+
+        match pidinfo::<WorkQueueInfo>(pid, 0) {
+            Ok(info) => assert!(info.pwq_nthreads > 0),
+            Err(_) => panic!("Error retrieving WorkQueueInfo")
         };
     }
 
