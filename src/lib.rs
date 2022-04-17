@@ -10,6 +10,9 @@ extern crate libc;
 extern crate errno;
 
 pub mod libproc;
+
 #[cfg(target_os = "macos")]
 #[allow(warnings, missing_docs)]
-mod osx_libproc_bindings;
+mod osx_libproc_bindings {
+include!(concat!(env!("OUT_DIR"), "/osx_libproc_bindings.rs"));
+}
