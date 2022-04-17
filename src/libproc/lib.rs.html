@@ -18,6 +18,9 @@
 <span id="13">13</span>
 <span id="14">14</span>
 <span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">deny</span>(<span class="ident">missing_docs</span>)]</span>
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">clippy::unwrap_used</span>)]</span>
 
@@ -30,9 +33,12 @@
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">errno</span>;
 
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">libproc</span>;
+
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">warnings</span>, <span class="ident">missing_docs</span>)]</span>
-<span class="kw">mod</span> <span class="ident">osx_libproc_bindings</span>;
+<span class="kw">mod</span> <span class="ident">osx_libproc_bindings</span> {
+<span class="macro">include!</span>(<span class="macro">concat!</span>(<span class="macro">env!</span>(<span class="string">&quot;OUT_DIR&quot;</span>), <span class="string">&quot;/osx_libproc_bindings.rs&quot;</span>));
+}
 </code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="libproc" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
 </body></html>
