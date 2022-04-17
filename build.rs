@@ -1,8 +1,8 @@
-use std::env;
-use std::path::Path;
-
 #[cfg(target_os = "macos")]
 fn main() {
+    use std::env;
+    use std::path::Path;
+
     let bindings = bindgen::builder()
         .header_contents("libproc_rs.h", "#include <libproc.h>")
         .generate()
