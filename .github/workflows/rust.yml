@@ -41,7 +41,7 @@ jobs:
         components: clippy
 
     - name: Clippy
-      run: cargo clippy --all --all-targets --all-features -- -D warnings
+      run: cargo clippy --all --tests --all-targets --all-features -- -D warnings
 
     - name: ConfigureCoverage
       if: matrix.rust == 'nightly'
