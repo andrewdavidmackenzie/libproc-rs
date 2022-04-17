@@ -815,6 +815,62 @@
 <span id="810">810</span>
 <span id="811">811</span>
 <span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
 </pre><pre class="rust"><code><span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
@@ -1092,13 +1148,12 @@
     }
 }
 
-<span class="doccomment">/// Get info about a process</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// arg - is &quot;heavily not documented&quot; and need to look at code for each flavour</span>
-<span class="doccomment">/// [here](http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c)</span>
-<span class="doccomment">/// to figure out what it&#39;s doing.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Pull-Requests welcome!</span>
+<span class="doccomment">/// Get info about a process, task, thread or work queue by specifying the appropriate type for `T`:</span>
+<span class="doccomment">/// - `BSDInfo`</span>
+<span class="doccomment">/// - `TaskInfo`</span>
+<span class="doccomment">/// - `TaskAllInfo`</span>
+<span class="doccomment">/// - `ThreadInfo`</span>
+<span class="doccomment">/// - `WorkQueueInfo`</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">///</span>
@@ -1110,6 +1165,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// let pid = process::id() as i32;</span>
 <span class="doccomment">///</span>
+<span class="doccomment">/// // Get the `BSDInfo` for Process of pid 0</span>
 <span class="doccomment">/// match pidinfo::&lt;BSDInfo&gt;(pid, 0) {</span>
 <span class="doccomment">///     Ok(info) =&gt; assert_eq!(info.pbi_pid as i32, pid),</span>
 <span class="doccomment">///     Err(err) =&gt; assert!(false, &quot;Error retrieving process info: {}&quot;, err)</span>
@@ -1502,6 +1558,12 @@
     <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::am_root</span>;
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
     <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::helpers</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::task_info::TaskInfo</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::thread_info::ThreadInfo</span>;
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::work_queue_info::WorkQueueInfo</span>;
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1511,7 +1573,57 @@
 
         <span class="kw">match</span> <span class="ident">pidinfo</span>::<span class="op">&lt;</span><span class="ident">BSDInfo</span><span class="op">&gt;</span>(<span class="ident">pid</span>, <span class="number">0</span>) {
             <span class="prelude-val">Ok</span>(<span class="ident">info</span>) =&gt; <span class="macro">assert_eq!</span>(<span class="ident">info</span>.<span class="ident">pbi_pid</span> <span class="kw">as</span> <span class="ident">i32</span>, <span class="ident">pid</span>),
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Error retrieving process info&quot;</span>)
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Error retrieving BSDInfo: {}&quot;</span>, <span class="ident">e</span>)
+        };
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">taskinfo_test</span>() {
+        <span class="kw">use</span> <span class="ident">std::process</span>;
+        <span class="kw">let</span> <span class="ident">pid</span> <span class="op">=</span> <span class="ident">process::id</span>() <span class="kw">as</span> <span class="ident">i32</span>;
+
+        <span class="kw">match</span> <span class="ident">pidinfo</span>::<span class="op">&lt;</span><span class="ident">TaskInfo</span><span class="op">&gt;</span>(<span class="ident">pid</span>, <span class="number">0</span>) {
+            <span class="prelude-val">Ok</span>(<span class="ident">info</span>) =&gt; <span class="macro">assert!</span>(<span class="ident">info</span>.<span class="ident">pti_virtual_size</span> <span class="op">&gt;</span> <span class="number">0</span>),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Error retrieving TaskInfo: {}&quot;</span>, <span class="ident">e</span>)
+        };
+    }
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">taskallinfo_test</span>() {
+        <span class="kw">use</span> <span class="ident">std::process</span>;
+        <span class="kw">let</span> <span class="ident">pid</span> <span class="op">=</span> <span class="ident">process::id</span>() <span class="kw">as</span> <span class="ident">i32</span>;
+
+        <span class="kw">match</span> <span class="ident">pidinfo</span>::<span class="op">&lt;</span><span class="ident">TaskAllInfo</span><span class="op">&gt;</span>(<span class="ident">pid</span>, <span class="number">0</span>) {
+            <span class="prelude-val">Ok</span>(<span class="ident">info</span>) =&gt; <span class="macro">assert!</span>(<span class="ident">info</span>.<span class="ident">ptinfo</span>.<span class="ident">pti_virtual_size</span> <span class="op">&gt;</span> <span class="number">0</span>),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Error retrieving TaskAllInfo: {}&quot;</span>, <span class="ident">e</span>)
+        };
+    }
+
+    <span class="attribute">#[<span class="ident">ignore</span>]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">threadinfo_test</span>() {
+        <span class="kw">use</span> <span class="ident">std::process</span>;
+        <span class="kw">let</span> <span class="ident">pid</span> <span class="op">=</span> <span class="ident">process::id</span>() <span class="kw">as</span> <span class="ident">i32</span>;
+
+        <span class="kw">match</span> <span class="ident">pidinfo</span>::<span class="op">&lt;</span><span class="ident">ThreadInfo</span><span class="op">&gt;</span>(<span class="ident">pid</span>, <span class="number">0</span>) {
+            <span class="prelude-val">Ok</span>(<span class="ident">info</span>) =&gt; <span class="macro">assert!</span>(<span class="ident">info</span>.<span class="ident">pth_user_time</span> <span class="op">&gt;</span> <span class="number">0</span>),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Error retrieving ThreadInfo: {}&quot;</span>, <span class="ident">e</span>)
+        };
+    }
+
+    <span class="attribute">#[<span class="ident">ignore</span>]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">workqueueinfo_test</span>() {
+        <span class="kw">use</span> <span class="ident">std::process</span>;
+        <span class="kw">let</span> <span class="ident">pid</span> <span class="op">=</span> <span class="ident">process::id</span>() <span class="kw">as</span> <span class="ident">i32</span>;
+
+        <span class="kw">match</span> <span class="ident">pidinfo</span>::<span class="op">&lt;</span><span class="ident">WorkQueueInfo</span><span class="op">&gt;</span>(<span class="ident">pid</span>, <span class="number">0</span>) {
+            <span class="prelude-val">Ok</span>(<span class="ident">info</span>) =&gt; <span class="macro">assert!</span>(<span class="ident">info</span>.<span class="ident">pwq_nthreads</span> <span class="op">&gt;</span> <span class="number">0</span>),
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Error retrieving WorkQueueInfo&quot;</span>)
         };
     }
 
