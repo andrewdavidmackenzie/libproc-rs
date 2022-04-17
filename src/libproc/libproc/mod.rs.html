@@ -34,6 +34,9 @@
 <span id="29">29</span>
 <span id="30">30</span>
 <span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
 </pre><pre class="rust"><code><span class="doccomment">//! `libproc` module provides library methods for getting various types of</span>
 <span class="doccomment">//! information about running processes.</span>
 <span class="doccomment">//!</span>
@@ -49,10 +52,13 @@
 <span class="doccomment">/// Information about Work Queues - very MacOS specific</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">work_queue_info</span>;
 <span class="doccomment">/// Information about Threads running inside processes</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">thread_info</span>;
 <span class="doccomment">/// Information about Tasks - very MacOS specific</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">task_info</span>;
 <span class="doccomment">/// BSD specific information - very MacOS specific</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">bsd_info</span>;
 <span class="doccomment">/// Information about Process Resource Usage - added in Mac OS X 10.9</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">pid_rusage</span>;
@@ -64,6 +70,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">net_info</span>;
 
-<span class="kw">mod</span> <span class="ident">helpers</span>;</code></pre></div>
+<span class="kw">mod</span> <span class="ident">helpers</span>;
+</code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="libproc" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
 </body></html>

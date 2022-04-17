@@ -858,69 +858,45 @@
 <span id="853">853</span>
 <span id="854">854</span>
 <span id="855">855</span>
-<span id="856">856</span>
-<span id="857">857</span>
-<span id="858">858</span>
-<span id="859">859</span>
-<span id="860">860</span>
-<span id="861">861</span>
-<span id="862">862</span>
-<span id="863">863</span>
-<span id="864">864</span>
-<span id="865">865</span>
-<span id="866">866</span>
-<span id="867">867</span>
-<span id="868">868</span>
 </pre><pre class="rust"><code><span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">std::mem</span>;
+<span class="kw">use</span> <span class="ident">std::env</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::ffi::CString</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::fs</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident">std::mem</span>;
 <span class="kw">use</span> <span class="ident">std::path::PathBuf</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::ptr</span>;
-<span class="kw">use</span> <span class="ident">std::env</span>;
 
+<span class="kw">use</span> <span class="ident">libc::pid_t</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">libc::PATH_MAX</span>;
-<span class="kw">use</span> <span class="ident">libc::pid_t</span>;
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::bsd_info::BSDInfo</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::helpers</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::task_info</span>::{<span class="ident">TaskAllInfo</span>, <span class="ident">TaskInfo</span>};
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::thread_info::ThreadInfo</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::work_queue_info::WorkQueueInfo</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::osx_libproc_bindings</span>::{
+    <span class="ident">proc_libversion</span>, <span class="ident">proc_listpids</span>, <span class="ident">proc_listpidspath</span>, <span class="ident">proc_name</span>, <span class="ident">proc_pidinfo</span>, <span class="ident">proc_pidpath</span>,
+    <span class="ident">proc_regionfilename</span>, <span class="ident">PROC_PIDPATHINFO_MAXSIZE</span>,
+};
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident"><span class="self">self</span>::libc</span>::{<span class="ident">c_char</span>, <span class="ident">c_void</span>};
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident"><span class="self">self</span>::libc</span>::{<span class="ident">c_char</span>, <span class="ident">readlink</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="self">self</span>::libc</span>::{<span class="ident">c_int</span>, <span class="ident">c_void</span>, <span class="ident">c_char</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::ffi::CString</span>;
 
-<span class="doccomment">/// Since we cannot access C macros for constants from Rust - I have had to redefine this, based on Apple&#39;s source code</span>
-<span class="doccomment">/// See http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c</span>
-<span class="doccomment">/// buffersize must be more than PROC_PIDPATHINFO_SIZE</span>
-<span class="doccomment">/// buffersize must be less than PROC_PIDPATHINFO_MAXSIZE</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h</span>
-<span class="doccomment">/// #define PROC_PIDPATHINFO_SIZE (MAXPATHLEN)</span>
-<span class="doccomment">/// #define PROC_PIDPATHINFO_MAXSIZE (4 * MAXPATHLEN)</span>
-<span class="doccomment">/// in http://opensource.apple.com//source/xnu/xnu-1504.7.4/bsd/sys/param.h</span>
-<span class="doccomment">/// #define MAXPATHLEN PATH_MAX</span>
-<span class="doccomment">/// in https://opensource.apple.com/source/xnu/xnu-792.25.20/bsd/sys/syslimits.h</span>
-<span class="doccomment">/// #define PATH_MAX 1024</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="kw">const</span> <span class="ident">MAXPATHLEN</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">1024</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="kw">const</span> <span class="ident">PROC_PIDPATHINFO_MAXSIZE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">4</span> <span class="op">*</span> <span class="ident">MAXPATHLEN</span>;
-
-<span class="comment">// From http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h and</span>
-<span class="comment">// http://fxr.watson.org/fxr/source/bsd/sys/proc_info.h?v=xnu-2050.18.24</span>
 <span class="doccomment">/// The `ProcType` type. Used to specify what type of processes you are interested</span>
 <span class="doccomment">/// in in other calls, such as `listpids`.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
@@ -941,7 +917,7 @@
 
 <span class="doccomment">/// The `PIDInfo` trait is needed for polymorphism on pidinfo types, also abstracting flavor in order to provide</span>
 <span class="doccomment">/// type-guaranteed flavor correctness</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">PIDInfo</span>: <span class="ident">Default</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">PIDInfo</span> {
     <span class="doccomment">/// Return the `PidInfoFlavor` of the implementing struct</span>
     <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidInfoFlavor</span>;
 }
@@ -981,12 +957,16 @@
     <span class="doccomment">/// File Descriptors used by Process</span>
     <span class="ident">ListFDs</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>),
     <span class="doccomment">/// Get all Task Info</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
     <span class="ident">TaskAllInfo</span>(<span class="ident">TaskAllInfo</span>),
     <span class="doccomment">/// Get TBSDInfo - TODO doc this</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
     <span class="ident">TBSDInfo</span>(<span class="ident">BSDInfo</span>),
     <span class="doccomment">/// Single Task Info</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
     <span class="ident">TaskInfo</span>(<span class="ident">TaskInfo</span>),
     <span class="doccomment">/// ThreadInfo</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
     <span class="ident">ThreadInfo</span>(<span class="ident">ThreadInfo</span>),
     <span class="doccomment">/// A list of Thread IDs</span>
     <span class="ident">ListThreads</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>),
@@ -1018,22 +998,9 @@
 
 <span class="kw">impl</span> <span class="ident">ListPIDInfo</span> <span class="kw">for</span> <span class="ident">ListThreads</span> {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">u64</span>;
-    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidInfoFlavor</span> { <span class="ident">PidInfoFlavor::ListThreads</span> }
-}
-
-<span class="comment">// this extern block links to the libproc library</span>
-<span class="comment">// Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">link</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;proc&quot;</span>, <span class="ident">kind</span> <span class="op">=</span> <span class="string">&quot;dylib&quot;</span>)]</span>
-<span class="kw">extern</span> {
-    <span class="comment">// All these methods are supported in the minimum version of Mac OS X which is 10.5</span>
-    <span class="kw">fn</span> <span class="ident">proc_listpids</span>(<span class="ident">proc_type</span>: <span class="ident">u32</span>, <span class="ident">typeinfo</span>: <span class="ident">u32</span>, <span class="ident">buffer</span>: <span class="kw-2">*mut</span> <span class="ident">c_void</span>, <span class="ident">buffersize</span>: <span class="ident">u32</span>) -&gt; <span class="ident">c_int</span>;
-    <span class="kw">fn</span> <span class="ident">proc_listpidspath</span>(<span class="ident">proc_type</span>: <span class="ident">u32</span>, <span class="ident">typeinfo</span>: <span class="ident">u32</span>, <span class="ident">path</span>: <span class="op">*</span> <span class="kw">const</span> <span class="ident">c_char</span>, <span class="ident">pathflags</span>: <span class="ident">u32</span>, <span class="ident">buffer</span>: <span class="kw-2">*mut</span> <span class="ident">c_void</span>, <span class="ident">buffersize</span>: <span class="ident">u32</span>) -&gt; <span class="ident">c_int</span>;
-    <span class="kw">fn</span> <span class="ident">proc_pidinfo</span>(<span class="ident">pid</span>: <span class="ident">c_int</span>, <span class="ident">flavor</span>: <span class="ident">c_int</span>, <span class="ident">arg</span>: <span class="ident">u64</span>, <span class="ident">buffer</span>: <span class="kw-2">*mut</span> <span class="ident">c_void</span>, <span class="ident">buffersize</span>: <span class="ident">c_int</span>) -&gt; <span class="ident">c_int</span>;
-    <span class="kw">fn</span> <span class="ident">proc_name</span>(<span class="ident">pid</span>: <span class="ident">c_int</span>, <span class="ident">buffer</span>: <span class="kw-2">*mut</span> <span class="ident">c_void</span>, <span class="ident">buffersize</span>: <span class="ident">u32</span>) -&gt; <span class="ident">c_int</span>;
-    <span class="kw">fn</span> <span class="ident">proc_libversion</span>(<span class="ident">major</span>: <span class="kw-2">*mut</span> <span class="ident">c_int</span>, <span class="ident">minor</span>: <span class="kw-2">*mut</span> <span class="ident">c_int</span>) -&gt; <span class="ident">c_int</span>;
-    <span class="kw">fn</span> <span class="ident">proc_pidpath</span>(<span class="ident">pid</span>: <span class="ident">c_int</span>, <span class="ident">buffer</span>: <span class="kw-2">*mut</span> <span class="ident">c_void</span>, <span class="ident">buffersize</span>: <span class="ident">u32</span>) -&gt; <span class="ident">c_int</span>;
-    <span class="kw">fn</span> <span class="ident">proc_regionfilename</span>(<span class="ident">pid</span>: <span class="ident">c_int</span>, <span class="ident">address</span>: <span class="ident">u64</span>, <span class="ident">buffer</span>: <span class="kw-2">*mut</span> <span class="ident">c_void</span>, <span class="ident">buffersize</span>: <span class="ident">u32</span>) -&gt; <span class="ident">c_int</span>;
+    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidInfoFlavor</span> {
+        <span class="ident">PidInfoFlavor::ListThreads</span>
+    }
 }
 
 <span class="doccomment">/// Returns the PIDs of the active processes that match the ProcType passed in</span>
@@ -1061,7 +1028,7 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pids</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">capacity</span>);
     <span class="kw">let</span> <span class="ident">buffer_ptr</span> <span class="op">=</span> <span class="ident">pids</span>.<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>;
 
-    <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">proc_listpids</span>(<span class="ident">proc_types</span> <span class="kw">as</span> <span class="ident">u32</span>, <span class="number">0</span>, <span class="ident">buffer_ptr</span>, <span class="ident">buffer_size</span> <span class="kw">as</span> <span class="ident">u32</span>) };
+    <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">proc_listpids</span>(<span class="ident">proc_types</span> <span class="kw">as</span> <span class="ident">u32</span>, <span class="number">0</span>, <span class="ident">buffer_ptr</span>, <span class="ident">buffer_size</span> <span class="kw">as</span> <span class="ident">i32</span>) };
 
     <span class="kw">if</span> <span class="ident">ret</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0</span> {
         <span class="prelude-val">Err</span>(<span class="ident">helpers::get_errno_with_message</span>(<span class="ident">ret</span>))
@@ -1133,7 +1100,14 @@
     <span class="kw">let</span> <span class="ident">buffer_ptr</span> <span class="op">=</span> <span class="ident">pids</span>.<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>;
 
     <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> {
-        <span class="ident">proc_listpidspath</span>(<span class="ident">proc_types</span> <span class="kw">as</span> <span class="ident">u32</span>, <span class="number">0</span>, <span class="ident">c_path</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="op">*</span> <span class="kw">const</span> <span class="ident">c_char</span>, <span class="number">0</span>, <span class="ident">buffer_ptr</span>, <span class="ident">buffer_size</span> <span class="kw">as</span> <span class="ident">u32</span>)
+        <span class="ident">proc_listpidspath</span>(
+            <span class="ident">proc_types</span> <span class="kw">as</span> <span class="ident">u32</span>,
+            <span class="number">0</span>,
+            <span class="ident">c_path</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">c_char</span>,
+            <span class="number">0</span>,
+            <span class="ident">buffer_ptr</span>,
+            <span class="ident">buffer_size</span> <span class="kw">as</span> <span class="ident">i32</span>,
+        )
     };
 
     <span class="kw">if</span> <span class="ident">ret</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0</span> {
@@ -1175,7 +1149,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pidinfo</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PIDInfo</span><span class="op">&gt;</span>(<span class="ident">pid</span>: <span class="ident">i32</span>, <span class="ident">arg</span>: <span class="ident">u64</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">flavor</span> <span class="op">=</span> <span class="ident">T::flavor</span>() <span class="kw">as</span> <span class="ident">i32</span>;
     <span class="kw">let</span> <span class="ident">buffer_size</span> <span class="op">=</span> <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() <span class="kw">as</span> <span class="ident">i32</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pidinfo</span> <span class="op">=</span> <span class="ident">T::default</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pidinfo</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">std::mem::zeroed</span>() };
     <span class="kw">let</span> <span class="ident">buffer_ptr</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">pidinfo</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="kw">_</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>;
     <span class="kw">let</span> <span class="ident">ret</span>: <span class="ident">i32</span>;
 
@@ -1215,7 +1189,7 @@
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">regionfilename</span>(<span class="ident">pid</span>: <span class="ident">i32</span>, <span class="ident">address</span>: <span class="ident">u64</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">PROC_PIDPATHINFO_MAXSIZE</span> <span class="op">-</span> <span class="number">1</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>((<span class="ident">PROC_PIDPATHINFO_MAXSIZE</span> <span class="op">-</span> <span class="number">1</span>) <span class="kw">as</span> <span class="kw">_</span>);
     <span class="kw">let</span> <span class="ident">buffer_ptr</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>;
     <span class="kw">let</span> <span class="ident">buffer_size</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">capacity</span>() <span class="kw">as</span> <span class="ident">u32</span>;
     <span class="kw">let</span> <span class="ident">ret</span>: <span class="ident">i32</span>;
@@ -1263,13 +1237,13 @@
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pidpath</span>(<span class="ident">pid</span>: <span class="ident">i32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">PROC_PIDPATHINFO_MAXSIZE</span> <span class="op">-</span> <span class="number">1</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>((<span class="ident">PROC_PIDPATHINFO_MAXSIZE</span> <span class="op">-</span> <span class="number">1</span>) <span class="kw">as</span> <span class="kw">_</span>);
     <span class="kw">let</span> <span class="ident">buffer_ptr</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>;
     <span class="kw">let</span> <span class="ident">buffer_size</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">capacity</span>() <span class="kw">as</span> <span class="ident">u32</span>;
     <span class="kw">let</span> <span class="ident">ret</span>: <span class="ident">i32</span>;
 
     <span class="kw">unsafe</span> {
-        <span class="ident">ret</span> <span class="op">=</span> <span class="ident">proc_pidpath</span>(<span class="ident">pid</span>, <span class="ident">buffer_ptr</span>, <span class="ident">buffer_size</span>);
+        <span class="ident">ret</span> <span class="op">=</span> <span class="ident">proc_pidpath</span>(<span class="ident">pid</span>, <span class="ident">buffer_ptr</span>, <span class="ident">buffer_size</span> <span class="kw">as</span> <span class="kw">_</span>);
     };
 
     <span class="ident">helpers::check_errno</span>(<span class="ident">ret</span>, <span class="kw-2">&amp;mut</span> <span class="ident">buf</span>)
@@ -1367,7 +1341,7 @@
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="ident">pid</span>: <span class="ident">i32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">namebuf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">PROC_PIDPATHINFO_MAXSIZE</span> <span class="op">-</span> <span class="number">1</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">namebuf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>((<span class="ident">PROC_PIDPATHINFO_MAXSIZE</span> <span class="op">-</span> <span class="number">1</span>) <span class="kw">as</span> <span class="kw">_</span>);
     <span class="kw">let</span> <span class="ident">buffer_ptr</span> <span class="op">=</span> <span class="ident">namebuf</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>;
     <span class="kw">let</span> <span class="ident">buffer_size</span> <span class="op">=</span> <span class="ident">namebuf</span>.<span class="ident">capacity</span>() <span class="kw">as</span> <span class="ident">u32</span>;
     <span class="kw">let</span> <span class="ident">ret</span>: <span class="ident">i32</span>;
@@ -1738,6 +1712,7 @@
             .<span class="ident">expect</span>(<span class="string">&quot;listpidspath() failed&quot;</span>);
         <span class="macro">assert!</span>(<span class="ident">pids</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span>);
     }
-}</code></pre></div>
+}
+</code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="libproc" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
 </body></html>

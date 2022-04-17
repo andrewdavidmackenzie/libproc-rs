@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["ThreadInfo","Darwin Kernel C struct representing Information about a Thread"]]});

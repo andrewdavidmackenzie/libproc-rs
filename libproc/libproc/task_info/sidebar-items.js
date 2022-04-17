@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["TaskAllInfo","Struct for info on all Tasks"],["TaskInfo","TaskInfo structure see http://opensource.apple.com//source/xnu/xnu-1456.1.26/bsd/sys/proc_info.h"]]});

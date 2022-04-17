@@ -428,21 +428,18 @@
 <span id="423">423</span>
 <span id="424">424</span>
 <span id="425">425</span>
-<span id="426">426</span>
-<span id="427">427</span>
-<span id="428">428</span>
-<span id="429">429</span>
-<span id="430">430</span>
 </pre><pre class="rust"><code><span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::helpers</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="self">self</span>::libc</span>::{<span class="ident">c_void</span>, <span class="ident">c_int</span>};
+<span class="kw">use</span> <span class="ident"><span class="self">self</span>::libc::c_void</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::helpers</span>::{<span class="ident">procfile_field</span>, <span class="ident">parse_memory_string</span>};
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::osx_libproc_bindings::proc_pid_rusage</span>;
 
 <span class="doccomment">/// The `PIDRUsage` trait is needed for polymorphism on pidrusage types, also abstracting flavor in order to provide</span>
 <span class="doccomment">/// type-guaranteed flavor correctness</span>
@@ -469,13 +466,6 @@
     <span class="ident">V4</span> <span class="op">=</span> <span class="number">4</span>,
 }
 
-<span class="comment">// this extern block links to the libproc library</span>
-<span class="comment">// Original signatures of functions can be found at http://opensource.apple.com/source/Libc/Libc-594.9.4/darwin/libproc.c</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">link</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;proc&quot;</span>, <span class="ident">kind</span> <span class="op">=</span> <span class="string">&quot;dylib&quot;</span>)]</span>
-<span class="kw">extern</span> {
-    <span class="kw">fn</span> <span class="ident">proc_pid_rusage</span>(<span class="ident">pid</span>: <span class="ident">c_int</span>, <span class="ident">flavor</span>: <span class="ident">c_int</span>, <span class="ident">buffer</span>: <span class="kw-2">*mut</span> <span class="ident">c_void</span>) -&gt; <span class="ident">c_int</span>;
-}
 
 <span class="doccomment">/// C struct for Resource Usage Version 0</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
@@ -816,7 +806,7 @@
     <span class="kw">let</span> <span class="ident">ret</span>: <span class="ident">i32</span>;
 
     <span class="kw">unsafe</span> {
-        <span class="ident">ret</span> <span class="op">=</span> <span class="ident">proc_pid_rusage</span>(<span class="ident">pid</span>, <span class="ident">flavor</span>, <span class="ident">buffer_ptr</span>);
+        <span class="ident">ret</span> <span class="op">=</span> <span class="ident">proc_pid_rusage</span>(<span class="ident">pid</span>, <span class="ident">flavor</span>, <span class="ident">buffer_ptr</span> <span class="kw">as</span> <span class="kw">_</span>);
     };
 
     <span class="kw">if</span> <span class="ident">ret</span> <span class="op">&lt;</span> <span class="number">0</span> {
@@ -862,6 +852,7 @@
         <span class="kw">let</span> <span class="ident">usage</span>: <span class="ident">RUsageInfoV0</span> <span class="op">=</span> <span class="ident">pidrusage</span>(<span class="ident">std::process::id</span>() <span class="kw">as</span> <span class="ident">i32</span>).<span class="ident">expect</span>(<span class="string">&quot;pidrusage() failed&quot;</span>);
         <span class="macro">assert!</span>(<span class="ident">usage</span>.<span class="ident">ri_resident_size</span> <span class="op">&gt;</span> <span class="number">0</span>, <span class="string">&quot;Resident size reports 0&quot;</span>)
     }
-}</code></pre></div>
+}
+</code></pre></div>
 </section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="libproc" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
 </body></html>
