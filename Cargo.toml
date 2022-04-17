@@ -29,3 +29,6 @@ path = "src/procinfo.rs"
 [[bin]]
 name = "dmesg"
 path = "src/dmesg.rs"
+
+[build-dependencies]
+bindgen = "0.53.1"

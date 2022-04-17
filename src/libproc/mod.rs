@@ -13,10 +13,13 @@ pub mod kmesg_buffer;
 /// Information about Work Queues - very MacOS specific
 pub mod work_queue_info;
 /// Information about Threads running inside processes
+#[cfg(target_os = "macos")]
 pub mod thread_info;
 /// Information about Tasks - very MacOS specific
+#[cfg(target_os = "macos")]
 pub mod task_info;
 /// BSD specific information - very MacOS specific
+#[cfg(target_os = "macos")]
 pub mod bsd_info;
 /// Information about Process Resource Usage - added in Mac OS X 10.9
 pub mod pid_rusage;
