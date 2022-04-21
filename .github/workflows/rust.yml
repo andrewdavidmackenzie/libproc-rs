@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-11 ]
+        os: [ ubuntu-latest, macos-11, macos-12 ]
         rust: [stable, beta]
         experimental: [false]
         include:
@@ -44,32 +44,30 @@ jobs:
       run: cargo clippy --all --tests --all-targets --all-features -- -D warnings
 
     - name: ConfigureCoverage
-      if: matrix.rust == 'nightly'
       run: |
         cargo install grcov
         rustup component add llvm-tools-preview
         echo RUSTFLAGS="-Zinstrument-coverage" >> "$GITHUB_ENV"
         echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
 
-    - name: Run Tests
-      if: matrix.os != 'macos-11'
+    - name: Run Tests on Linux
+      if: runner.os == 'Linux'
       run:  env "PATH=$PATH" cargo test
 
     - name: Run Tests as Root on Mac
-      if: matrix.os == 'macos-11'
+      if: runner.os == 'macOS'
       run:  sudo env "PATH=$PATH" cargo test
 
     - name: UploadCoverage
-      if: matrix.rust == 'nightly'
       run: |
         grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
         bash <(curl -s https://codecov.io/bash) -f lcov.info
         rm -f lcov.info
 
     - name: CheckDocsBuild
-      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
       run: cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
 
+    # Only deploy docs once - from one matrix combination
     - name: DeployDocsToGHPagesFromMaster
       uses: JamesIves/github-pages-deploy-action@4.1.4
       if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable' && github.ref == 'refs/heads/master'
