@@ -43,17 +43,6 @@ jobs:
         rust-version: ${{ matrix.rust }}
         components: clippy
 
-    - name: MacOS Details
-      if: runner.os == 'macOS'
-      run: |
-        uname -a
-        sw_vers        
-
-    - name: Linux Details
-      if: runner.os == 'Linux'
-      run: |
-        uname -a
-
     - name: Clippy
       run: cargo clippy --all --tests --all-targets --all-features -- -D warnings
 
@@ -64,9 +53,6 @@ jobs:
         rustup component add llvm-tools-preview
         echo RUSTFLAGS="-C instrument-coverage" >> "$GITHUB_ENV"
         echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
-
-    - name: CheckDocsBuild
-      run: cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
 
     - name: Run Tests on Linux
       if: runner.os == 'Linux'
@@ -82,6 +68,10 @@ jobs:
         grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
         bash <(curl -s https://codecov.io/bash) -f lcov.info
         rm -f lcov.info
+
+    - name: CheckDocsBuild
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
+      run: cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
 
     # Only deploy docs once - from one matrix combination, and only when on master (i.e. post PR merge)
     - name: DeployDocsToGHPagesFromMaster
