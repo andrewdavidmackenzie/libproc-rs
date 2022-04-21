@@ -28,6 +28,9 @@ jobs:
           - os: macos-11
             rust: nightly
             experimental: true
+          - os: macos-12
+            rust: nightly
+            experimental: true
 
     continue-on-error: ${{ matrix.experimental }}
 
@@ -67,7 +70,7 @@ jobs:
     - name: CheckDocsBuild
       run: cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
 
-    # Only deploy docs once - from one matrix combination
+    # Only deploy docs once - from one matrix combination, and only when on master (i.e. post PR merge)
     - name: DeployDocsToGHPagesFromMaster
       uses: JamesIves/github-pages-deploy-action@4.1.4
       if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable' && github.ref == 'refs/heads/master'
