@@ -70,7 +70,8 @@ jobs:
         rm -f lcov.info
 
     - name: CheckDocsBuild
-      run: sudo env "PATH=$PATH" cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
+      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
+      run: cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
 
     # Only deploy docs once - from one matrix combination, and only when on master (i.e. post PR merge)
     - name: DeployDocsToGHPagesFromMaster
