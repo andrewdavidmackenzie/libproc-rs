@@ -63,7 +63,7 @@ pub trait PIDInfo {
 }
 
 /// An enum used to specify what type of information about a process is referenced
-/// See http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c
+/// See <http://opensource.apple.com/source/xnu/xnu-1504.7.4/bsd/kern/proc_info.c>
 pub enum PidInfoFlavor {
     /// List of File Descriptors
     ListFDs = 1,
