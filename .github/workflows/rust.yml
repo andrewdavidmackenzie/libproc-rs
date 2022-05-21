@@ -49,11 +49,11 @@ jobs:
 
     - name: Run Tests
       if: matrix.os != 'macos-11'
-      run:  env "PATH=$PATH" cargo test
+      run:  make run-tests
 
     - name: Run Tests as Root on Mac
       if: matrix.os == 'macos-11'
-      run:  sudo env "PATH=$PATH" cargo test
+      run:  make run-tests-root
 
     - name: UploadCoverage
       if: matrix.rust == 'nightly'
