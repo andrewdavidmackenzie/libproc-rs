@@ -41,7 +41,7 @@ jobs:
         components: clippy
 
     - name: Clippy
-      run: cargo clippy --all --tests --all-targets --all-features -- -D warnings
+      run: make clippy
 
     - name: ConfigureCoverage
       if: matrix.rust == 'nightly'
@@ -68,7 +68,7 @@ jobs:
 
     - name: CheckDocsBuild
       if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
-      run: cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
+      run: make build-docs
 
     - name: DeployDocsToGHPagesFromMaster
       uses: JamesIves/github-pages-deploy-action@4.1.4
