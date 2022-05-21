@@ -45,11 +45,7 @@ jobs:
 
     - name: ConfigureCoverage
       if: matrix.rust == 'nightly'
-      run: |
-        cargo install grcov
-        rustup component add llvm-tools-preview
-        echo RUSTFLAGS="-Zinstrument-coverage" >> "$GITHUB_ENV"
-        echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
+      run: make configure-coverage
 
     - name: Run Tests
       if: matrix.os != 'macos-11'

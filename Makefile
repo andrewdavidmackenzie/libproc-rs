@@ -10,7 +10,9 @@ configure-coverage:
 	cargo install grcov
 	rustup component add llvm-tools-preview
 	export RUSTFLAGS="-Zinstrument-coverage"
-	export LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
+	echo RUSTFLAGS="-Zinstrument-coverage" >> "$GITHUB_ENV"
+	export LLVM_PROFILE_FILE="libproc-%p-%m.profraw"
+	echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
 
 .PHONY: run-tests
 run-tests:
