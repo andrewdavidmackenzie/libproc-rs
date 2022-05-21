@@ -16,11 +16,11 @@ configure-coverage:
 
 .PHONY: run-tests
 run-tests:
-	env "PATH=$PATH" cargo test
+	env "PATH=$$PATH" cargo test
 
 .PHONY: run-tests-root
 run-tests-root:
-	sudo env "PATH=$PATH" cargo test
+	sudo env "PATH=$$PATH" cargo test
 
 .PHONY: upload-coverage
 uppload-coverage:
