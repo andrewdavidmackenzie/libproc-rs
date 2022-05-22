@@ -428,6 +428,7 @@
 <span id="423">423</span>
 <span id="424">424</span>
 <span id="425">425</span>
+<span id="426">426</span>
 </pre><pre class="rust"><code><span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
@@ -452,7 +453,8 @@
     <span class="kw">fn</span> <span class="ident">set_memory_used</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">used</span>: <span class="ident">u64</span>);
 }
 
-<span class="doccomment">/// `PidRUsageFlavor` From https://opensource.apple.com/source/xnu/xnu-4903.221.2/bsd/sys/resource.h</span>
+<span class="doccomment">/// `PidRUsageFlavor`</span>
+<span class="doccomment">/// From &lt;https://opensource.apple.com/source/xnu/xnu-4903.221.2/bsd/sys/resource.h&gt;</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PidRUsageFlavor</span> {
     <span class="doccomment">/// Version 0</span>
     <span class="ident">V0</span> <span class="op">=</span> <span class="number">0</span>,

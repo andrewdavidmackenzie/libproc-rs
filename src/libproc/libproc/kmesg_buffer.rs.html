@@ -142,7 +142,7 @@
 <span class="doccomment">/// Entries are in the format:</span>
 <span class="doccomment">/// faclev,seqnum,timestamp[optional, ...];message\n</span>
 <span class="doccomment">///  TAGNAME=value (0 or more Tags)</span>
-<span class="doccomment">/// See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c// See http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c</span>
+<span class="doccomment">/// See &lt;http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c&gt;</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">kmsgbuf</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">message_buffer</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">MAX_MSG_BSIZE</span> <span class="kw">as</span> <span class="kw">_</span>);
