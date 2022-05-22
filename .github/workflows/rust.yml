@@ -41,34 +41,27 @@ jobs:
         components: clippy
 
     - name: Clippy
-      run: cargo clippy --all --tests --all-targets --all-features -- -D warnings
+      run: make clippy
 
     - name: ConfigureCoverage
       if: matrix.rust == 'nightly'
-      run: |
-        cargo install grcov
-        rustup component add llvm-tools-preview
-        echo RUSTFLAGS="-Zinstrument-coverage" >> "$GITHUB_ENV"
-        echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
+      run: make configure-coverage
 
     - name: Run Tests
       if: matrix.os != 'macos-11'
-      run:  env "PATH=$PATH" cargo test
+      run:  make run-tests
 
     - name: Run Tests as Root on Mac
       if: matrix.os == 'macos-11'
-      run:  sudo env "PATH=$PATH" cargo test
+      run:  make run-tests-root
 
     - name: UploadCoverage
       if: matrix.rust == 'nightly'
-      run: |
-        grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
-        bash <(curl -s https://codecov.io/bash) -f lcov.info
-        rm -f lcov.info
+      run: make upload-coverage
 
     - name: CheckDocsBuild
       if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
-      run: cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
+      run: make build-docs
 
     - name: DeployDocsToGHPagesFromMaster
       uses: JamesIves/github-pages-deploy-action@4.1.4
