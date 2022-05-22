@@ -57,7 +57,7 @@ jobs:
 
     - name: UploadCoverage
       if: matrix.rust == 'nightly'
-      run: make upload coverage
+      run: make upload-coverage
 
     - name: CheckDocsBuild
       if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
