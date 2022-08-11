@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["getpid",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["getpid",""]]};
