@@ -22,8 +22,7 @@ pub trait PIDRUsage: Default {
     fn set_memory_used(&mut self, used: u64);
 }
 
-/// `PidRUsageFlavor`
-/// From <https://opensource.apple.com/source/xnu/xnu-4903.221.2/bsd/sys/resource.h>
+/// `PidRUsageFlavor` From <https://opensource.apple.com/source/xnu/xnu-4903.221.2/bsd/sys/resource.h>
 pub enum PidRUsageFlavor {
     /// Version 0
     V0 = 0,
