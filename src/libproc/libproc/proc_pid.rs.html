@@ -1023,7 +1023,7 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pids</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">capacity</span>);
     <span class="kw">let</span> <span class="ident">buffer_ptr</span> <span class="op">=</span> <span class="ident">pids</span>.<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>;
 
-    <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">proc_listpids</span>(<span class="ident">proc_types</span> <span class="kw">as</span> <span class="ident">u32</span>, <span class="number">0</span>, <span class="ident">buffer_ptr</span>, <span class="ident">buffer_size</span> <span class="kw">as</span> <span class="ident">i32</span>) };
+    <span class="kw">let</span> <span class="ident">ret</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">proc_listpids</span>(<span class="ident">proc_types</span> <span class="kw">as</span> <span class="ident">u32</span>, <span class="number">0</span>, <span class="ident">buffer_ptr</span>, <span class="ident">buffer_size</span>) };
 
     <span class="kw">if</span> <span class="ident">ret</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0</span> {
         <span class="prelude-val">Err</span>(<span class="ident">helpers::get_errno_with_message</span>(<span class="ident">ret</span>))
@@ -1101,7 +1101,7 @@
             <span class="ident">c_path</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">c_char</span>,
             <span class="number">0</span>,
             <span class="ident">buffer_ptr</span>,
-            <span class="ident">buffer_size</span> <span class="kw">as</span> <span class="ident">i32</span>,
+            <span class="ident">buffer_size</span>,
         )
     };
 

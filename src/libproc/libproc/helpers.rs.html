@@ -169,7 +169,7 @@
 <span class="doccomment">/// number and a possible message</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_errno_with_message</span>(<span class="ident">return_code</span>: <span class="ident">i32</span>) -&gt; <span class="ident">String</span> {
     <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">errno</span>();
-    <span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="ident">e</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">i32</span>;
+    <span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="ident">e</span>.<span class="number">0</span>;
     <span class="macro">format!</span>(<span class="string">&quot;return code = {}, errno = {}, message = &#39;{}&#39;&quot;</span>, <span class="ident">return_code</span>, <span class="ident">code</span>, <span class="ident">e</span>)
 }
 
