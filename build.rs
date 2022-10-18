@@ -5,6 +5,7 @@ fn main() {
 
     let bindings = bindgen::builder()
         .header_contents("libproc_rs.h", "#include <libproc.h>")
+        .layout_tests(false)
         .generate()
         .expect("Failed to build libproc bindings");
 

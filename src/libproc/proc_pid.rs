@@ -168,7 +168,7 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
     let mut pids: Vec<u32> = Vec::with_capacity(capacity);
     let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
 
-    let ret = unsafe { proc_listpids(proc_types as u32, 0, buffer_ptr, buffer_size as i32) };
+    let ret = unsafe { proc_listpids(proc_types as u32, 0, buffer_ptr, buffer_size) };
 
     if ret <= 0 {
         Err(helpers::get_errno_with_message(ret))
@@ -246,7 +246,7 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
             c_path.as_ptr() as *const c_char,
             0,
             buffer_ptr,
-            buffer_size as i32,
+            buffer_size,
         )
     };
 

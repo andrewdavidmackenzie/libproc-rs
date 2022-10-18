@@ -109,6 +109,12 @@ between using `cargo test` and `sudo cargo test`. To fix that run `sudo cargo cl
 In order to have tests pass when run as `root` or not, some tests need to check if they are `root` at run-time 
 (using our own `am_root()` function is handy) and avoid failing if *not* run as `root`. 
 
+## Macos: clang detection and header file finding
+Newer versions of `bindgen` have improved the detection of `clang` and hence macos header files. 
+If you also have llvm/clang installed directly or via `brew` this may cause the build to fail saying it 
+cannot find `libproc.h`. This can be fixed by setting `CLANG_PATH="/usr/bin/clang"` so that `bindgen` 
+detects the Xcode version and hence can fidn the correct header files.
+
 # CI Testing
 Continuous Integration testing has been moved from travis-ci to GitHub Actions. For details see the 
 [rust.yml](`.github/workflows/rust.yml`) GitHub Actions workflow

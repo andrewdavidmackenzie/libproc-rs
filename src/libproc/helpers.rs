@@ -8,7 +8,7 @@ use std::io::{BufRead, BufReader};
 /// number and a possible message
 pub fn get_errno_with_message(return_code: i32) -> String {
     let e = errno();
-    let code = e.0 as i32;
+    let code = e.0;
     format!("return code = {}, errno = {}, message = '{}'", return_code, code, e)
 }
 
