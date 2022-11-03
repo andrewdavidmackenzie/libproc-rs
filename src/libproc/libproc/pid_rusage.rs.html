@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/libproc/pid_rusage.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>pid_rusage.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../libproc/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../libproc/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../libproc/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/libproc/pid_rusage.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>pid_rusage.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../libproc/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../libproc/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../libproc/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -423,430 +423,430 @@
 <span id="423">423</span>
 <span id="424">424</span>
 <span id="425">425</span>
-</pre><pre class="rust"><code><span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
+</pre><pre class="rust"><code><span class="kw">extern crate </span>libc;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::helpers</span>;
+<span class="attribute">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+</span><span class="kw">use </span><span class="kw">crate</span>::libproc::helpers;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="self">self</span>::libc::c_void</span>;
+<span class="attribute">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+</span><span class="kw">use </span><span class="self">self</span>::libc::c_void;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::helpers</span>::{<span class="ident">procfile_field</span>, <span class="ident">parse_memory_string</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::osx_libproc_bindings::proc_pid_rusage</span>;
+<span class="attribute">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+</span><span class="kw">use </span><span class="kw">crate</span>::libproc::helpers::{procfile_field, parse_memory_string};
+<span class="attribute">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+</span><span class="kw">use </span><span class="kw">crate</span>::osx_libproc_bindings::proc_pid_rusage;
 
-<span class="doccomment">/// The `PIDRUsage` trait is needed for polymorphism on pidrusage types, also abstracting flavor in order to provide</span>
-<span class="doccomment">/// type-guaranteed flavor correctness</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">PIDRUsage</span>: <span class="ident">Default</span> {
-    <span class="doccomment">/// Return the `PidRUsageFlavor` for the implementing struct</span>
-    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidRUsageFlavor</span>;
-    <span class="doccomment">/// Memory used in bytes</span>
-    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span>;
-    <span class="doccomment">/// Memory used in bytes</span>
-    <span class="kw">fn</span> <span class="ident">set_memory_used</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">used</span>: <span class="ident">u64</span>);
+<span class="doccomment">/// The `PIDRUsage` trait is needed for polymorphism on pidrusage types, also abstracting flavor in order to provide
+/// type-guaranteed flavor correctness
+</span><span class="kw">pub trait </span>PIDRUsage: Default {
+    <span class="doccomment">/// Return the `PidRUsageFlavor` for the implementing struct
+    </span><span class="kw">fn </span>flavor() -&gt; PidRUsageFlavor;
+    <span class="doccomment">/// Memory used in bytes
+    </span><span class="kw">fn </span>memory_used(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64;
+    <span class="doccomment">/// Memory used in bytes
+    </span><span class="kw">fn </span>set_memory_used(<span class="kw-2">&amp;mut </span><span class="self">self</span>, used: u64);
 }
 
-<span class="doccomment">/// `PidRUsageFlavor` From &lt;https://opensource.apple.com/source/xnu/xnu-4903.221.2/bsd/sys/resource.h&gt;</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PidRUsageFlavor</span> {
-    <span class="doccomment">/// Version 0</span>
-    <span class="ident">V0</span> <span class="op">=</span> <span class="number">0</span>,
-    <span class="doccomment">/// Version 1</span>
-    <span class="ident">V1</span> <span class="op">=</span> <span class="number">1</span>,
-    <span class="doccomment">/// Version 2</span>
-    <span class="ident">V2</span> <span class="op">=</span> <span class="number">2</span>,
-    <span class="doccomment">/// Version 3</span>
-    <span class="ident">V3</span> <span class="op">=</span> <span class="number">3</span>,
-    <span class="doccomment">/// Version 4</span>
-    <span class="ident">V4</span> <span class="op">=</span> <span class="number">4</span>,
+<span class="doccomment">/// `PidRUsageFlavor` From &lt;https://opensource.apple.com/source/xnu/xnu-4903.221.2/bsd/sys/resource.h&gt;
+</span><span class="kw">pub enum </span>PidRUsageFlavor {
+    <span class="doccomment">/// Version 0
+    </span>V0 = <span class="number">0</span>,
+    <span class="doccomment">/// Version 1
+    </span>V1 = <span class="number">1</span>,
+    <span class="doccomment">/// Version 2
+    </span>V2 = <span class="number">2</span>,
+    <span class="doccomment">/// Version 3
+    </span>V3 = <span class="number">3</span>,
+    <span class="doccomment">/// Version 4
+    </span>V4 = <span class="number">4</span>,
 }
 
 
-<span class="doccomment">/// C struct for Resource Usage Version 0</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RUsageInfoV0</span> {
-    <span class="doccomment">/// Unique user id</span>
-    <span class="kw">pub</span> <span class="ident">ri_uuid</span>              : [<span class="ident">u8</span>; <span class="number">16</span>],
-    <span class="doccomment">/// User time used</span>
-    <span class="kw">pub</span> <span class="ident">ri_user_time</span>         : <span class="ident">u64</span>,
-    <span class="doccomment">/// System time used</span>
-    <span class="kw">pub</span> <span class="ident">ri_system_time</span>       : <span class="ident">u64</span>,
-    <span class="doccomment">/// Wakeups from idle</span>
-    <span class="kw">pub</span> <span class="ident">ri_pkg_idle_wkups</span>    : <span class="ident">u64</span>,
-    <span class="doccomment">/// Interrupt wakeups</span>
-    <span class="kw">pub</span> <span class="ident">ri_interrupt_wkups</span>   : <span class="ident">u64</span>,
-    <span class="doccomment">/// Number of pageins</span>
-    <span class="kw">pub</span> <span class="ident">ri_pageins</span>           : <span class="ident">u64</span>,
-    <span class="doccomment">/// Wired size</span>
-    <span class="kw">pub</span> <span class="ident">ri_wired_size</span>        : <span class="ident">u64</span>,
-    <span class="doccomment">/// Resident size</span>
-    <span class="kw">pub</span> <span class="ident">ri_resident_size</span>     : <span class="ident">u64</span>,
-    <span class="doccomment">/// Physical footprint</span>
-    <span class="kw">pub</span> <span class="ident">ri_phys_footprint</span>    : <span class="ident">u64</span>,
-    <span class="doccomment">/// Process start time</span>
-    <span class="kw">pub</span> <span class="ident">ri_proc_start_abstime</span>: <span class="ident">u64</span>,
-    <span class="doccomment">/// Process exit time</span>
-    <span class="kw">pub</span> <span class="ident">ri_proc_exit_abstime</span> : <span class="ident">u64</span>,
+<span class="doccomment">/// C struct for Resource Usage Version 0
+</span><span class="attribute">#[repr(C)]
+#[derive(Default)]
+</span><span class="kw">pub struct </span>RUsageInfoV0 {
+    <span class="doccomment">/// Unique user id
+    </span><span class="kw">pub </span>ri_uuid              : [u8; <span class="number">16</span>],
+    <span class="doccomment">/// User time used
+    </span><span class="kw">pub </span>ri_user_time         : u64,
+    <span class="doccomment">/// System time used
+    </span><span class="kw">pub </span>ri_system_time       : u64,
+    <span class="doccomment">/// Wakeups from idle
+    </span><span class="kw">pub </span>ri_pkg_idle_wkups    : u64,
+    <span class="doccomment">/// Interrupt wakeups
+    </span><span class="kw">pub </span>ri_interrupt_wkups   : u64,
+    <span class="doccomment">/// Number of pageins
+    </span><span class="kw">pub </span>ri_pageins           : u64,
+    <span class="doccomment">/// Wired size
+    </span><span class="kw">pub </span>ri_wired_size        : u64,
+    <span class="doccomment">/// Resident size
+    </span><span class="kw">pub </span>ri_resident_size     : u64,
+    <span class="doccomment">/// Physical footprint
+    </span><span class="kw">pub </span>ri_phys_footprint    : u64,
+    <span class="doccomment">/// Process start time
+    </span><span class="kw">pub </span>ri_proc_start_abstime: u64,
+    <span class="doccomment">/// Process exit time
+    </span><span class="kw">pub </span>ri_proc_exit_abstime : u64,
 }
 
-<span class="kw">impl</span> <span class="ident">PIDRUsage</span> <span class="kw">for</span> <span class="ident">RUsageInfoV0</span> {
-    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V0</span> }
+<span class="kw">impl </span>PIDRUsage <span class="kw">for </span>RUsageInfoV0 {
+    <span class="kw">fn </span>flavor() -&gt; PidRUsageFlavor { PidRUsageFlavor::V0 }
 
-    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span> {
-        <span class="self">self</span>.<span class="ident">ri_resident_size</span>
+    <span class="kw">fn </span>memory_used(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
+        <span class="self">self</span>.ri_resident_size
     }
 
-    <span class="kw">fn</span> <span class="ident">set_memory_used</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">used</span>: <span class="ident">u64</span>) {
-        <span class="self">self</span>.<span class="ident">ri_resident_size</span> <span class="op">=</span>  <span class="ident">used</span>
-    }
-}
-
-<span class="doccomment">/// C struct for Resource Usage Version 1</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RUsageInfoV1</span> {
-    <span class="doccomment">/// Unique user id</span>
-    <span class="kw">pub</span> <span class="ident">ri_uuid</span>                 : [<span class="ident">u8</span>; <span class="number">16</span>],
-    <span class="doccomment">/// User time used</span>
-    <span class="kw">pub</span> <span class="ident">ri_user_time</span>            : <span class="ident">u64</span>,
-    <span class="doccomment">/// System time used</span>
-    <span class="kw">pub</span> <span class="ident">ri_system_time</span>          : <span class="ident">u64</span>,
-    <span class="doccomment">/// Wakeups from idle</span>
-    <span class="kw">pub</span> <span class="ident">ri_pkg_idle_wkups</span>       : <span class="ident">u64</span>,
-    <span class="doccomment">/// Interrupt wakeups</span>
-    <span class="kw">pub</span> <span class="ident">ri_interrupt_wkups</span>      : <span class="ident">u64</span>,
-    <span class="doccomment">/// Number of pageins</span>
-    <span class="kw">pub</span> <span class="ident">ri_pageins</span>              : <span class="ident">u64</span>,
-    <span class="doccomment">/// Wired size</span>
-    <span class="kw">pub</span> <span class="ident">ri_wired_size</span>           : <span class="ident">u64</span>,
-    <span class="doccomment">/// Resident size</span>
-    <span class="kw">pub</span> <span class="ident">ri_resident_size</span>        : <span class="ident">u64</span>,
-    <span class="doccomment">/// Physical footprint</span>
-    <span class="kw">pub</span> <span class="ident">ri_phys_footprint</span>       : <span class="ident">u64</span>,
-    <span class="doccomment">/// Process start time</span>
-    <span class="kw">pub</span> <span class="ident">ri_proc_start_abstime</span>   : <span class="ident">u64</span>,
-    <span class="doccomment">/// Process exit time</span>
-    <span class="kw">pub</span> <span class="ident">ri_proc_exit_abstime</span>    : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child user time</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_user_time</span>      : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child system time</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_system_time</span>    : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child wakeups from idle</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_pkg_idle_wkups</span> : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child interrupt wakeups</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_interrupt_wkups</span>: <span class="ident">u64</span>,
-    <span class="doccomment">/// Child pageins</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_pageins</span>        : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child elapse time</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_elapsed_abstime</span>: <span class="ident">u64</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">PIDRUsage</span> <span class="kw">for</span> <span class="ident">RUsageInfoV1</span> {
-    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V1</span> }
-
-    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span> {
-        <span class="self">self</span>.<span class="ident">ri_resident_size</span>
-    }
-
-    <span class="kw">fn</span> <span class="ident">set_memory_used</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">used</span>: <span class="ident">u64</span>) {
-        <span class="self">self</span>.<span class="ident">ri_resident_size</span> <span class="op">=</span>  <span class="ident">used</span>
+    <span class="kw">fn </span>set_memory_used(<span class="kw-2">&amp;mut </span><span class="self">self</span>, used: u64) {
+        <span class="self">self</span>.ri_resident_size =  used
     }
 }
 
-<span class="doccomment">/// C struct for Resource Usage Version 2</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RUsageInfoV2</span> {
-    <span class="doccomment">/// Unique user id</span>
-    <span class="kw">pub</span> <span class="ident">ri_uuid</span>                 : [<span class="ident">u8</span>; <span class="number">16</span>],
-    <span class="doccomment">/// User time used</span>
-    <span class="kw">pub</span> <span class="ident">ri_user_time</span>            : <span class="ident">u64</span>,
-    <span class="doccomment">/// System time used</span>
-    <span class="kw">pub</span> <span class="ident">ri_system_time</span>          : <span class="ident">u64</span>,
-    <span class="doccomment">/// Wakeups from idle</span>
-    <span class="kw">pub</span> <span class="ident">ri_pkg_idle_wkups</span>       : <span class="ident">u64</span>,
-    <span class="doccomment">/// Interrupt wakeups</span>
-    <span class="kw">pub</span> <span class="ident">ri_interrupt_wkups</span>      : <span class="ident">u64</span>,
-    <span class="doccomment">/// Number of pageins</span>
-    <span class="kw">pub</span> <span class="ident">ri_pageins</span>              : <span class="ident">u64</span>,
-    <span class="doccomment">/// Wired size</span>
-    <span class="kw">pub</span> <span class="ident">ri_wired_size</span>           : <span class="ident">u64</span>,
-    <span class="doccomment">/// Resident size</span>
-    <span class="kw">pub</span> <span class="ident">ri_resident_size</span>        : <span class="ident">u64</span>,
-    <span class="doccomment">/// Physical footprint</span>
-    <span class="kw">pub</span> <span class="ident">ri_phys_footprint</span>       : <span class="ident">u64</span>,
-    <span class="doccomment">/// Process start time</span>
-    <span class="kw">pub</span> <span class="ident">ri_proc_start_abstime</span>   : <span class="ident">u64</span>,
-    <span class="doccomment">/// Process exit time</span>
-    <span class="kw">pub</span> <span class="ident">ri_proc_exit_abstime</span>    : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child user time</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_user_time</span>      : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child system time</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_system_time</span>    : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child wakeups from idle</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_pkg_idle_wkups</span> : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child interrupt wakeups</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_interrupt_wkups</span>: <span class="ident">u64</span>,
-    <span class="doccomment">/// Child pageins</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_pageins</span>        : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child elapse time</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_elapsed_abstime</span>: <span class="ident">u64</span>,
-    <span class="doccomment">/// Disk IO bytes read</span>
-    <span class="kw">pub</span> <span class="ident">ri_diskio_bytesread</span>     : <span class="ident">u64</span>,
-    <span class="doccomment">/// Disk IO bytes written</span>
-    <span class="kw">pub</span> <span class="ident">ri_diskio_byteswritten</span>  : <span class="ident">u64</span>,
+<span class="doccomment">/// C struct for Resource Usage Version 1
+</span><span class="attribute">#[repr(C)]
+#[derive(Default)]
+</span><span class="kw">pub struct </span>RUsageInfoV1 {
+    <span class="doccomment">/// Unique user id
+    </span><span class="kw">pub </span>ri_uuid                 : [u8; <span class="number">16</span>],
+    <span class="doccomment">/// User time used
+    </span><span class="kw">pub </span>ri_user_time            : u64,
+    <span class="doccomment">/// System time used
+    </span><span class="kw">pub </span>ri_system_time          : u64,
+    <span class="doccomment">/// Wakeups from idle
+    </span><span class="kw">pub </span>ri_pkg_idle_wkups       : u64,
+    <span class="doccomment">/// Interrupt wakeups
+    </span><span class="kw">pub </span>ri_interrupt_wkups      : u64,
+    <span class="doccomment">/// Number of pageins
+    </span><span class="kw">pub </span>ri_pageins              : u64,
+    <span class="doccomment">/// Wired size
+    </span><span class="kw">pub </span>ri_wired_size           : u64,
+    <span class="doccomment">/// Resident size
+    </span><span class="kw">pub </span>ri_resident_size        : u64,
+    <span class="doccomment">/// Physical footprint
+    </span><span class="kw">pub </span>ri_phys_footprint       : u64,
+    <span class="doccomment">/// Process start time
+    </span><span class="kw">pub </span>ri_proc_start_abstime   : u64,
+    <span class="doccomment">/// Process exit time
+    </span><span class="kw">pub </span>ri_proc_exit_abstime    : u64,
+    <span class="doccomment">/// Child user time
+    </span><span class="kw">pub </span>ri_child_user_time      : u64,
+    <span class="doccomment">/// Child system time
+    </span><span class="kw">pub </span>ri_child_system_time    : u64,
+    <span class="doccomment">/// Child wakeups from idle
+    </span><span class="kw">pub </span>ri_child_pkg_idle_wkups : u64,
+    <span class="doccomment">/// Child interrupt wakeups
+    </span><span class="kw">pub </span>ri_child_interrupt_wkups: u64,
+    <span class="doccomment">/// Child pageins
+    </span><span class="kw">pub </span>ri_child_pageins        : u64,
+    <span class="doccomment">/// Child elapse time
+    </span><span class="kw">pub </span>ri_child_elapsed_abstime: u64,
 }
 
-<span class="kw">impl</span> <span class="ident">PIDRUsage</span> <span class="kw">for</span> <span class="ident">RUsageInfoV2</span> {
-    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V2</span> }
+<span class="kw">impl </span>PIDRUsage <span class="kw">for </span>RUsageInfoV1 {
+    <span class="kw">fn </span>flavor() -&gt; PidRUsageFlavor { PidRUsageFlavor::V1 }
 
-    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span> {
-        <span class="self">self</span>.<span class="ident">ri_resident_size</span>
+    <span class="kw">fn </span>memory_used(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
+        <span class="self">self</span>.ri_resident_size
     }
 
-    <span class="kw">fn</span> <span class="ident">set_memory_used</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">used</span>: <span class="ident">u64</span>) {
-        <span class="self">self</span>.<span class="ident">ri_resident_size</span> <span class="op">=</span>  <span class="ident">used</span>
+    <span class="kw">fn </span>set_memory_used(<span class="kw-2">&amp;mut </span><span class="self">self</span>, used: u64) {
+        <span class="self">self</span>.ri_resident_size =  used
     }
 }
 
-<span class="doccomment">/// C struct for Resource Usage Version 3</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RUsageInfoV3</span> {
-    <span class="doccomment">/// Unique user id</span>
-    <span class="kw">pub</span> <span class="ident">ri_uuid</span>                         : [<span class="ident">u8</span>; <span class="number">16</span>],
-    <span class="doccomment">/// User time used</span>
-    <span class="kw">pub</span> <span class="ident">ri_user_time</span>                    : <span class="ident">u64</span>,
-    <span class="doccomment">/// System time used</span>
-    <span class="kw">pub</span> <span class="ident">ri_system_time</span>                  : <span class="ident">u64</span>,
-    <span class="doccomment">/// Wakeups from idle</span>
-    <span class="kw">pub</span> <span class="ident">ri_pkg_idle_wkups</span>               : <span class="ident">u64</span>,
-    <span class="doccomment">/// Interrupt wakeups</span>
-    <span class="kw">pub</span> <span class="ident">ri_interrupt_wkups</span>              : <span class="ident">u64</span>,
-    <span class="doccomment">/// Number of pageins</span>
-    <span class="kw">pub</span> <span class="ident">ri_pageins</span>                      : <span class="ident">u64</span>,
-    <span class="doccomment">/// Wired size</span>
-    <span class="kw">pub</span> <span class="ident">ri_wired_size</span>                   : <span class="ident">u64</span>,
-    <span class="doccomment">/// Resident size</span>
-    <span class="kw">pub</span> <span class="ident">ri_resident_size</span>                : <span class="ident">u64</span>,
-    <span class="doccomment">/// Physical footprint</span>
-    <span class="kw">pub</span> <span class="ident">ri_phys_footprint</span>               : <span class="ident">u64</span>,
-    <span class="doccomment">/// Process start time</span>
-    <span class="kw">pub</span> <span class="ident">ri_proc_start_abstime</span>           : <span class="ident">u64</span>,
-    <span class="doccomment">/// Process exit time</span>
-    <span class="kw">pub</span> <span class="ident">ri_proc_exit_abstime</span>            : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child user time</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_user_time</span>              : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child system time</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_system_time</span>            : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child wakeups from idle</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_pkg_idle_wkups</span>         : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child interrupt wakeups</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_interrupt_wkups</span>        : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child pageins</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_pageins</span>                : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child elapse time</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_elapsed_abstime</span>        : <span class="ident">u64</span>,
-    <span class="doccomment">/// Disk IO bytes read</span>
-    <span class="kw">pub</span> <span class="ident">ri_diskio_bytesread</span>             : <span class="ident">u64</span>,
-    <span class="doccomment">/// Disk IO bytes written</span>
-    <span class="kw">pub</span> <span class="ident">ri_diskio_byteswritten</span>          : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU time QOS default</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_default</span>         : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU time QOS maintenance</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_maintenance</span>     : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU time QOS background</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_background</span>      : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU time QOS utility</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_utility</span>         : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU time QOS legacy</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_legacy</span>          : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU time QOS user initiated</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_user_initiated</span>  : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU tim QOS user interactive</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_user_interactive</span>: <span class="ident">u64</span>,
-    <span class="doccomment">/// Billed system time</span>
-    <span class="kw">pub</span> <span class="ident">ri_billed_system_time</span>           : <span class="ident">u64</span>,
-    <span class="doccomment">/// Serviced system time</span>
-    <span class="kw">pub</span> <span class="ident">ri_serviced_system_time</span>         : <span class="ident">u64</span>,
+<span class="doccomment">/// C struct for Resource Usage Version 2
+</span><span class="attribute">#[repr(C)]
+#[derive(Debug, Default)]
+</span><span class="kw">pub struct </span>RUsageInfoV2 {
+    <span class="doccomment">/// Unique user id
+    </span><span class="kw">pub </span>ri_uuid                 : [u8; <span class="number">16</span>],
+    <span class="doccomment">/// User time used
+    </span><span class="kw">pub </span>ri_user_time            : u64,
+    <span class="doccomment">/// System time used
+    </span><span class="kw">pub </span>ri_system_time          : u64,
+    <span class="doccomment">/// Wakeups from idle
+    </span><span class="kw">pub </span>ri_pkg_idle_wkups       : u64,
+    <span class="doccomment">/// Interrupt wakeups
+    </span><span class="kw">pub </span>ri_interrupt_wkups      : u64,
+    <span class="doccomment">/// Number of pageins
+    </span><span class="kw">pub </span>ri_pageins              : u64,
+    <span class="doccomment">/// Wired size
+    </span><span class="kw">pub </span>ri_wired_size           : u64,
+    <span class="doccomment">/// Resident size
+    </span><span class="kw">pub </span>ri_resident_size        : u64,
+    <span class="doccomment">/// Physical footprint
+    </span><span class="kw">pub </span>ri_phys_footprint       : u64,
+    <span class="doccomment">/// Process start time
+    </span><span class="kw">pub </span>ri_proc_start_abstime   : u64,
+    <span class="doccomment">/// Process exit time
+    </span><span class="kw">pub </span>ri_proc_exit_abstime    : u64,
+    <span class="doccomment">/// Child user time
+    </span><span class="kw">pub </span>ri_child_user_time      : u64,
+    <span class="doccomment">/// Child system time
+    </span><span class="kw">pub </span>ri_child_system_time    : u64,
+    <span class="doccomment">/// Child wakeups from idle
+    </span><span class="kw">pub </span>ri_child_pkg_idle_wkups : u64,
+    <span class="doccomment">/// Child interrupt wakeups
+    </span><span class="kw">pub </span>ri_child_interrupt_wkups: u64,
+    <span class="doccomment">/// Child pageins
+    </span><span class="kw">pub </span>ri_child_pageins        : u64,
+    <span class="doccomment">/// Child elapse time
+    </span><span class="kw">pub </span>ri_child_elapsed_abstime: u64,
+    <span class="doccomment">/// Disk IO bytes read
+    </span><span class="kw">pub </span>ri_diskio_bytesread     : u64,
+    <span class="doccomment">/// Disk IO bytes written
+    </span><span class="kw">pub </span>ri_diskio_byteswritten  : u64,
 }
 
-<span class="kw">impl</span> <span class="ident">PIDRUsage</span> <span class="kw">for</span> <span class="ident">RUsageInfoV3</span> {
-    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V3</span> }
+<span class="kw">impl </span>PIDRUsage <span class="kw">for </span>RUsageInfoV2 {
+    <span class="kw">fn </span>flavor() -&gt; PidRUsageFlavor { PidRUsageFlavor::V2 }
 
-    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span> {
-        <span class="self">self</span>.<span class="ident">ri_resident_size</span>
+    <span class="kw">fn </span>memory_used(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
+        <span class="self">self</span>.ri_resident_size
     }
 
-    <span class="kw">fn</span> <span class="ident">set_memory_used</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">used</span>: <span class="ident">u64</span>) {
-        <span class="self">self</span>.<span class="ident">ri_resident_size</span> <span class="op">=</span>  <span class="ident">used</span>
+    <span class="kw">fn </span>set_memory_used(<span class="kw-2">&amp;mut </span><span class="self">self</span>, used: u64) {
+        <span class="self">self</span>.ri_resident_size =  used
     }
 }
 
-<span class="doccomment">/// C struct for Resource Usage Version 4</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RUsageInfoV4</span> {
-    <span class="doccomment">/// Unique user id</span>
-    <span class="kw">pub</span> <span class="ident">ri_uuid</span>                         : [<span class="ident">u8</span>; <span class="number">16</span>],
-    <span class="doccomment">/// User time used</span>
-    <span class="kw">pub</span> <span class="ident">ri_user_time</span>                    : <span class="ident">u64</span>,
-    <span class="doccomment">/// System time used</span>
-    <span class="kw">pub</span> <span class="ident">ri_system_time</span>                  : <span class="ident">u64</span>,
-    <span class="doccomment">/// Wakeups from idle</span>
-    <span class="kw">pub</span> <span class="ident">ri_pkg_idle_wkups</span>               : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child interrupt wakeups</span>
-    <span class="kw">pub</span> <span class="ident">ri_interrupt_wkups</span>              : <span class="ident">u64</span>,
-    <span class="doccomment">/// Number of pageins</span>
-    <span class="kw">pub</span> <span class="ident">ri_pageins</span>                      : <span class="ident">u64</span>,
-    <span class="doccomment">/// Wired size</span>
-    <span class="kw">pub</span> <span class="ident">ri_wired_size</span>                   : <span class="ident">u64</span>,
-    <span class="doccomment">/// Resident size</span>
-    <span class="kw">pub</span> <span class="ident">ri_resident_size</span>                : <span class="ident">u64</span>,
-    <span class="doccomment">/// Physical footprint</span>
-    <span class="kw">pub</span> <span class="ident">ri_phys_footprint</span>               : <span class="ident">u64</span>,
-    <span class="doccomment">/// Process start time</span>
-    <span class="kw">pub</span> <span class="ident">ri_proc_start_abstime</span>           : <span class="ident">u64</span>,
-    <span class="doccomment">/// Process exit time</span>
-    <span class="kw">pub</span> <span class="ident">ri_proc_exit_abstime</span>            : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child user time</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_user_time</span>              : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child system time</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_system_time</span>            : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child wakeups from idle</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_pkg_idle_wkups</span>         : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child interrupt wakeups</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_interrupt_wkups</span>        : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child pageins</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_pageins</span>                : <span class="ident">u64</span>,
-    <span class="doccomment">/// Child elapse time</span>
-    <span class="kw">pub</span> <span class="ident">ri_child_elapsed_abstime</span>        : <span class="ident">u64</span>,
-    <span class="doccomment">/// Disk IO bytes read</span>
-    <span class="kw">pub</span> <span class="ident">ri_diskio_bytesread</span>             : <span class="ident">u64</span>,
-    <span class="doccomment">/// Disk IO bytes written</span>
-    <span class="kw">pub</span> <span class="ident">ri_diskio_byteswritten</span>          : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU time QOS default</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_default</span>         : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU time QOS maintenance</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_maintenance</span>     : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU time QOS background</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_background</span>      : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU time QOS utility</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_utility</span>         : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU time QOS legacy</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_legacy</span>          : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU time QOS user initiated</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_user_initiated</span>  : <span class="ident">u64</span>,
-    <span class="doccomment">/// CPU tim QOS user interactive</span>
-    <span class="kw">pub</span> <span class="ident">ri_cpu_time_qos_user_interactive</span>: <span class="ident">u64</span>,
-    <span class="doccomment">/// Billed system time</span>
-    <span class="kw">pub</span> <span class="ident">ri_billed_system_time</span>           : <span class="ident">u64</span>,
-    <span class="doccomment">/// Serviced system time</span>
-    <span class="kw">pub</span> <span class="ident">ri_serviced_system_time</span>         : <span class="ident">u64</span>,
-    <span class="doccomment">/// Logical writes</span>
-    <span class="kw">pub</span> <span class="ident">ri_logical_writes</span>               : <span class="ident">u64</span>,
-    <span class="doccomment">/// Lifetime maximum physical footprint</span>
-    <span class="kw">pub</span> <span class="ident">ri_lifetime_max_phys_footprint</span>  : <span class="ident">u64</span>,
-    <span class="doccomment">/// instructions</span>
-    <span class="kw">pub</span> <span class="ident">ri_instructions</span>                 : <span class="ident">u64</span>,
-    <span class="doccomment">/// cycles</span>
-    <span class="kw">pub</span> <span class="ident">ri_cycles</span>                       : <span class="ident">u64</span>,
-    <span class="doccomment">/// billed energy</span>
-    <span class="kw">pub</span> <span class="ident">ri_billed_energy</span>                : <span class="ident">u64</span>,
-    <span class="doccomment">/// services energy</span>
-    <span class="kw">pub</span> <span class="ident">ri_serviced_energy</span>              : <span class="ident">u64</span>,
-    <span class="doccomment">/// interval maximum physical footprint</span>
-    <span class="kw">pub</span> <span class="ident">ri_interval_max_phys_footprint</span>  : <span class="ident">u64</span>,
-    <span class="doccomment">/// unused</span>
-    <span class="kw">pub</span> <span class="ident">ri_unused</span>                       : [<span class="ident">u64</span>; <span class="number">1</span>],
+<span class="doccomment">/// C struct for Resource Usage Version 3
+</span><span class="attribute">#[repr(C)]
+#[derive(Default)]
+</span><span class="kw">pub struct </span>RUsageInfoV3 {
+    <span class="doccomment">/// Unique user id
+    </span><span class="kw">pub </span>ri_uuid                         : [u8; <span class="number">16</span>],
+    <span class="doccomment">/// User time used
+    </span><span class="kw">pub </span>ri_user_time                    : u64,
+    <span class="doccomment">/// System time used
+    </span><span class="kw">pub </span>ri_system_time                  : u64,
+    <span class="doccomment">/// Wakeups from idle
+    </span><span class="kw">pub </span>ri_pkg_idle_wkups               : u64,
+    <span class="doccomment">/// Interrupt wakeups
+    </span><span class="kw">pub </span>ri_interrupt_wkups              : u64,
+    <span class="doccomment">/// Number of pageins
+    </span><span class="kw">pub </span>ri_pageins                      : u64,
+    <span class="doccomment">/// Wired size
+    </span><span class="kw">pub </span>ri_wired_size                   : u64,
+    <span class="doccomment">/// Resident size
+    </span><span class="kw">pub </span>ri_resident_size                : u64,
+    <span class="doccomment">/// Physical footprint
+    </span><span class="kw">pub </span>ri_phys_footprint               : u64,
+    <span class="doccomment">/// Process start time
+    </span><span class="kw">pub </span>ri_proc_start_abstime           : u64,
+    <span class="doccomment">/// Process exit time
+    </span><span class="kw">pub </span>ri_proc_exit_abstime            : u64,
+    <span class="doccomment">/// Child user time
+    </span><span class="kw">pub </span>ri_child_user_time              : u64,
+    <span class="doccomment">/// Child system time
+    </span><span class="kw">pub </span>ri_child_system_time            : u64,
+    <span class="doccomment">/// Child wakeups from idle
+    </span><span class="kw">pub </span>ri_child_pkg_idle_wkups         : u64,
+    <span class="doccomment">/// Child interrupt wakeups
+    </span><span class="kw">pub </span>ri_child_interrupt_wkups        : u64,
+    <span class="doccomment">/// Child pageins
+    </span><span class="kw">pub </span>ri_child_pageins                : u64,
+    <span class="doccomment">/// Child elapse time
+    </span><span class="kw">pub </span>ri_child_elapsed_abstime        : u64,
+    <span class="doccomment">/// Disk IO bytes read
+    </span><span class="kw">pub </span>ri_diskio_bytesread             : u64,
+    <span class="doccomment">/// Disk IO bytes written
+    </span><span class="kw">pub </span>ri_diskio_byteswritten          : u64,
+    <span class="doccomment">/// CPU time QOS default
+    </span><span class="kw">pub </span>ri_cpu_time_qos_default         : u64,
+    <span class="doccomment">/// CPU time QOS maintenance
+    </span><span class="kw">pub </span>ri_cpu_time_qos_maintenance     : u64,
+    <span class="doccomment">/// CPU time QOS background
+    </span><span class="kw">pub </span>ri_cpu_time_qos_background      : u64,
+    <span class="doccomment">/// CPU time QOS utility
+    </span><span class="kw">pub </span>ri_cpu_time_qos_utility         : u64,
+    <span class="doccomment">/// CPU time QOS legacy
+    </span><span class="kw">pub </span>ri_cpu_time_qos_legacy          : u64,
+    <span class="doccomment">/// CPU time QOS user initiated
+    </span><span class="kw">pub </span>ri_cpu_time_qos_user_initiated  : u64,
+    <span class="doccomment">/// CPU tim QOS user interactive
+    </span><span class="kw">pub </span>ri_cpu_time_qos_user_interactive: u64,
+    <span class="doccomment">/// Billed system time
+    </span><span class="kw">pub </span>ri_billed_system_time           : u64,
+    <span class="doccomment">/// Serviced system time
+    </span><span class="kw">pub </span>ri_serviced_system_time         : u64,
 }
 
-<span class="kw">impl</span> <span class="ident">PIDRUsage</span> <span class="kw">for</span> <span class="ident">RUsageInfoV4</span> {
-    <span class="kw">fn</span> <span class="ident">flavor</span>() -&gt; <span class="ident">PidRUsageFlavor</span> { <span class="ident">PidRUsageFlavor::V4</span> }
+<span class="kw">impl </span>PIDRUsage <span class="kw">for </span>RUsageInfoV3 {
+    <span class="kw">fn </span>flavor() -&gt; PidRUsageFlavor { PidRUsageFlavor::V3 }
 
-    <span class="kw">fn</span> <span class="ident">memory_used</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u64</span> {
-        <span class="self">self</span>.<span class="ident">ri_resident_size</span>
+    <span class="kw">fn </span>memory_used(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
+        <span class="self">self</span>.ri_resident_size
     }
 
-    <span class="kw">fn</span> <span class="ident">set_memory_used</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">used</span>: <span class="ident">u64</span>) {
-        <span class="self">self</span>.<span class="ident">ri_resident_size</span> <span class="op">=</span>  <span class="ident">used</span>
+    <span class="kw">fn </span>set_memory_used(<span class="kw-2">&amp;mut </span><span class="self">self</span>, used: u64) {
+        <span class="self">self</span>.ri_resident_size =  used
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;macosx_10_9&quot;</span>)]</span>
-<span class="doccomment">/// Returns the information about resources of the process that match pid passed in.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use std::io::Write;</span>
-<span class="doccomment">/// use libproc::libproc::pid_rusage::{pidrusage, RUsageInfoV2};</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// fn pidrusage_test() {</span>
-<span class="doccomment">///     use std::process;</span>
-<span class="doccomment">///     let pid = process::id() as i32;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// #[cfg(target_os = &quot;macos&quot;)]</span>
-<span class="doccomment">///     if let Ok(res) = pidrusage::&lt;RUsageInfoV2&gt;(pid) {</span>
-<span class="doccomment">///         println!(&quot;UUID: {:?}, Disk Read: {}, Disk Write: {}&quot;, res.ri_uuid, res.ri_diskio_bytesread, res.ri_diskio_byteswritten);</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pidrusage</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PIDRUsage</span><span class="op">&gt;</span>(<span class="ident">pid</span> : <span class="ident">i32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">flavor</span> <span class="op">=</span> <span class="ident">T::flavor</span>() <span class="kw">as</span> <span class="ident">i32</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pidrusage</span> <span class="op">=</span> <span class="ident">T::default</span>();
-    <span class="kw">let</span> <span class="ident">buffer_ptr</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">pidrusage</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="kw">_</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">c_void</span>;
-    <span class="kw">let</span> <span class="ident">ret</span>: <span class="ident">i32</span>;
+<span class="doccomment">/// C struct for Resource Usage Version 4
+</span><span class="attribute">#[repr(C)]
+#[derive(Default)]
+</span><span class="kw">pub struct </span>RUsageInfoV4 {
+    <span class="doccomment">/// Unique user id
+    </span><span class="kw">pub </span>ri_uuid                         : [u8; <span class="number">16</span>],
+    <span class="doccomment">/// User time used
+    </span><span class="kw">pub </span>ri_user_time                    : u64,
+    <span class="doccomment">/// System time used
+    </span><span class="kw">pub </span>ri_system_time                  : u64,
+    <span class="doccomment">/// Wakeups from idle
+    </span><span class="kw">pub </span>ri_pkg_idle_wkups               : u64,
+    <span class="doccomment">/// Child interrupt wakeups
+    </span><span class="kw">pub </span>ri_interrupt_wkups              : u64,
+    <span class="doccomment">/// Number of pageins
+    </span><span class="kw">pub </span>ri_pageins                      : u64,
+    <span class="doccomment">/// Wired size
+    </span><span class="kw">pub </span>ri_wired_size                   : u64,
+    <span class="doccomment">/// Resident size
+    </span><span class="kw">pub </span>ri_resident_size                : u64,
+    <span class="doccomment">/// Physical footprint
+    </span><span class="kw">pub </span>ri_phys_footprint               : u64,
+    <span class="doccomment">/// Process start time
+    </span><span class="kw">pub </span>ri_proc_start_abstime           : u64,
+    <span class="doccomment">/// Process exit time
+    </span><span class="kw">pub </span>ri_proc_exit_abstime            : u64,
+    <span class="doccomment">/// Child user time
+    </span><span class="kw">pub </span>ri_child_user_time              : u64,
+    <span class="doccomment">/// Child system time
+    </span><span class="kw">pub </span>ri_child_system_time            : u64,
+    <span class="doccomment">/// Child wakeups from idle
+    </span><span class="kw">pub </span>ri_child_pkg_idle_wkups         : u64,
+    <span class="doccomment">/// Child interrupt wakeups
+    </span><span class="kw">pub </span>ri_child_interrupt_wkups        : u64,
+    <span class="doccomment">/// Child pageins
+    </span><span class="kw">pub </span>ri_child_pageins                : u64,
+    <span class="doccomment">/// Child elapse time
+    </span><span class="kw">pub </span>ri_child_elapsed_abstime        : u64,
+    <span class="doccomment">/// Disk IO bytes read
+    </span><span class="kw">pub </span>ri_diskio_bytesread             : u64,
+    <span class="doccomment">/// Disk IO bytes written
+    </span><span class="kw">pub </span>ri_diskio_byteswritten          : u64,
+    <span class="doccomment">/// CPU time QOS default
+    </span><span class="kw">pub </span>ri_cpu_time_qos_default         : u64,
+    <span class="doccomment">/// CPU time QOS maintenance
+    </span><span class="kw">pub </span>ri_cpu_time_qos_maintenance     : u64,
+    <span class="doccomment">/// CPU time QOS background
+    </span><span class="kw">pub </span>ri_cpu_time_qos_background      : u64,
+    <span class="doccomment">/// CPU time QOS utility
+    </span><span class="kw">pub </span>ri_cpu_time_qos_utility         : u64,
+    <span class="doccomment">/// CPU time QOS legacy
+    </span><span class="kw">pub </span>ri_cpu_time_qos_legacy          : u64,
+    <span class="doccomment">/// CPU time QOS user initiated
+    </span><span class="kw">pub </span>ri_cpu_time_qos_user_initiated  : u64,
+    <span class="doccomment">/// CPU tim QOS user interactive
+    </span><span class="kw">pub </span>ri_cpu_time_qos_user_interactive: u64,
+    <span class="doccomment">/// Billed system time
+    </span><span class="kw">pub </span>ri_billed_system_time           : u64,
+    <span class="doccomment">/// Serviced system time
+    </span><span class="kw">pub </span>ri_serviced_system_time         : u64,
+    <span class="doccomment">/// Logical writes
+    </span><span class="kw">pub </span>ri_logical_writes               : u64,
+    <span class="doccomment">/// Lifetime maximum physical footprint
+    </span><span class="kw">pub </span>ri_lifetime_max_phys_footprint  : u64,
+    <span class="doccomment">/// instructions
+    </span><span class="kw">pub </span>ri_instructions                 : u64,
+    <span class="doccomment">/// cycles
+    </span><span class="kw">pub </span>ri_cycles                       : u64,
+    <span class="doccomment">/// billed energy
+    </span><span class="kw">pub </span>ri_billed_energy                : u64,
+    <span class="doccomment">/// services energy
+    </span><span class="kw">pub </span>ri_serviced_energy              : u64,
+    <span class="doccomment">/// interval maximum physical footprint
+    </span><span class="kw">pub </span>ri_interval_max_phys_footprint  : u64,
+    <span class="doccomment">/// unused
+    </span><span class="kw">pub </span>ri_unused                       : [u64; <span class="number">1</span>],
+}
 
-    <span class="kw">unsafe</span> {
-        <span class="ident">ret</span> <span class="op">=</span> <span class="ident">proc_pid_rusage</span>(<span class="ident">pid</span>, <span class="ident">flavor</span>, <span class="ident">buffer_ptr</span> <span class="kw">as</span> <span class="kw">_</span>);
+<span class="kw">impl </span>PIDRUsage <span class="kw">for </span>RUsageInfoV4 {
+    <span class="kw">fn </span>flavor() -&gt; PidRUsageFlavor { PidRUsageFlavor::V4 }
+
+    <span class="kw">fn </span>memory_used(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u64 {
+        <span class="self">self</span>.ri_resident_size
+    }
+
+    <span class="kw">fn </span>set_memory_used(<span class="kw-2">&amp;mut </span><span class="self">self</span>, used: u64) {
+        <span class="self">self</span>.ri_resident_size =  used
+    }
+}
+
+<span class="attribute">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+#[cfg(feature = <span class="string">&quot;macosx_10_9&quot;</span>)]
+</span><span class="doccomment">/// Returns the information about resources of the process that match pid passed in.
+///
+/// # Examples
+///
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::pid_rusage::{pidrusage, RUsageInfoV2};
+///
+/// fn pidrusage_test() {
+///     use std::process;
+///     let pid = process::id() as i32;
+///
+/// #[cfg(target_os = &quot;macos&quot;)]
+///     if let Ok(res) = pidrusage::&lt;RUsageInfoV2&gt;(pid) {
+///         println!(&quot;UUID: {:?}, Disk Read: {}, Disk Write: {}&quot;, res.ri_uuid, res.ri_diskio_bytesread, res.ri_diskio_byteswritten);
+///     }
+/// }
+/// ```
+</span><span class="kw">pub fn </span>pidrusage&lt;T: PIDRUsage&gt;(pid : i32) -&gt; <span class="prelude-ty">Result</span>&lt;T, String&gt; {
+    <span class="kw">let </span>flavor = T::flavor() <span class="kw">as </span>i32;
+    <span class="kw">let </span><span class="kw-2">mut </span>pidrusage = T::default();
+    <span class="kw">let </span>buffer_ptr = <span class="kw-2">&amp;mut </span>pidrusage <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_ as </span><span class="kw-2">*mut </span>c_void;
+    <span class="kw">let </span>ret: i32;
+
+    <span class="kw">unsafe </span>{
+        ret = proc_pid_rusage(pid, flavor, buffer_ptr <span class="kw">as _</span>);
     };
 
-    <span class="kw">if</span> <span class="ident">ret</span> <span class="op">&lt;</span> <span class="number">0</span> {
-        <span class="prelude-val">Err</span>(<span class="ident">helpers::get_errno_with_message</span>(<span class="ident">ret</span>))
-    } <span class="kw">else</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">pidrusage</span>)
+    <span class="kw">if </span>ret &lt; <span class="number">0 </span>{
+        <span class="prelude-val">Err</span>(helpers::get_errno_with_message(ret))
+    } <span class="kw">else </span>{
+        <span class="prelude-val">Ok</span>(pidrusage)
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-<span class="doccomment">/// Returns the information about resources of the process that match pid passed in.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use std::io::Write;</span>
-<span class="doccomment">/// use libproc::libproc::pid_rusage::{pidrusage, RUsageInfoV2, RUsageInfoV0, PIDRUsage};</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// fn pidrusage_test() {</span>
-<span class="doccomment">///     use std::process;</span>
-<span class="doccomment">///     let pid = process::id() as i32;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     if let Ok(res) = pidrusage::&lt;RUsageInfoV0&gt;(pid) {</span>
-<span class="doccomment">///         println!(&quot;VmSize (resident_size): {}&quot;, res.memory_used() );</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pidrusage</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">PIDRUsage</span><span class="op">&gt;</span>(<span class="ident">pid</span> : <span class="ident">i32</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pidrusage</span> <span class="op">=</span> <span class="ident">T::default</span>();
-    <span class="kw">let</span> <span class="ident">vm_size</span> <span class="op">=</span> <span class="ident">procfile_field</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;/proc/{}/status&quot;</span>, <span class="ident">pid</span>), <span class="string">&quot;VmSize&quot;</span>)<span class="question-mark">?</span>;
-    <span class="ident">pidrusage</span>.<span class="ident">set_memory_used</span>(<span class="ident">parse_memory_string</span>(<span class="kw-2">&amp;</span><span class="ident">vm_size</span>)<span class="question-mark">?</span>);
+<span class="attribute">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+</span><span class="doccomment">/// Returns the information about resources of the process that match pid passed in.
+///
+/// # Examples
+///
+/// ```
+/// use std::io::Write;
+/// use libproc::libproc::pid_rusage::{pidrusage, RUsageInfoV2, RUsageInfoV0, PIDRUsage};
+///
+/// fn pidrusage_test() {
+///     use std::process;
+///     let pid = process::id() as i32;
+///
+///     if let Ok(res) = pidrusage::&lt;RUsageInfoV0&gt;(pid) {
+///         println!(&quot;VmSize (resident_size): {}&quot;, res.memory_used() );
+///     }
+/// }
+/// ```
+</span><span class="kw">pub fn </span>pidrusage&lt;T: PIDRUsage&gt;(pid : i32) -&gt; <span class="prelude-ty">Result</span>&lt;T, String&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>pidrusage = T::default();
+    <span class="kw">let </span>vm_size = procfile_field(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;/proc/{}/status&quot;</span>, pid), <span class="string">&quot;VmSize&quot;</span>)<span class="question-mark">?</span>;
+    pidrusage.set_memory_used(parse_memory_string(<span class="kw-2">&amp;</span>vm_size)<span class="question-mark">?</span>);
 
-    <span class="prelude-val">Ok</span>(<span class="ident">pidrusage</span>)
+    <span class="prelude-val">Ok</span>(pidrusage)
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::pidrusage</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::pid_rusage::RUsageInfoV0</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use </span><span class="kw">super</span>::pidrusage;
+    <span class="kw">use </span><span class="kw">crate</span>::libproc::pid_rusage::RUsageInfoV0;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">pidrusage_test</span>() {
-        <span class="kw">let</span> <span class="ident">usage</span>: <span class="ident">RUsageInfoV0</span> <span class="op">=</span> <span class="ident">pidrusage</span>(<span class="ident">std::process::id</span>() <span class="kw">as</span> <span class="ident">i32</span>).<span class="ident">expect</span>(<span class="string">&quot;pidrusage() failed&quot;</span>);
-        <span class="macro">assert!</span>(<span class="ident">usage</span>.<span class="ident">ri_resident_size</span> <span class="op">&gt;</span> <span class="number">0</span>, <span class="string">&quot;Resident size reports 0&quot;</span>)
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>pidrusage_test() {
+        <span class="kw">let </span>usage: RUsageInfoV0 = pidrusage(std::process::id() <span class="kw">as </span>i32).expect(<span class="string">&quot;pidrusage() failed&quot;</span>);
+        <span class="macro">assert!</span>(usage.ri_resident_size &gt; <span class="number">0</span>, <span class="string">&quot;Resident size reports 0&quot;</span>)
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="libproc" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="libproc" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

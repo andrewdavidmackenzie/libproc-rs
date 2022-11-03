@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/procinfo.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>procinfo.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../procinfo/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../procinfo/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../procinfo/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/procinfo.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>procinfo.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../procinfo/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../procinfo/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../procinfo/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -94,100 +94,100 @@
 <span id="94">94</span>
 <span id="95">95</span>
 <span id="96">96</span>
-</pre><pre class="rust"><code><span class="doccomment">//! `procinfo` is a simple program to demonstrate the use of the [`libproc`](../libproc/index.html)</span>
-<span class="doccomment">//! library functions.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! It prints out info about a process specified by its pid, or the current process if no pid</span>
-<span class="doccomment">//! specified.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Usage</span>
-<span class="doccomment">//! =</span>
-<span class="doccomment">//!```</span>
-<span class="doccomment">//! procinfo [pid]</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Which will produce output similar to:</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! Libversion: 1.1</span>
-<span class="doccomment">//! Pid: 8484</span>
-<span class="doccomment">//! Path: /Users/andrew/workspace/libproc-rs/target/debug/procinfo</span>
-<span class="doccomment">//! Name: procinfo</span>
-<span class="doccomment">//! Region Filename (at address 0): /Users/andrew/workspace/libproc-rs/target/debug/procinfo</span>
-<span class="doccomment">//! There are currently 454 processes active</span>
-<span class="doccomment">//! 8496</span>
-<span class="doccomment">//! ...</span>
-<span class="doccomment">//! ```</span>
+</pre><pre class="rust"><code><span class="doccomment">//! `procinfo` is a simple program to demonstrate the use of the [`libproc`](../libproc/index.html)
+//! library functions.
+//!
+//! It prints out info about a process specified by its pid, or the current process if no pid
+//! specified.
+//!
+//! Usage
+//! =
+//!```
+//! procinfo [pid]
+//!
+//!```
+//!
+//! Which will produce output similar to:
+//! ```
+//! Libversion: 1.1
+//! Pid: 8484
+//! Path: /Users/andrew/workspace/libproc-rs/target/debug/procinfo
+//! Name: procinfo
+//! Region Filename (at address 0): /Users/andrew/workspace/libproc-rs/target/debug/procinfo
+//! There are currently 454 processes active
+//! 8496
+//! ...
+//! ```
 
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libproc</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
+</span><span class="kw">extern crate </span>libproc;
+<span class="kw">extern crate </span>libc;
 
-<span class="kw">use</span> <span class="ident">std::env</span>;
-<span class="kw">use</span> <span class="ident">std::io::Write</span>;
-<span class="kw">use</span> <span class="ident">libproc::libproc::proc_pid</span>;
-<span class="kw">use</span> <span class="ident">libproc::libproc::pid_rusage</span>::{<span class="ident">pidrusage</span>, <span class="ident">RUsageInfoV0</span>};
+<span class="kw">use </span>std::env;
+<span class="kw">use </span>std::io::Write;
+<span class="kw">use </span>libproc::libproc::proc_pid;
+<span class="kw">use </span>libproc::libproc::pid_rusage::{pidrusage, RUsageInfoV0};
 
-<span class="kw">mod</span> <span class="ident">c</span> {
-    <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
-    <span class="kw">extern</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">getpid</span>() -&gt; <span class="ident">libc::pid_t</span>;
+<span class="kw">mod </span>c {
+    <span class="kw">extern crate </span>libc;
+    <span class="kw">extern </span>{
+        <span class="kw">pub fn </span>getpid() -&gt; libc::pid_t;
     }
 }
 
-<span class="kw">fn</span> <span class="ident">getpid</span>() -&gt; <span class="ident">i32</span> {
-    <span class="kw">unsafe</span> {
-        <span class="ident">c::getpid</span>()
+<span class="kw">fn </span>getpid() -&gt; i32 {
+    <span class="kw">unsafe </span>{
+        c::getpid()
     }
 }
 
-<span class="kw">fn</span> <span class="ident">procinfo</span>(<span class="ident">pid</span>: <span class="ident">i32</span>) {
-    <span class="kw">match</span> <span class="ident">proc_pid::libversion</span>() {
-        <span class="prelude-val">Ok</span>((<span class="ident">major</span>, <span class="ident">minor</span>)) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Libversion: {}.{}&quot;</span>, <span class="ident">major</span>, <span class="ident">minor</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut</span> <span class="ident">std::io::stderr</span>(), <span class="string">&quot;Error: {}&quot;</span>, <span class="ident">err</span>).<span class="ident">unwrap</span>()
+<span class="kw">fn </span>procinfo(pid: i32) {
+    <span class="kw">match </span>proc_pid::libversion() {
+        <span class="prelude-val">Ok</span>((major, minor)) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Libversion: {}.{}&quot;</span>, major, minor),
+        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {}&quot;</span>, err).unwrap()
     }
 
-    <span class="macro">println!</span>(<span class="string">&quot;Pid: {}&quot;</span>, <span class="ident">pid</span>);
+    <span class="macro">println!</span>(<span class="string">&quot;Pid: {}&quot;</span>, pid);
 
-    <span class="kw">match</span> <span class="ident">proc_pid::pidpath</span>(<span class="ident">pid</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">path</span>) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Path: {}&quot;</span>, <span class="ident">path</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut</span> <span class="ident">std::io::stderr</span>(), <span class="string">&quot;Error: {}&quot;</span>, <span class="ident">err</span>).<span class="ident">unwrap</span>()
+    <span class="kw">match </span>proc_pid::pidpath(pid) {
+        <span class="prelude-val">Ok</span>(path) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Path: {}&quot;</span>, path),
+        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {}&quot;</span>, err).unwrap()
     }
 
-    <span class="kw">match</span> <span class="ident">pidrusage</span>::<span class="op">&lt;</span><span class="ident">RUsageInfoV0</span><span class="op">&gt;</span>(<span class="ident">pid</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">resource_usage</span>) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Memory Used: {} Bytes&quot;</span>, <span class="ident">resource_usage</span>.<span class="ident">ri_resident_size</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut</span> <span class="ident">std::io::stderr</span>(), <span class="string">&quot;Error: {}&quot;</span>, <span class="ident">err</span>).<span class="ident">unwrap</span>()
+    <span class="kw">match </span>pidrusage::&lt;RUsageInfoV0&gt;(pid) {
+        <span class="prelude-val">Ok</span>(resource_usage) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Memory Used: {} Bytes&quot;</span>, resource_usage.ri_resident_size),
+        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {}&quot;</span>, err).unwrap()
     }
 
-    <span class="kw">match</span> <span class="ident">proc_pid::name</span>(<span class="ident">pid</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">name</span>) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Name: {}&quot;</span>, <span class="ident">name</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut</span> <span class="ident">std::io::stderr</span>(), <span class="string">&quot;Error: {}&quot;</span>, <span class="ident">err</span>).<span class="ident">unwrap</span>()
+    <span class="kw">match </span>proc_pid::name(pid) {
+        <span class="prelude-val">Ok</span>(name) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Name: {}&quot;</span>, name),
+        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {}&quot;</span>, err).unwrap()
     }
 
-    <span class="kw">match</span> <span class="ident">proc_pid::regionfilename</span>(<span class="ident">pid</span>, <span class="number">0</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">regionfilename</span>) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Region Filename (at address 0): {}&quot;</span>, <span class="ident">regionfilename</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut</span> <span class="ident">std::io::stderr</span>(), <span class="string">&quot;Error: {}&quot;</span>, <span class="ident">err</span>).<span class="ident">unwrap</span>()
+    <span class="kw">match </span>proc_pid::regionfilename(pid, <span class="number">0</span>) {
+        <span class="prelude-val">Ok</span>(regionfilename) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Region Filename (at address 0): {}&quot;</span>, regionfilename),
+        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {}&quot;</span>, err).unwrap()
     }
 
-    <span class="kw">match</span> <span class="ident">proc_pid::listpids</span>(<span class="ident">proc_pid::ProcType::ProcAllPIDS</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">pids</span>) =&gt; {
-            <span class="macro">println!</span>(<span class="string">&quot;There are currently {} processes active&quot;</span>, <span class="ident">pids</span>.<span class="ident">len</span>());
-            <span class="kw">for</span> <span class="ident">pid</span> <span class="kw">in</span> <span class="ident">pids</span> {
-                <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">pid</span>);
+    <span class="kw">match </span>proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
+        <span class="prelude-val">Ok</span>(pids) =&gt; {
+            <span class="macro">println!</span>(<span class="string">&quot;There are currently {} processes active&quot;</span>, pids.len());
+            <span class="kw">for </span>pid <span class="kw">in </span>pids {
+                <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, pid);
             }
         },
-        <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut</span> <span class="ident">std::io::stderr</span>(), <span class="string">&quot;Error: {}&quot;</span>, <span class="ident">err</span>).<span class="ident">unwrap</span>()
+        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {}&quot;</span>, err).unwrap()
     }
 }
 
-<span class="kw">fn</span> <span class="ident">main</span>() {
-    <span class="kw">let</span> <span class="ident">args</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">env::args</span>().<span class="ident">collect</span>();
+<span class="kw">fn </span>main() {
+    <span class="kw">let </span>args: Vec&lt;String&gt; = env::args().collect();
 
-    <span class="kw">let</span> <span class="ident">pid</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">args</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
-       <span class="ident">getpid</span>()
-    } <span class="kw">else</span> {
-        <span class="ident">args</span>[<span class="number">1</span>].<span class="ident">clone</span>().<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>()
+    <span class="kw">let </span>pid = <span class="kw">if </span>args.len() == <span class="number">1 </span>{
+       getpid()
+    } <span class="kw">else </span>{
+        args[<span class="number">1</span>].clone().parse::&lt;i32&gt;().unwrap()
     };
 
-    <span class="ident">procinfo</span>(<span class="ident">pid</span>);
+    procinfo(pid);
 }</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="procinfo" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="procinfo" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

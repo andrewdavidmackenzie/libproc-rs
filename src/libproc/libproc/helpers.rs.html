@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/libproc/helpers.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>helpers.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../libproc/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../libproc/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../libproc/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/libproc/helpers.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>helpers.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../libproc/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../libproc/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../libproc/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -159,165 +159,165 @@
 <span id="159">159</span>
 <span id="160">160</span>
 <span id="161">161</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::errno::errno</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">std::fs::File</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">BufRead</span>, <span class="ident">BufReader</span>};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::errno::errno;
+<span class="attribute">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+</span><span class="kw">use </span>std::fs::File;
+<span class="attribute">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+</span><span class="kw">use </span>std::io::{BufRead, BufReader};
 
-<span class="doccomment">/// Helper function to get errno and return a String with the passed in return_code, the error</span>
-<span class="doccomment">/// number and a possible message</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_errno_with_message</span>(<span class="ident">return_code</span>: <span class="ident">i32</span>) -&gt; <span class="ident">String</span> {
-    <span class="kw">let</span> <span class="ident">e</span> <span class="op">=</span> <span class="ident">errno</span>();
-    <span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="ident">e</span>.<span class="number">0</span>;
-    <span class="macro">format!</span>(<span class="string">&quot;return code = {}, errno = {}, message = &#39;{}&#39;&quot;</span>, <span class="ident">return_code</span>, <span class="ident">code</span>, <span class="ident">e</span>)
+<span class="doccomment">/// Helper function to get errno and return a String with the passed in return_code, the error
+/// number and a possible message
+</span><span class="kw">pub fn </span>get_errno_with_message(return_code: i32) -&gt; String {
+    <span class="kw">let </span>e = errno();
+    <span class="kw">let </span>code = e.<span class="number">0</span>;
+    <span class="macro">format!</span>(<span class="string">&quot;return code = {}, errno = {}, message = &#39;{}&#39;&quot;</span>, return_code, code, e)
 }
 
-<span class="doccomment">/// Helper function that depending on the `ret` value:</span>
-<span class="doccomment">/// - is negative or 0, then form an error message from the `errno` value</span>
-<span class="doccomment">/// - is positive, take `ret` as the length of the success message in `buf` in bytes</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_errno</span>(<span class="ident">ret</span>: <span class="ident">i32</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">ret</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0</span> {
-        <span class="prelude-val">Err</span>(<span class="ident">get_errno_with_message</span>(<span class="ident">ret</span>))
-    } <span class="kw">else</span> {
-        <span class="kw">unsafe</span> {
-            <span class="ident">buf</span>.<span class="ident">set_len</span>(<span class="ident">ret</span> <span class="kw">as</span> <span class="ident">usize</span>);
+<span class="doccomment">/// Helper function that depending on the `ret` value:
+/// - is negative or 0, then form an error message from the `errno` value
+/// - is positive, take `ret` as the length of the success message in `buf` in bytes
+</span><span class="kw">pub fn </span>check_errno(ret: i32, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
+    <span class="kw">if </span>ret &lt;= <span class="number">0 </span>{
+        <span class="prelude-val">Err</span>(get_errno_with_message(ret))
+    } <span class="kw">else </span>{
+        <span class="kw">unsafe </span>{
+            buf.set_len(ret <span class="kw">as </span>usize);
         }
 
-        <span class="kw">match</span> <span class="ident">String::from_utf8</span>(<span class="ident">buf</span>.<span class="ident">to_vec</span>()) {
-            <span class="prelude-val">Ok</span>(<span class="ident">return_value</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">return_value</span>),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid UTF-8 sequence: {}&quot;</span>, <span class="ident">e</span>))
+        <span class="kw">match </span>String::from_utf8(buf.to_vec()) {
+            <span class="prelude-val">Ok</span>(return_value) =&gt; <span class="prelude-val">Ok</span>(return_value),
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid UTF-8 sequence: {}&quot;</span>, e))
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-<span class="doccomment">/// A helper function for finding named fields in specific /proc FS files for processes</span>
-<span class="doccomment">/// This will be more useful when implementing more linux functions</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">procfile_field</span>(<span class="ident">filename</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">field_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">const</span> <span class="ident">SEPARATOR</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;:&quot;</span>;
-    <span class="kw">let</span> <span class="ident">line_header</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">field_name</span>, <span class="ident">SEPARATOR</span>);
+<span class="attribute">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+</span><span class="doccomment">/// A helper function for finding named fields in specific /proc FS files for processes
+/// This will be more useful when implementing more linux functions
+</span><span class="kw">pub fn </span>procfile_field(filename: <span class="kw-2">&amp;</span>str, field_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
+    <span class="kw">const </span>SEPARATOR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;:&quot;</span>;
+    <span class="kw">let </span>line_header = <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, field_name, SEPARATOR);
 
-    <span class="comment">// Open the file in read-only mode (ignoring errors).</span>
-    <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">File::open</span>(<span class="ident">filename</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Could not open /proc file &#39;{}&#39;&quot;</span>, <span class="ident">filename</span>))<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">BufReader::new</span>(<span class="ident">file</span>);
+    <span class="comment">// Open the file in read-only mode (ignoring errors).
+    </span><span class="kw">let </span>file = File::open(filename).map_err(|<span class="kw">_</span>| <span class="macro">format!</span>(<span class="string">&quot;Could not open /proc file &#39;{}&#39;&quot;</span>, filename))<span class="question-mark">?</span>;
+    <span class="kw">let </span>reader = BufReader::new(file);
 
-    <span class="comment">// Read the file line by line using the lines() iterator from std::io::BufRead.</span>
-    <span class="kw">for</span> <span class="ident">line</span> <span class="kw">in</span> <span class="ident">reader</span>.<span class="ident">lines</span>() {
-        <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="ident">line</span>.<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;Could not read file contents&quot;</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="ident">line</span>.<span class="ident">starts_with</span>(<span class="kw-2">&amp;</span><span class="ident">line_header</span>) {
-            <span class="kw">let</span> <span class="ident">parts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">line</span>.<span class="ident">split</span>(<span class="ident">SEPARATOR</span>).<span class="ident">collect</span>();
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">parts</span>[<span class="number">1</span>].<span class="ident">trim</span>().<span class="ident">to_owned</span>());
+    <span class="comment">// Read the file line by line using the lines() iterator from std::io::BufRead.
+    </span><span class="kw">for </span>line <span class="kw">in </span>reader.lines() {
+        <span class="kw">let </span>line = line.map_err(|<span class="kw">_</span>| <span class="string">&quot;Could not read file contents&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">if </span>line.starts_with(<span class="kw-2">&amp;</span>line_header) {
+            <span class="kw">let </span>parts: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = line.split(SEPARATOR).collect();
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(parts[<span class="number">1</span>].trim().to_owned());
         }
     }
 
-    <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not find the field named &#39;{}&#39; in the /proc FS file name &#39;{}&#39;&quot;</span>, <span class="ident">field_name</span>, <span class="ident">filename</span>))
+    <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not find the field named &#39;{}&#39; in the /proc FS file name &#39;{}&#39;&quot;</span>, field_name, filename))
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-<span class="doccomment">/// Parse a memory amount string into integer number of bytes</span>
-<span class="doccomment">/// e.g. 220844 kB --&gt;</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_memory_string</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">parts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">line</span>.<span class="ident">trim</span>().<span class="ident">split</span>(<span class="string">&#39; &#39;</span>).<span class="ident">collect</span>();
-    <span class="kw">if</span> <span class="ident">parts</span>.<span class="ident">is_empty</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not parse Memory String: {}&quot;</span>, <span class="ident">line</span>))
+<span class="attribute">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+</span><span class="doccomment">/// Parse a memory amount string into integer number of bytes
+/// e.g. 220844 kB --&gt;
+</span><span class="kw">pub fn </span>parse_memory_string(line: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;u64, String&gt; {
+    <span class="kw">let </span>parts: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = line.trim().split(<span class="string">&#39; &#39;</span>).collect();
+    <span class="kw">if </span>parts.is_empty() {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not parse Memory String: {}&quot;</span>, line))
     }
-    <span class="kw">let</span> <span class="ident">multiplier</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">parts</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">2</span> {
-        <span class="kw">match</span> <span class="ident">parts</span>[<span class="number">1</span>] {
-            <span class="string">&quot;MB&quot;</span> =&gt; <span class="number">1024</span> <span class="op">*</span> <span class="number">1024</span>,
-            <span class="string">&quot;kB&quot;</span> =&gt; <span class="number">1024</span>,
-            <span class="string">&quot;B&quot;</span> =&gt; <span class="number">1</span>,
-            <span class="kw">_</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not parse units of Memory String: {}&quot;</span>, <span class="ident">line</span>))
+    <span class="kw">let </span>multiplier: u64 = <span class="kw">if </span>parts.len() == <span class="number">2 </span>{
+        <span class="kw">match </span>parts[<span class="number">1</span>] {
+            <span class="string">&quot;MB&quot; </span>=&gt; <span class="number">1024 </span>* <span class="number">1024</span>,
+            <span class="string">&quot;kB&quot; </span>=&gt; <span class="number">1024</span>,
+            <span class="string">&quot;B&quot; </span>=&gt; <span class="number">1</span>,
+            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not parse units of Memory String: {}&quot;</span>, line))
         }
-    } <span class="kw">else</span> {
-        <span class="number">1</span>
-    };
+    } <span class="kw">else </span>{
+        <span class="number">1
+    </span>};
 
-    <span class="kw">let</span> <span class="ident">value</span>:<span class="ident">u64</span> <span class="op">=</span> <span class="ident">parts</span>[<span class="number">0</span>].<span class="ident">parse</span>()
-        .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;Could not parse value as integer&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>value:u64 = parts[<span class="number">0</span>].parse()
+        .map_err(|<span class="kw">_</span>| <span class="string">&quot;Could not parse value as integer&quot;</span>)<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Ok</span>(<span class="ident">value</span> <span class="op">*</span> <span class="ident">multiplier</span>)
+    <span class="prelude-val">Ok</span>(value * multiplier)
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::errno</span>::{<span class="ident">set_errno</span>, <span class="ident">Errno</span>};
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::check_errno</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use </span><span class="kw">crate</span>::errno::{set_errno, Errno};
+    <span class="kw">use </span><span class="kw">super</span>::check_errno;
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-    <span class="kw">mod</span> <span class="ident">linux</span> {
-        <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::libproc::helpers::parse_memory_string</span>;
+    <span class="attribute">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+    </span><span class="kw">mod </span>linux {
+        <span class="kw">use </span><span class="kw">crate</span>::libproc::helpers::parse_memory_string;
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">test_valid_memory_string</span>() {
-            <span class="macro">assert_eq!</span>(<span class="ident">parse_memory_string</span>(<span class="string">&quot;220844 kB&quot;</span>), <span class="prelude-val">Ok</span>(<span class="number">226144256</span>));
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>test_valid_memory_string() {
+            <span class="macro">assert_eq!</span>(parse_memory_string(<span class="string">&quot;220844 kB&quot;</span>), <span class="prelude-val">Ok</span>(<span class="number">226144256</span>));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">test_valid_memory_string_spaces</span>() {
-            <span class="macro">assert_eq!</span>(<span class="ident">parse_memory_string</span>(<span class="string">&quot;  220844 kB  &quot;</span>), <span class="prelude-val">Ok</span>(<span class="number">226144256</span>));
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>test_valid_memory_string_spaces() {
+            <span class="macro">assert_eq!</span>(parse_memory_string(<span class="string">&quot;  220844 kB  &quot;</span>), <span class="prelude-val">Ok</span>(<span class="number">226144256</span>));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">test_invalid_memory_string_units</span>() {
-            <span class="macro">assert!</span>(<span class="ident">parse_memory_string</span>(<span class="string">&quot;  220844 THz  &quot;</span>).<span class="ident">is_err</span>());
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>test_invalid_memory_string_units() {
+            <span class="macro">assert!</span>(parse_memory_string(<span class="string">&quot;  220844 THz  &quot;</span>).is_err());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">test_invalid_memory_string</span>() {
-            <span class="macro">assert!</span>(<span class="ident">parse_memory_string</span>(<span class="string">&quot;    &quot;</span>).<span class="ident">is_err</span>());
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>test_invalid_memory_string() {
+            <span class="macro">assert!</span>(parse_memory_string(<span class="string">&quot;    &quot;</span>).is_err());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">test_invalid_memory_string_empty</span>() {
-            <span class="macro">assert!</span>(<span class="ident">parse_memory_string</span>(<span class="string">&quot;gobble dee gook&quot;</span>).<span class="ident">is_err</span>())
-        }
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">invalid_utf8</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>(<span class="number">255</span>, <span class="number">0</span>, <span class="number">0</span>);
-
-        <span class="comment">// Test</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">msg</span>) <span class="op">=</span> <span class="ident">check_errno</span>(<span class="ident">buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">i32</span>, <span class="kw-2">&amp;mut</span> <span class="ident">buf</span>) {
-            <span class="macro">assert_eq!</span>(<span class="ident">msg</span>, <span class="string">&quot;Invalid UTF-8 sequence: invalid utf-8 sequence of 1 bytes from index 0&quot;</span>)
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>test_invalid_memory_string_empty() {
+            <span class="macro">assert!</span>(parse_memory_string(<span class="string">&quot;gobble dee gook&quot;</span>).is_err())
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">positive_ret</span>() {
-        <span class="kw">let</span> <span class="ident">message</span> <span class="op">=</span> <span class="string">&quot;custom message&quot;</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec::from</span>(<span class="ident">message</span>.<span class="ident">as_bytes</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>invalid_utf8() {
+        <span class="kw">let </span><span class="kw-2">mut </span>buf: Vec&lt;u8&gt; = <span class="macro">vec!</span>(<span class="number">255</span>, <span class="number">0</span>, <span class="number">0</span>);
 
-        <span class="comment">// Test</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">msg</span>) <span class="op">=</span> <span class="ident">check_errno</span>(<span class="ident">buf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">i32</span>, <span class="kw-2">&amp;mut</span> <span class="ident">buf</span>) {
-            <span class="macro">assert_eq!</span>(<span class="ident">msg</span>, <span class="ident">message</span>);
+        <span class="comment">// Test
+        </span><span class="kw">if let </span><span class="prelude-val">Err</span>(msg) = check_errno(buf.len() <span class="kw">as </span>i32, <span class="kw-2">&amp;mut </span>buf) {
+            <span class="macro">assert_eq!</span>(msg, <span class="string">&quot;Invalid UTF-8 sequence: invalid utf-8 sequence of 1 bytes from index 0&quot;</span>)
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">negative_ret</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>();
-        <span class="ident">set_errno</span>(<span class="ident">Errno</span>(<span class="op">-</span><span class="number">1</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>positive_ret() {
+        <span class="kw">let </span>message = <span class="string">&quot;custom message&quot;</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>buf: Vec&lt;u8&gt; = Vec::from(message.as_bytes());
 
-        <span class="comment">// Test</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">mes</span>) <span class="op">=</span> <span class="ident">check_errno</span>(<span class="op">-</span><span class="number">1</span>, <span class="kw-2">&amp;mut</span> <span class="ident">buf</span>) {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>)]</span>
-            <span class="macro">assert_eq!</span>(<span class="ident">mes</span>, <span class="string">&quot;return code = -1, errno = -1, message = &#39;Unknown error: -1&#39;&quot;</span>);
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;linux&quot;</span>)]</span>
-            <span class="macro">assert_eq!</span>(<span class="ident">mes</span>, <span class="string">&quot;return code = -1, errno = -1, message = &#39;Unknown error -1&#39;&quot;</span>);
+        <span class="comment">// Test
+        </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(msg) = check_errno(buf.len() <span class="kw">as </span>i32, <span class="kw-2">&amp;mut </span>buf) {
+            <span class="macro">assert_eq!</span>(msg, message);
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">zero_ret</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>();
-        <span class="ident">set_errno</span>(<span class="ident">Errno</span>(<span class="number">2</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>negative_ret() {
+        <span class="kw">let </span><span class="kw-2">mut </span>buf: Vec&lt;u8&gt; = <span class="macro">vec!</span>();
+        set_errno(Errno(-<span class="number">1</span>));
 
-        <span class="comment">// Test</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">mes</span>) <span class="op">=</span> <span class="ident">check_errno</span>(<span class="number">0</span>, <span class="kw-2">&amp;mut</span> <span class="ident">buf</span>) {
-            <span class="macro">assert_eq!</span>(<span class="ident">mes</span>, <span class="string">&quot;return code = 0, errno = 2, message = &#39;No such file or directory&#39;&quot;</span>)
+        <span class="comment">// Test
+        </span><span class="kw">if let </span><span class="prelude-val">Err</span>(mes) = check_errno(-<span class="number">1</span>, <span class="kw-2">&amp;mut </span>buf) {
+            <span class="attribute">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+            </span><span class="macro">assert_eq!</span>(mes, <span class="string">&quot;return code = -1, errno = -1, message = &#39;Unknown error: -1&#39;&quot;</span>);
+            <span class="attribute">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+            </span><span class="macro">assert_eq!</span>(mes, <span class="string">&quot;return code = -1, errno = -1, message = &#39;Unknown error -1&#39;&quot;</span>);
+        }
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>zero_ret() {
+        <span class="kw">let </span><span class="kw-2">mut </span>buf: Vec&lt;u8&gt; = <span class="macro">vec!</span>();
+        set_errno(Errno(<span class="number">2</span>));
+
+        <span class="comment">// Test
+        </span><span class="kw">if let </span><span class="prelude-val">Err</span>(mes) = check_errno(<span class="number">0</span>, <span class="kw-2">&amp;mut </span>buf) {
+            <span class="macro">assert_eq!</span>(mes, <span class="string">&quot;return code = 0, errno = 2, message = &#39;No such file or directory&#39;&quot;</span>)
         }
     }
 }</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="libproc" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0 (a55dd71d5 2022-09-19)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="libproc" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>
