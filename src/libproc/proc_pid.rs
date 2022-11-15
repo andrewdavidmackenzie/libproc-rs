@@ -8,8 +8,6 @@ use std::fs;
 #[cfg(target_os = "macos")]
 use std::mem;
 use std::path::PathBuf;
-#[cfg(target_os = "macos")]
-use std::ptr;
 
 use libc::pid_t;
 #[cfg(target_os = "linux")]
@@ -25,17 +23,16 @@ use crate::libproc::thread_info::ThreadInfo;
 use crate::libproc::work_queue_info::WorkQueueInfo;
 #[cfg(target_os = "macos")]
 use crate::osx_libproc_bindings::{
-    proc_libversion, proc_listpids, proc_listpidspath, proc_name, proc_pidinfo, proc_pidpath,
-    proc_regionfilename, PROC_PIDPATHINFO_MAXSIZE,
+    proc_libversion, proc_name, proc_pidinfo, proc_pidpath, proc_regionfilename,
+    PROC_PIDPATHINFO_MAXSIZE,
 };
 
 #[cfg(target_os = "macos")]
-use self::libc::{c_char, c_void};
+use self::libc::c_void;
 #[cfg(target_os = "linux")]
 use self::libc::{c_char, readlink};
 
-#[cfg(target_os = "macos")]
-use std::ffi::CString;
+use crate::processes;
 
 /// The `ProcType` type. Used to specify what type of processes you are interested
 /// in in other calls, such as `listpids`.
@@ -143,47 +140,32 @@ impl ListPIDInfo for ListThreads {
     }
 }
 
-/// Returns the PIDs of the active processes that match the ProcType passed in
-///
-/// # Examples
-///
-/// Get the list of running process IDs using `listpids`
-///
-/// ```
-/// use std::io::Write;
-/// use libproc::libproc::proc_pid;
-///
-/// if let Ok(pids) = proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
-///     println!("Found {} processes using listpids()", pids.len());
-/// }
-/// ```
-#[cfg(target_os = "macos")]
-pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
-    let buffer_size = unsafe { proc_listpids(proc_types as u32, 0, ptr::null_mut(), 0) };
-    if buffer_size <= 0 {
-        return Err(helpers::get_errno_with_message(buffer_size));
-    }
+/// Map `ProcType` to the new `ProcFilter` enum; the values match the now
+/// deprecated implementation of `listpids`
+impl From<ProcType> for processes::ProcFilter {
+    fn from(proc_type: ProcType) -> Self {
+        use processes::ProcFilter;
 
-    let capacity = buffer_size as usize / mem::size_of::<u32>();
-    let mut pids: Vec<u32> = Vec::with_capacity(capacity);
-    let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
-
-    let ret = unsafe { proc_listpids(proc_types as u32, 0, buffer_ptr, buffer_size) };
-
-    if ret <= 0 {
-        Err(helpers::get_errno_with_message(ret))
-    } else {
-        let items_count = ret as usize / mem::size_of::<u32>() - 1;
-        unsafe {
-            pids.set_len(items_count);
+        match proc_type {
+            ProcType::ProcAllPIDS => ProcFilter::All,
+            ProcType::ProcPGRPOnly => ProcFilter::ByProgramGroup { pgrpid: 0 },
+            ProcType::ProcTTYOnly => ProcFilter::ByTTY { tty: 0 },
+            ProcType::ProcUIDOnly => ProcFilter::ByUID { uid: 0 },
+            ProcType::ProcRUIDOnly => ProcFilter::ByRealUID { ruid: 0 },
+            ProcType::ProcPPIDOnly => ProcFilter::ByParentProcess { ppid: 0 },
         }
-
-        Ok(pids)
     }
 }
 
 /// Returns the PIDs of the active processes that match the ProcType passed in
 ///
+/// # Note
+///
+/// This function is deprecated in favor of
+/// [`libproc::processes::pids_by_type()`][crate::processes::pids_by_type],
+/// which lets you specify what PGRP / TTY / UID / RUID / PPID you want to
+/// filter by.
+///
 /// # Examples
 ///
 /// Get the list of running process IDs using `listpids`
@@ -196,70 +178,39 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
 ///     println!("Found {} processes using listpids()", pids.len());
 /// }
 /// ```
-#[cfg(target_os = "linux")]
+#[deprecated(
+    since = "0.13.0",
+    note = "Please use `libproc::processes::pids_by_type()` instead."
+)]
 pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
-    match proc_types {
-        ProcType::ProcAllPIDS => {
-            let mut pids = Vec::<u32>::new();
-
-            let proc_dir = fs::read_dir("/proc").map_err(|e| format!("Could not read '/proc': {e}"))?;
-
-            for entry in proc_dir {
-                let path = entry.map_err(|_| "Couldn't get /proc/ filename")?.path();
-                let filename = path.file_name();
-                if let Some(name) = filename {
-                    if let Some(n) = name.to_str() {
-                        if let Ok(pid) = n.parse::<u32>() {
-                            pids.push(pid);
-                        }
-                    }
-                }
-            }
-
-            Ok(pids)
-        }
-        _ => Err("Unsupported ProcType".to_owned())
-    }
+    processes::pids_by_type(proc_types.into()).map_err(|e| {
+        e.raw_os_error()
+            .map_or_else(|| e.to_string(), helpers::get_errno_with_message)
+    })
 }
 
 /// Search through the current processes looking for open file references which match
 /// a specified path or volume.
+///
+/// # Note
+///
+/// This function is deprecated in favor of
+/// [`libproc::processes::pids_by_type_and_path()`][crate::processes::pids_by_type_and_path],
+/// which lets you specify what PGRP / TTY / UID / RUID / PPID you want to
+/// filter by.
+///
 #[cfg(target_os = "macos")]
+#[deprecated(
+    since = "0.13.0",
+    note = "Please use `libproc::processes::pids_by_type_and_path()` instead."
+)]
 pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String> {
-    let c_path = CString::new(path).map_err(|_| "CString::new failed".to_string())?;
-
-    let buffer_size = unsafe {
-        proc_listpidspath(proc_types as u32, 0, c_path.as_ptr() as * const c_char, 0, ptr::null_mut(), 0)
-    };
-    if buffer_size <= 0 {
-        return Err(helpers::get_errno_with_message(buffer_size));
-    }
-
-    let capacity = buffer_size as usize / mem::size_of::<u32>();
-    let mut pids: Vec<u32> = Vec::with_capacity(capacity);
-    let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
-
-    let ret = unsafe {
-        proc_listpidspath(
-            proc_types as u32,
-            0,
-            c_path.as_ptr() as *const c_char,
-            0,
-            buffer_ptr,
-            buffer_size,
-        )
-    };
-
-    if ret <= 0 {
-        Err(helpers::get_errno_with_message(ret))
-    } else {
-        let items_count = ret as usize / mem::size_of::<u32>() - 1;
-        unsafe {
-            pids.set_len(items_count);
-        }
-
-        Ok(pids)
-    }
+    processes::pids_by_type_and_path(proc_types.into(), &PathBuf::from(path), false, false).map_err(
+        |e| {
+            e.raw_os_error()
+                .map_or_else(|| e.to_string(), helpers::get_errno_with_message)
+        },
+    )
 }
 
 /// Get info about a process, task, thread or work queue by specifying the appropriate type for `T`:
@@ -665,10 +616,9 @@ mod test {
 
     #[cfg(target_os = "macos")]
     use super::{libversion, listpidinfo, ListThreads, pidinfo};
-    use super::{name, cwdself, listpids, pidpath};
+    use super::{name, cwdself, pidpath};
     #[cfg(target_os = "linux")]
     use super::pidcwd;
-    use crate::libproc::proc_pid::ProcType;
     use super::am_root;
     #[cfg(target_os = "linux")]
     use crate::libproc::helpers;
@@ -764,18 +714,6 @@ mod test {
     }
 
     #[test]
-    fn listpids_test() {
-        let pids = listpids(ProcType::ProcAllPIDS).expect("Could not list pids");
-        assert!(pids.len() > 1);
-    }
-
-    #[test]
-    #[cfg(target_os = "linux")]
-    fn listpids_invalid_type_test() {
-        assert!(listpids(ProcType::ProcPGRPOnly).is_err());
-    }
-
-    #[test]
     fn name_test() {
         #[cfg(target_os = "linux")]
             let expected_name = "systemd";
@@ -843,13 +781,5 @@ mod test {
         if am_root() {
             assert!(helpers::procfile_field("/proc/1/status", "invalid").is_err());
         }
-    }
-
-    #[test]
-    #[cfg(target_os = "macos")]
-    fn listpidspath_test() {
-        let pids = super::listpidspath(ProcType::ProcAllPIDS, "/")
-            .expect("listpidspath() failed");
-        assert!(pids.len() > 1);
     }
 }

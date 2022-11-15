@@ -1,6 +1,6 @@
 [package]
 name = "libproc"
-version = "0.12.0"
+version = "0.13.0"
 description = "A library to get information about running processes - for Mac OS X and Linux"
 authors = ["Andrew Mackenzie <andrew@mackenzie-serres.net>"]
 repository = "https://github.com/andrewdavidmackenzie/libproc-rs"
@@ -32,3 +32,7 @@ path = "src/dmesg.rs"
 
 [build-dependencies]
 bindgen = { version = "0.63.0", default-features = false, features = ["runtime"] }
+
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+procfs = "0.14.1"
+tempfile = "3.3.0"
