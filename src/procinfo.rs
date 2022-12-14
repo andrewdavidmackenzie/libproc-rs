@@ -46,40 +46,40 @@ fn getpid() -> i32 {
 
 fn procinfo(pid: i32) {
     match proc_pid::libversion() {
-        Ok((major, minor)) => println!("Libversion: {}.{}", major, minor),
-        Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+        Ok((major, minor)) => println!("Libversion: {major}.{minor}"),
+        Err(err) => writeln!(&mut std::io::stderr(), "Error: {err}").unwrap()
     }
 
-    println!("Pid: {}", pid);
+    println!("Pid: {pid}");
 
     match proc_pid::pidpath(pid) {
-        Ok(path) => println!("Path: {}", path),
-        Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+        Ok(path) => println!("Path: {path}"),
+        Err(err) => writeln!(&mut std::io::stderr(), "Error: {err}").unwrap()
     }
 
     match pidrusage::<RUsageInfoV0>(pid) {
         Ok(resource_usage) => println!("Memory Used: {} Bytes", resource_usage.ri_resident_size),
-        Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+        Err(err) => writeln!(&mut std::io::stderr(), "Error: {err}").unwrap()
     }
 
     match proc_pid::name(pid) {
-        Ok(name) => println!("Name: {}", name),
-        Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+        Ok(name) => println!("Name: {name}"),
+        Err(err) => writeln!(&mut std::io::stderr(), "Error: {err}").unwrap()
     }
 
     match proc_pid::regionfilename(pid, 0) {
-        Ok(regionfilename) => println!("Region Filename (at address 0): {}", regionfilename),
-        Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+        Ok(regionfilename) => println!("Region Filename (at address 0): {regionfilename}"),
+        Err(err) => writeln!(&mut std::io::stderr(), "Error: {err}").unwrap()
     }
 
     match proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
         Ok(pids) => {
             println!("There are currently {} processes active", pids.len());
             for pid in pids {
-                println!("{}", pid);
+                println!("{pid}");
             }
         },
-        Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+        Err(err) => writeln!(&mut std::io::stderr(), "Error: {err}").unwrap()
     }
 }
 
