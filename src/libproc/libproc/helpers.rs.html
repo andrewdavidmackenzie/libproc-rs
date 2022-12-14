@@ -170,7 +170,7 @@
 </span><span class="kw">pub fn </span>get_errno_with_message(return_code: i32) -&gt; String {
     <span class="kw">let </span>e = errno();
     <span class="kw">let </span>code = e.<span class="number">0</span>;
-    <span class="macro">format!</span>(<span class="string">&quot;return code = {}, errno = {}, message = &#39;{}&#39;&quot;</span>, return_code, code, e)
+    <span class="macro">format!</span>(<span class="string">&quot;return code = {return_code}, errno = {code}, message = &#39;{e}&#39;&quot;</span>)
 }
 
 <span class="doccomment">/// Helper function that depending on the `ret` value:
@@ -186,7 +186,7 @@
 
         <span class="kw">match </span>String::from_utf8(buf.to_vec()) {
             <span class="prelude-val">Ok</span>(return_value) =&gt; <span class="prelude-val">Ok</span>(return_value),
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid UTF-8 sequence: {}&quot;</span>, e))
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid UTF-8 sequence: {e}&quot;</span>))
         }
     }
 }
@@ -196,10 +196,10 @@
 /// This will be more useful when implementing more linux functions
 </span><span class="kw">pub fn </span>procfile_field(filename: <span class="kw-2">&amp;</span>str, field_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
     <span class="kw">const </span>SEPARATOR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;:&quot;</span>;
-    <span class="kw">let </span>line_header = <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, field_name, SEPARATOR);
+    <span class="kw">let </span>line_header = <span class="macro">format!</span>(<span class="string">&quot;{field_name}{SEPARATOR}&quot;</span>);
 
     <span class="comment">// Open the file in read-only mode (ignoring errors).
-    </span><span class="kw">let </span>file = File::open(filename).map_err(|<span class="kw">_</span>| <span class="macro">format!</span>(<span class="string">&quot;Could not open /proc file &#39;{}&#39;&quot;</span>, filename))<span class="question-mark">?</span>;
+    </span><span class="kw">let </span>file = File::open(filename).map_err(|<span class="kw">_</span>| <span class="macro">format!</span>(<span class="string">&quot;Could not open /proc file &#39;{filename}&#39;&quot;</span>))<span class="question-mark">?</span>;
     <span class="kw">let </span>reader = BufReader::new(file);
 
     <span class="comment">// Read the file line by line using the lines() iterator from std::io::BufRead.
@@ -211,7 +211,7 @@
         }
     }
 
-    <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not find the field named &#39;{}&#39; in the /proc FS file name &#39;{}&#39;&quot;</span>, field_name, filename))
+    <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not find the field named &#39;{field_name}&#39; in the /proc FS file name &#39;{filename}&#39;&quot;</span>))
 }
 
 <span class="attribute">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
@@ -220,14 +220,14 @@
 </span><span class="kw">pub fn </span>parse_memory_string(line: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;u64, String&gt; {
     <span class="kw">let </span>parts: Vec&lt;<span class="kw-2">&amp;</span>str&gt; = line.trim().split(<span class="string">&#39; &#39;</span>).collect();
     <span class="kw">if </span>parts.is_empty() {
-        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not parse Memory String: {}&quot;</span>, line))
+        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not parse Memory String: {line}&quot;</span>))
     }
     <span class="kw">let </span>multiplier: u64 = <span class="kw">if </span>parts.len() == <span class="number">2 </span>{
         <span class="kw">match </span>parts[<span class="number">1</span>] {
             <span class="string">&quot;MB&quot; </span>=&gt; <span class="number">1024 </span>* <span class="number">1024</span>,
             <span class="string">&quot;kB&quot; </span>=&gt; <span class="number">1024</span>,
             <span class="string">&quot;B&quot; </span>=&gt; <span class="number">1</span>,
-            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not parse units of Memory String: {}&quot;</span>, line))
+            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Could not parse units of Memory String: {line}&quot;</span>))
         }
     } <span class="kw">else </span>{
         <span class="number">1

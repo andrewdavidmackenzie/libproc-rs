@@ -831,7 +831,7 @@
 /// ```
 </span><span class="kw">pub fn </span>pidrusage&lt;T: PIDRUsage&gt;(pid : i32) -&gt; <span class="prelude-ty">Result</span>&lt;T, String&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>pidrusage = T::default();
-    <span class="kw">let </span>vm_size = procfile_field(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;/proc/{}/status&quot;</span>, pid), <span class="string">&quot;VmSize&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let </span>vm_size = procfile_field(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;/proc/{pid}/status&quot;</span>), <span class="string">&quot;VmSize&quot;</span>)<span class="question-mark">?</span>;
     pidrusage.set_memory_used(parse_memory_string(<span class="kw-2">&amp;</span>vm_size)<span class="question-mark">?</span>);
 
     <span class="prelude-val">Ok</span>(pidrusage)

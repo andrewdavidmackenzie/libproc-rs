@@ -32,8 +32,8 @@
 
 <span class="kw">fn </span>main() {
     <span class="kw">match </span>kmesg_buffer::kmsgbuf() {
-        <span class="prelude-val">Ok</span>(message) =&gt; <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, message),
-        <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">eprintln!</span>(<span class="string">&quot;{}&quot;</span>, e)
+        <span class="prelude-val">Ok</span>(message) =&gt; <span class="macro">print!</span>(<span class="string">&quot;{message}&quot;</span>),
+        <span class="prelude-val">Err</span>(e) =&gt; <span class="macro">eprintln!</span>(<span class="string">&quot;{e}&quot;</span>)
     }
 }</code></pre></div>
 </section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="dmesg" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

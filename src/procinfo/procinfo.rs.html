@@ -142,40 +142,40 @@
 
 <span class="kw">fn </span>procinfo(pid: i32) {
     <span class="kw">match </span>proc_pid::libversion() {
-        <span class="prelude-val">Ok</span>((major, minor)) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Libversion: {}.{}&quot;</span>, major, minor),
-        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {}&quot;</span>, err).unwrap()
+        <span class="prelude-val">Ok</span>((major, minor)) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Libversion: {major}.{minor}&quot;</span>),
+        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {err}&quot;</span>).unwrap()
     }
 
-    <span class="macro">println!</span>(<span class="string">&quot;Pid: {}&quot;</span>, pid);
+    <span class="macro">println!</span>(<span class="string">&quot;Pid: {pid}&quot;</span>);
 
     <span class="kw">match </span>proc_pid::pidpath(pid) {
-        <span class="prelude-val">Ok</span>(path) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Path: {}&quot;</span>, path),
-        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {}&quot;</span>, err).unwrap()
+        <span class="prelude-val">Ok</span>(path) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Path: {path}&quot;</span>),
+        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {err}&quot;</span>).unwrap()
     }
 
     <span class="kw">match </span>pidrusage::&lt;RUsageInfoV0&gt;(pid) {
         <span class="prelude-val">Ok</span>(resource_usage) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Memory Used: {} Bytes&quot;</span>, resource_usage.ri_resident_size),
-        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {}&quot;</span>, err).unwrap()
+        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {err}&quot;</span>).unwrap()
     }
 
     <span class="kw">match </span>proc_pid::name(pid) {
-        <span class="prelude-val">Ok</span>(name) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Name: {}&quot;</span>, name),
-        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {}&quot;</span>, err).unwrap()
+        <span class="prelude-val">Ok</span>(name) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Name: {name}&quot;</span>),
+        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {err}&quot;</span>).unwrap()
     }
 
     <span class="kw">match </span>proc_pid::regionfilename(pid, <span class="number">0</span>) {
-        <span class="prelude-val">Ok</span>(regionfilename) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Region Filename (at address 0): {}&quot;</span>, regionfilename),
-        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {}&quot;</span>, err).unwrap()
+        <span class="prelude-val">Ok</span>(regionfilename) =&gt; <span class="macro">println!</span>(<span class="string">&quot;Region Filename (at address 0): {regionfilename}&quot;</span>),
+        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {err}&quot;</span>).unwrap()
     }
 
     <span class="kw">match </span>proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
         <span class="prelude-val">Ok</span>(pids) =&gt; {
             <span class="macro">println!</span>(<span class="string">&quot;There are currently {} processes active&quot;</span>, pids.len());
             <span class="kw">for </span>pid <span class="kw">in </span>pids {
-                <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, pid);
+                <span class="macro">println!</span>(<span class="string">&quot;{pid}&quot;</span>);
             }
         },
-        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {}&quot;</span>, err).unwrap()
+        <span class="prelude-val">Err</span>(err) =&gt; <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>std::io::stderr(), <span class="string">&quot;Error: {err}&quot;</span>).unwrap()
     }
 }
 

@@ -1057,7 +1057,7 @@
         ProcType::ProcAllPIDS =&gt; {
             <span class="kw">let </span><span class="kw-2">mut </span>pids = Vec::&lt;u32&gt;::new();
 
-            <span class="kw">let </span>proc_dir = fs::read_dir(<span class="string">&quot;/proc&quot;</span>).map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Could not read &#39;/proc&#39;: {}&quot;</span>, e))<span class="question-mark">?</span>;
+            <span class="kw">let </span>proc_dir = fs::read_dir(<span class="string">&quot;/proc&quot;</span>).map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Could not read &#39;/proc&#39;: {e}&quot;</span>))<span class="question-mark">?</span>;
 
             <span class="kw">for </span>entry <span class="kw">in </span>proc_dir {
                 <span class="kw">let </span>path = entry.map_err(|<span class="kw">_</span>| <span class="string">&quot;Couldn&#39;t get /proc/ filename&quot;</span>)<span class="question-mark">?</span>.path();
@@ -1144,7 +1144,7 @@
 </span><span class="kw">pub fn </span>pidinfo&lt;T: PIDInfo&gt;(pid: i32, arg: u64) -&gt; <span class="prelude-ty">Result</span>&lt;T, String&gt; {
     <span class="kw">let </span>flavor = T::flavor() <span class="kw">as </span>i32;
     <span class="kw">let </span>buffer_size = mem::size_of::&lt;T&gt;() <span class="kw">as </span>i32;
-    <span class="kw">let </span><span class="kw-2">mut </span>pidinfo = <span class="kw">unsafe </span>{ std::mem::zeroed() };
+    <span class="kw">let </span><span class="kw-2">mut </span>pidinfo = <span class="kw">unsafe </span>{ mem::zeroed() };
     <span class="kw">let </span>buffer_ptr = <span class="kw-2">&amp;mut </span>pidinfo <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_ as </span><span class="kw-2">*mut </span>c_void;
     <span class="kw">let </span>ret: i32;
 
@@ -1260,7 +1260,7 @@
 /// ```
 </span><span class="attribute">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
 </span><span class="kw">pub fn </span>pidpath(pid: i32) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
-    <span class="kw">let </span>exe_path = CString::new(<span class="macro">format!</span>(<span class="string">&quot;/proc/{}/exe&quot;</span>, pid))
+    <span class="kw">let </span>exe_path = CString::new(<span class="macro">format!</span>(<span class="string">&quot;/proc/{pid}/exe&quot;</span>))
         .map_err(|<span class="kw">_</span>| <span class="string">&quot;Could not create CString&quot;</span>)<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>buf: Vec&lt;u8&gt; = Vec::with_capacity(PATH_MAX <span class="kw">as </span>usize - <span class="number">1</span>);
     <span class="kw">let </span>buffer_ptr = buf.as_mut_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>c_char;
@@ -1354,7 +1354,7 @@
 
         <span class="kw">match </span>String::from_utf8(namebuf) {
             <span class="prelude-val">Ok</span>(name) =&gt; <span class="prelude-val">Ok</span>(name),
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid UTF-8 sequence: {}&quot;</span>, e))
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Invalid UTF-8 sequence: {e}&quot;</span>))
         }
     }
 }
@@ -1363,7 +1363,7 @@
 <span class="doccomment">/// Get the name of a Process using it&#39;s Pid
 </span><span class="attribute">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
 </span><span class="kw">pub fn </span>name(pid: i32) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
-    helpers::procfile_field(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;/proc/{}/status&quot;</span>, pid), <span class="string">&quot;Name&quot;</span>)
+    helpers::procfile_field(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;/proc/{pid}/status&quot;</span>), <span class="string">&quot;Name&quot;</span>)
 }
 
 <span class="doccomment">/// Get information on all running processes.
@@ -1455,7 +1455,7 @@
 /// }
 /// ```
 </span><span class="kw">pub fn </span>pidcwd(pid: pid_t) -&gt; <span class="prelude-ty">Result</span>&lt;PathBuf, String&gt; {
-    fs::read_link(<span class="macro">format!</span>(<span class="string">&quot;/proc/{}/cwd&quot;</span>, pid)).map_err(|e| {
+    fs::read_link(<span class="macro">format!</span>(<span class="string">&quot;/proc/{pid}/cwd&quot;</span>)).map_err(|e| {
         e.to_string()
     })
 }
