@@ -47,7 +47,7 @@ fn getpid() -> i32 {
 fn procinfo(pid: i32) {
     match proc_pid::libversion() {
         Ok((major, minor)) => println!("Libversion: {major}.{minor}"),
-        Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+        Err(err) => writeln!(&mut std::io::stderr(), "Error: {err}").unwrap()
     }
 
     println!("Pid: {pid}");
