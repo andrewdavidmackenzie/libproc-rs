@@ -13,7 +13,7 @@ use crate::libproc::libproc::kmesg_buffer;
 
 fn main() {
     match kmesg_buffer::kmsgbuf() {
-        Ok(message) => print!("{}", message),
-        Err(e) => eprintln!("{}", e)
+        Ok(message) => print!("{message}"),
+        Err(e) => eprintln!("{e}")
     }
 }
