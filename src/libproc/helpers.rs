@@ -9,7 +9,7 @@ use std::io::{BufRead, BufReader};
 pub fn get_errno_with_message(return_code: i32) -> String {
     let e = errno();
     let code = e.0;
-    format!("return code = {}, errno = {}, message = '{}'", return_code, code, e)
+    format!("return code = {return_code}, errno = {code}, message = '{e}'")
 }
 
 /// Helper function that depending on the `ret` value:
@@ -25,7 +25,7 @@ pub fn check_errno(ret: i32, buf: &mut Vec<u8>) -> Result<String, String> {
 
         match String::from_utf8(buf.to_vec()) {
             Ok(return_value) => Ok(return_value),
-            Err(e) => Err(format!("Invalid UTF-8 sequence: {}", e))
+            Err(e) => Err(format!("Invalid UTF-8 sequence: {e}"))
         }
     }
 }
@@ -35,10 +35,10 @@ pub fn check_errno(ret: i32, buf: &mut Vec<u8>) -> Result<String, String> {
 /// This will be more useful when implementing more linux functions
 pub fn procfile_field(filename: &str, field_name: &str) -> Result<String, String> {
     const SEPARATOR: &str = ":";
-    let line_header = format!("{}{}", field_name, SEPARATOR);
+    let line_header = format!("{field_name}{SEPARATOR}");
 
     // Open the file in read-only mode (ignoring errors).
-    let file = File::open(filename).map_err(|_| format!("Could not open /proc file '{}'", filename))?;
+    let file = File::open(filename).map_err(|_| format!("Could not open /proc file '{filename}'"))?;
     let reader = BufReader::new(file);
 
     // Read the file line by line using the lines() iterator from std::io::BufRead.
@@ -50,7 +50,7 @@ pub fn procfile_field(filename: &str, field_name: &str) -> Result<String, String
         }
     }
 
-    Err(format!("Could not find the field named '{}' in the /proc FS file name '{}'", field_name, filename))
+    Err(format!("Could not find the field named '{field_name}' in the /proc FS file name '{filename}'"))
 }
 
 #[cfg(target_os = "linux")]
@@ -59,14 +59,14 @@ pub fn procfile_field(filename: &str, field_name: &str) -> Result<String, String
 pub fn parse_memory_string(line: &str) -> Result<u64, String> {
     let parts: Vec<&str> = line.trim().split(' ').collect();
     if parts.is_empty() {
-        return Err(format!("Could not parse Memory String: {}", line))
+        return Err(format!("Could not parse Memory String: {line}"))
     }
     let multiplier: u64 = if parts.len() == 2 {
         match parts[1] {
             "MB" => 1024 * 1024,
             "kB" => 1024,
             "B" => 1,
-            _ => return Err(format!("Could not parse units of Memory String: {}", line))
+            _ => return Err(format!("Could not parse units of Memory String: {line}"))
         }
     } else {
         1

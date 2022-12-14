@@ -202,7 +202,7 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
         ProcType::ProcAllPIDS => {
             let mut pids = Vec::<u32>::new();
 
-            let proc_dir = fs::read_dir("/proc").map_err(|e| format!("Could not read '/proc': {}", e))?;
+            let proc_dir = fs::read_dir("/proc").map_err(|e| format!("Could not read '/proc': {e}"))?;
 
             for entry in proc_dir {
                 let path = entry.map_err(|_| "Couldn't get /proc/ filename")?.path();
@@ -289,7 +289,7 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
     let flavor = T::flavor() as i32;
     let buffer_size = mem::size_of::<T>() as i32;
-    let mut pidinfo = unsafe { std::mem::zeroed() };
+    let mut pidinfo = unsafe { mem::zeroed() };
     let buffer_ptr = &mut pidinfo as *mut _ as *mut c_void;
     let ret: i32;
 
@@ -405,7 +405,7 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 /// ```
 #[cfg(target_os = "linux")]
 pub fn pidpath(pid: i32) -> Result<String, String> {
-    let exe_path = CString::new(format!("/proc/{}/exe", pid))
+    let exe_path = CString::new(format!("/proc/{pid}/exe"))
         .map_err(|_| "Could not create CString")?;
     let mut buf: Vec<u8> = Vec::with_capacity(PATH_MAX as usize - 1);
     let buffer_ptr = buf.as_mut_ptr() as *mut c_char;
@@ -508,7 +508,7 @@ pub fn name(pid: i32) -> Result<String, String> {
 /// Get the name of a Process using it's Pid
 #[cfg(target_os = "linux")]
 pub fn name(pid: i32) -> Result<String, String> {
-    helpers::procfile_field(&format!("/proc/{}/status", pid), "Name")
+    helpers::procfile_field(&format!("/proc/{pid}/status"), "Name")
 }
 
 /// Get information on all running processes.
@@ -600,7 +600,7 @@ pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
 /// }
 /// ```
 pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
-    fs::read_link(format!("/proc/{}/cwd", pid)).map_err(|e| {
+    fs::read_link(format!("/proc/{pid}/cwd")).map_err(|e| {
         e.to_string()
     })
 }
