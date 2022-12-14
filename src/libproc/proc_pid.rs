@@ -499,7 +499,7 @@ pub fn name(pid: i32) -> Result<String, String> {
 
         match String::from_utf8(namebuf) {
             Ok(name) => Ok(name),
-            Err(e) => Err(format!("Invalid UTF-8 sequence: {}", e))
+            Err(e) => Err(format!("Invalid UTF-8 sequence: {e}"))
         }
     }
 }
