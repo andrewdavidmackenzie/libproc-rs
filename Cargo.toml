@@ -31,4 +31,4 @@ name = "dmesg"
 path = "src/dmesg.rs"
 
 [build-dependencies]
-bindgen = { version = "0.63.0", default-features = false, features = ["runtime"] }
+bindgen = { version = "0.64.0", default-features = false, features = ["runtime"] }
