@@ -16,6 +16,8 @@
 <a href="#16" id="16">16</a>
 <a href="#17" id="17">17</a>
 <a href="#18" id="18">18</a>
+<a href="#19" id="19">19</a>
+<a href="#20" id="20">20</a>
 </pre><pre class="rust"><code><span class="attr">#![deny(missing_docs)]
 #![warn(clippy::unwrap_used)]
 
@@ -28,6 +30,8 @@
 <span class="kw">extern crate </span>errno;
 
 <span class="kw">pub mod </span>libproc;
+<span class="doccomment">/// List processes by type and / or by path
+</span><span class="kw">pub mod </span>processes;
 
 <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
 #[allow(warnings, missing_docs)]

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["libproc","`libproc` module provides library methods for getting various types of information about running processes."]]};
+window.SIDEBAR_ITEMS = {"mod":[["libproc","`libproc` module provides library methods for getting various types of information about running processes."],["processes","List processes by type and / or by path"]]};

@@ -783,76 +783,6 @@
 <a href="#783" id="783">783</a>
 <a href="#784" id="784">784</a>
 <a href="#785" id="785">785</a>
-<a href="#786" id="786">786</a>
-<a href="#787" id="787">787</a>
-<a href="#788" id="788">788</a>
-<a href="#789" id="789">789</a>
-<a href="#790" id="790">790</a>
-<a href="#791" id="791">791</a>
-<a href="#792" id="792">792</a>
-<a href="#793" id="793">793</a>
-<a href="#794" id="794">794</a>
-<a href="#795" id="795">795</a>
-<a href="#796" id="796">796</a>
-<a href="#797" id="797">797</a>
-<a href="#798" id="798">798</a>
-<a href="#799" id="799">799</a>
-<a href="#800" id="800">800</a>
-<a href="#801" id="801">801</a>
-<a href="#802" id="802">802</a>
-<a href="#803" id="803">803</a>
-<a href="#804" id="804">804</a>
-<a href="#805" id="805">805</a>
-<a href="#806" id="806">806</a>
-<a href="#807" id="807">807</a>
-<a href="#808" id="808">808</a>
-<a href="#809" id="809">809</a>
-<a href="#810" id="810">810</a>
-<a href="#811" id="811">811</a>
-<a href="#812" id="812">812</a>
-<a href="#813" id="813">813</a>
-<a href="#814" id="814">814</a>
-<a href="#815" id="815">815</a>
-<a href="#816" id="816">816</a>
-<a href="#817" id="817">817</a>
-<a href="#818" id="818">818</a>
-<a href="#819" id="819">819</a>
-<a href="#820" id="820">820</a>
-<a href="#821" id="821">821</a>
-<a href="#822" id="822">822</a>
-<a href="#823" id="823">823</a>
-<a href="#824" id="824">824</a>
-<a href="#825" id="825">825</a>
-<a href="#826" id="826">826</a>
-<a href="#827" id="827">827</a>
-<a href="#828" id="828">828</a>
-<a href="#829" id="829">829</a>
-<a href="#830" id="830">830</a>
-<a href="#831" id="831">831</a>
-<a href="#832" id="832">832</a>
-<a href="#833" id="833">833</a>
-<a href="#834" id="834">834</a>
-<a href="#835" id="835">835</a>
-<a href="#836" id="836">836</a>
-<a href="#837" id="837">837</a>
-<a href="#838" id="838">838</a>
-<a href="#839" id="839">839</a>
-<a href="#840" id="840">840</a>
-<a href="#841" id="841">841</a>
-<a href="#842" id="842">842</a>
-<a href="#843" id="843">843</a>
-<a href="#844" id="844">844</a>
-<a href="#845" id="845">845</a>
-<a href="#846" id="846">846</a>
-<a href="#847" id="847">847</a>
-<a href="#848" id="848">848</a>
-<a href="#849" id="849">849</a>
-<a href="#850" id="850">850</a>
-<a href="#851" id="851">851</a>
-<a href="#852" id="852">852</a>
-<a href="#853" id="853">853</a>
-<a href="#854" id="854">854</a>
-<a href="#855" id="855">855</a>
 </pre><pre class="rust"><code><span class="kw">extern crate </span>libc;
 
 <span class="kw">use </span>std::env;
@@ -863,8 +793,6 @@
 <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
 </span><span class="kw">use </span>std::mem;
 <span class="kw">use </span>std::path::PathBuf;
-<span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
-</span><span class="kw">use </span>std::ptr;
 
 <span class="kw">use </span>libc::pid_t;
 <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
@@ -880,17 +808,16 @@
 <span class="kw">use </span><span class="kw">crate</span>::libproc::work_queue_info::WorkQueueInfo;
 <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
 </span><span class="kw">use </span><span class="kw">crate</span>::osx_libproc_bindings::{
-    proc_libversion, proc_listpids, proc_listpidspath, proc_name, proc_pidinfo, proc_pidpath,
-    proc_regionfilename, PROC_PIDPATHINFO_MAXSIZE,
+    proc_libversion, proc_name, proc_pidinfo, proc_pidpath, proc_regionfilename,
+    PROC_PIDPATHINFO_MAXSIZE,
 };
 
 <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
-</span><span class="kw">use </span><span class="self">self</span>::libc::{c_char, c_void};
+</span><span class="kw">use </span><span class="self">self</span>::libc::c_void;
 <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
 </span><span class="kw">use </span><span class="self">self</span>::libc::{c_char, readlink};
 
-<span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
-</span><span class="kw">use </span>std::ffi::CString;
+<span class="kw">use </span><span class="kw">crate</span>::processes;
 
 <span class="doccomment">/// The `ProcType` type. Used to specify what type of processes you are interested
 /// in in other calls, such as `listpids`.
@@ -998,47 +925,32 @@
     }
 }
 
-<span class="doccomment">/// Returns the PIDs of the active processes that match the ProcType passed in
-///
-/// # Examples
-///
-/// Get the list of running process IDs using `listpids`
-///
-/// ```
-/// use std::io::Write;
-/// use libproc::libproc::proc_pid;
-///
-/// if let Ok(pids) = proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
-///     println!(&quot;Found {} processes using listpids()&quot;, pids.len());
-/// }
-/// ```
-</span><span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
-</span><span class="kw">pub fn </span>listpids(proc_types: ProcType) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u32&gt;, String&gt; {
-    <span class="kw">let </span>buffer_size = <span class="kw">unsafe </span>{ proc_listpids(proc_types <span class="kw">as </span>u32, <span class="number">0</span>, ptr::null_mut(), <span class="number">0</span>) };
-    <span class="kw">if </span>buffer_size &lt;= <span class="number">0 </span>{
-        <span class="kw">return </span><span class="prelude-val">Err</span>(helpers::get_errno_with_message(buffer_size));
-    }
+<span class="doccomment">/// Map `ProcType` to the new `ProcFilter` enum; the values match the now
+/// deprecated implementation of `listpids`
+</span><span class="kw">impl </span>From&lt;ProcType&gt; <span class="kw">for </span>processes::ProcFilter {
+    <span class="kw">fn </span>from(proc_type: ProcType) -&gt; <span class="self">Self </span>{
+        <span class="kw">use </span>processes::ProcFilter;
 
-    <span class="kw">let </span>capacity = buffer_size <span class="kw">as </span>usize / mem::size_of::&lt;u32&gt;();
-    <span class="kw">let </span><span class="kw-2">mut </span>pids: Vec&lt;u32&gt; = Vec::with_capacity(capacity);
-    <span class="kw">let </span>buffer_ptr = pids.as_mut_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>c_void;
-
-    <span class="kw">let </span>ret = <span class="kw">unsafe </span>{ proc_listpids(proc_types <span class="kw">as </span>u32, <span class="number">0</span>, buffer_ptr, buffer_size) };
-
-    <span class="kw">if </span>ret &lt;= <span class="number">0 </span>{
-        <span class="prelude-val">Err</span>(helpers::get_errno_with_message(ret))
-    } <span class="kw">else </span>{
-        <span class="kw">let </span>items_count = ret <span class="kw">as </span>usize / mem::size_of::&lt;u32&gt;() - <span class="number">1</span>;
-        <span class="kw">unsafe </span>{
-            pids.set_len(items_count);
+        <span class="kw">match </span>proc_type {
+            ProcType::ProcAllPIDS =&gt; ProcFilter::All,
+            ProcType::ProcPGRPOnly =&gt; ProcFilter::ByProgramGroup { pgrpid: <span class="number">0 </span>},
+            ProcType::ProcTTYOnly =&gt; ProcFilter::ByTTY { tty: <span class="number">0 </span>},
+            ProcType::ProcUIDOnly =&gt; ProcFilter::ByUID { uid: <span class="number">0 </span>},
+            ProcType::ProcRUIDOnly =&gt; ProcFilter::ByRealUID { ruid: <span class="number">0 </span>},
+            ProcType::ProcPPIDOnly =&gt; ProcFilter::ByParentProcess { ppid: <span class="number">0 </span>},
         }
-
-        <span class="prelude-val">Ok</span>(pids)
     }
 }
 
 <span class="doccomment">/// Returns the PIDs of the active processes that match the ProcType passed in
 ///
+/// # Note
+///
+/// This function is deprecated in favor of
+/// [`libproc::processes::pids_by_type()`][crate::processes::pids_by_type],
+/// which lets you specify what PGRP / TTY / UID / RUID / PPID you want to
+/// filter by.
+///
 /// # Examples
 ///
 /// Get the list of running process IDs using `listpids`
@@ -1051,70 +963,39 @@
 ///     println!(&quot;Found {} processes using listpids()&quot;, pids.len());
 /// }
 /// ```
-</span><span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
+</span><span class="attr">#[deprecated(
+    since = <span class="string">&quot;0.13.0&quot;</span>,
+    note = <span class="string">&quot;Please use `libproc::processes::pids_by_type()` instead.&quot;
+</span>)]
 </span><span class="kw">pub fn </span>listpids(proc_types: ProcType) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u32&gt;, String&gt; {
-    <span class="kw">match </span>proc_types {
-        ProcType::ProcAllPIDS =&gt; {
-            <span class="kw">let </span><span class="kw-2">mut </span>pids = Vec::&lt;u32&gt;::new();
-
-            <span class="kw">let </span>proc_dir = fs::read_dir(<span class="string">&quot;/proc&quot;</span>).map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Could not read &#39;/proc&#39;: {e}&quot;</span>))<span class="question-mark">?</span>;
-
-            <span class="kw">for </span>entry <span class="kw">in </span>proc_dir {
-                <span class="kw">let </span>path = entry.map_err(|<span class="kw">_</span>| <span class="string">&quot;Couldn&#39;t get /proc/ filename&quot;</span>)<span class="question-mark">?</span>.path();
-                <span class="kw">let </span>filename = path.file_name();
-                <span class="kw">if let </span><span class="prelude-val">Some</span>(name) = filename {
-                    <span class="kw">if let </span><span class="prelude-val">Some</span>(n) = name.to_str() {
-                        <span class="kw">if let </span><span class="prelude-val">Ok</span>(pid) = n.parse::&lt;u32&gt;() {
-                            pids.push(pid);
-                        }
-                    }
-                }
-            }
-
-            <span class="prelude-val">Ok</span>(pids)
-        }
-        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="string">&quot;Unsupported ProcType&quot;</span>.to_owned())
-    }
+    processes::pids_by_type(proc_types.into()).map_err(|e| {
+        e.raw_os_error()
+            .map_or_else(|| e.to_string(), helpers::get_errno_with_message)
+    })
 }
 
 <span class="doccomment">/// Search through the current processes looking for open file references which match
 /// a specified path or volume.
+///
+/// # Note
+///
+/// This function is deprecated in favor of
+/// [`libproc::processes::pids_by_type_and_path()`][crate::processes::pids_by_type_and_path],
+/// which lets you specify what PGRP / TTY / UID / RUID / PPID you want to
+/// filter by.
+///
 </span><span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
+#[deprecated(
+    since = <span class="string">&quot;0.13.0&quot;</span>,
+    note = <span class="string">&quot;Please use `libproc::processes::pids_by_type_and_path()` instead.&quot;
+</span>)]
 </span><span class="kw">pub fn </span>listpidspath(proc_types: ProcType, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u32&gt;, String&gt; {
-    <span class="kw">let </span>c_path = CString::new(path).map_err(|<span class="kw">_</span>| <span class="string">&quot;CString::new failed&quot;</span>.to_string())<span class="question-mark">?</span>;
-
-    <span class="kw">let </span>buffer_size = <span class="kw">unsafe </span>{
-        proc_listpidspath(proc_types <span class="kw">as </span>u32, <span class="number">0</span>, c_path.as_ptr() <span class="kw">as </span>* <span class="kw">const </span>c_char, <span class="number">0</span>, ptr::null_mut(), <span class="number">0</span>)
-    };
-    <span class="kw">if </span>buffer_size &lt;= <span class="number">0 </span>{
-        <span class="kw">return </span><span class="prelude-val">Err</span>(helpers::get_errno_with_message(buffer_size));
-    }
-
-    <span class="kw">let </span>capacity = buffer_size <span class="kw">as </span>usize / mem::size_of::&lt;u32&gt;();
-    <span class="kw">let </span><span class="kw-2">mut </span>pids: Vec&lt;u32&gt; = Vec::with_capacity(capacity);
-    <span class="kw">let </span>buffer_ptr = pids.as_mut_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>c_void;
-
-    <span class="kw">let </span>ret = <span class="kw">unsafe </span>{
-        proc_listpidspath(
-            proc_types <span class="kw">as </span>u32,
-            <span class="number">0</span>,
-            c_path.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>c_char,
-            <span class="number">0</span>,
-            buffer_ptr,
-            buffer_size,
-        )
-    };
-
-    <span class="kw">if </span>ret &lt;= <span class="number">0 </span>{
-        <span class="prelude-val">Err</span>(helpers::get_errno_with_message(ret))
-    } <span class="kw">else </span>{
-        <span class="kw">let </span>items_count = ret <span class="kw">as </span>usize / mem::size_of::&lt;u32&gt;() - <span class="number">1</span>;
-        <span class="kw">unsafe </span>{
-            pids.set_len(items_count);
-        }
-
-        <span class="prelude-val">Ok</span>(pids)
-    }
+    processes::pids_by_type_and_path(proc_types.into(), <span class="kw-2">&amp;</span>PathBuf::from(path), <span class="bool-val">false</span>, <span class="bool-val">false</span>).map_err(
+        |e| {
+            e.raw_os_error()
+                .map_or_else(|| e.to_string(), helpers::get_errno_with_message)
+        },
+    )
 }
 
 <span class="doccomment">/// Get info about a process, task, thread or work queue by specifying the appropriate type for `T`:
@@ -1520,10 +1401,9 @@
 
     <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
     </span><span class="kw">use super</span>::{libversion, listpidinfo, ListThreads, pidinfo};
-    <span class="kw">use super</span>::{name, cwdself, listpids, pidpath};
+    <span class="kw">use super</span>::{name, cwdself, pidpath};
     <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
     </span><span class="kw">use </span><span class="kw">super</span>::pidcwd;
-    <span class="kw">use </span><span class="kw">crate</span>::libproc::proc_pid::ProcType;
     <span class="kw">use </span><span class="kw">super</span>::am_root;
     <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
     </span><span class="kw">use </span><span class="kw">crate</span>::libproc::helpers;
@@ -1619,18 +1499,6 @@
     }
 
     <span class="attr">#[test]
-    </span><span class="kw">fn </span>listpids_test() {
-        <span class="kw">let </span>pids = listpids(ProcType::ProcAllPIDS).expect(<span class="string">&quot;Could not list pids&quot;</span>);
-        <span class="macro">assert!</span>(pids.len() &gt; <span class="number">1</span>);
-    }
-
-    <span class="attr">#[test]
-    #[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
-    </span><span class="kw">fn </span>listpids_invalid_type_test() {
-        <span class="macro">assert!</span>(listpids(ProcType::ProcPGRPOnly).is_err());
-    }
-
-    <span class="attr">#[test]
     </span><span class="kw">fn </span>name_test() {
         <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
             </span><span class="kw">let </span>expected_name = <span class="string">&quot;systemd&quot;</span>;
@@ -1698,14 +1566,6 @@
         <span class="kw">if </span>am_root() {
             <span class="macro">assert!</span>(helpers::procfile_field(<span class="string">&quot;/proc/1/status&quot;</span>, <span class="string">&quot;invalid&quot;</span>).is_err());
         }
-    }
-
-    <span class="attr">#[test]
-    #[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
-    </span><span class="kw">fn </span>listpidspath_test() {
-        <span class="kw">let </span>pids = <span class="kw">super</span>::listpidspath(ProcType::ProcAllPIDS, <span class="string">&quot;/&quot;</span>)
-            .expect(<span class="string">&quot;listpidspath() failed&quot;</span>);
-        <span class="macro">assert!</span>(pids.len() &gt; <span class="number">1</span>);
     }
 }
 </code></pre></div>
