@@ -30,6 +30,7 @@ use std::env;
 use std::io::Write;
 use libproc::libproc::proc_pid;
 use libproc::libproc::pid_rusage::{pidrusage, RUsageInfoV0};
+use libproc::processes;
 
 mod c {
     extern crate libc;
@@ -72,7 +73,7 @@ fn procinfo(pid: i32) {
         Err(err) => writeln!(&mut std::io::stderr(), "Error: {err}").unwrap()
     }
 
-    match proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
+    match processes::pids_by_type(processes::ProcFilter::All) {
         Ok(pids) => {
             println!("There are currently {} processes active", pids.len());
             for pid in pids {
