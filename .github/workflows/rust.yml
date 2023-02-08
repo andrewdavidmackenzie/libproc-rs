@@ -35,11 +35,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Install latest nightly
+      uses: actions-rs/toolchain@v1
       with:
-        fetch-depth: 2
-    - uses: hecrj/setup-rust-action@v1.3.4
-      with:
-        rust-version: ${{ matrix.rust }}
+        profile: minimal
+        toolchain: nightly
+        override: true
         components: clippy
 
     - name: Clippy
