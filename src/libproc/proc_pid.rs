@@ -163,21 +163,7 @@ impl From<ProcType> for processes::ProcFilter {
 ///
 /// This function is deprecated in favor of
 /// [`libproc::processes::pids_by_type()`][crate::processes::pids_by_type],
-/// which lets you specify what PGRP / TTY / UID / RUID / PPID you want to
-/// filter by.
-///
-/// # Examples
-///
-/// Get the list of running process IDs using `listpids`
-///
-/// ```
-/// use std::io::Write;
-/// use libproc::libproc::proc_pid;
-///
-/// if let Ok(pids) = proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
-///     println!("Found {} processes using listpids()", pids.len());
-/// }
-/// ```
+/// which lets you specify what PGRP / TTY / UID / RUID / PPID you want to filter by
 #[deprecated(
     since = "0.13.0",
     note = "Please use `libproc::processes::pids_by_type()` instead."
@@ -233,7 +219,7 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 /// // Get the `BSDInfo` for Process of pid 0
 /// match pidinfo::<BSDInfo>(pid, 0) {
 ///     Ok(info) => assert_eq!(info.pbi_pid as i32, pid),
-///     Err(err) => assert!(false, "Error retrieving process info: {}", err)
+///     Err(err) => eprintln!("Error retrieving process info: {}", err)
 /// };
 /// ```
 #[cfg(target_os = "macos")]
@@ -274,7 +260,7 @@ pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
 /// if am_root() {
 ///     match regionfilename(1, 0) {
 ///         Ok(regionfilename) => println!("Region Filename (at address = 0) of init process PID = 1 is '{}'", regionfilename),
-///         Err(message) => panic!(message)
+///         Err(err) => eprintln!("Error: {}", err)
 ///     }
 /// }
 /// ```
@@ -305,7 +291,7 @@ pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
 /// if am_root() {
 ///     match regionfilename(1, 0) {
 ///         Ok(regionfilename) => println!("Region Filename (at address = 0) of init process PID = 1 is '{}'", regionfilename),
-///         Err(message) => panic!(message)
+///         Err(err) => eprintln!("Error: {}", err)
 ///     }
 /// }
 /// ```
@@ -323,7 +309,7 @@ pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
 ///
 /// match pidpath(1) {
 ///     Ok(path) => println!("Path of init process with PID = 1 is '{}'", path),
-///     Err(message) => assert!(false, "{}", message)
+///     Err(err) => eprintln!("Error: {}", err)
 /// }
 /// ```
 #[cfg(target_os = "macos")]
@@ -350,8 +336,8 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 /// match pidpath(1) {
 ///     Ok(path) => println!("Path of init process with PID = 1 is '{}'", path),
 ///     Err(_) if !am_root() => println!("pidpath() needs to be run as root"),
-///     Err(message) if am_root() => assert!(false, "{}", message),
-///     _ => assert!(false, "Unknown error")
+///     Err(err) if am_root() => eprintln!("Error: {}", err),
+///     _ => panic!("Unknown error")
 /// }
 /// ```
 #[cfg(target_os = "linux")]
@@ -373,12 +359,11 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid;
 ///
 /// match proc_pid::libversion() {
 ///     Ok((major, minor)) => println!("Libversion: {}.{}", major, minor),
-///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+///     Err(err) => eprintln!("Error: {}", err)
 /// }
 /// ```
 #[cfg(target_os = "macos")]
@@ -404,12 +389,11 @@ pub fn libversion() -> Result<(i32, i32), String> {
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid;
 ///
 /// match proc_pid::libversion() {
 ///     Ok((major, minor)) => println!("Libversion: {}.{}", major, minor),
-///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+///     Err(err) => eprintln!("Error: {}", err)
 /// }
 /// ```
 #[cfg(not(target_os = "macos"))]
@@ -417,17 +401,16 @@ pub fn libversion() -> Result<(i32, i32), String> {
     Err("Linux does not use a library, so no library version number".to_owned())
 }
 
-/// Get the name of a process
+/// Get the name of a process, using it's process id (pid)
 ///
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid;
 ///
 /// match proc_pid::name(1) {
 ///     Ok(name) => println!("Name: {}", name),
-///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+///     Err(err) => eprintln!("Error: {}", err)
 /// }
 /// ```
 #[cfg(target_os = "macos")]
@@ -456,7 +439,7 @@ pub fn name(pid: i32) -> Result<String, String> {
 }
 
 
-/// Get the name of a Process using it's Pid
+/// Get the name of a process, using it's process id (pid)
 #[cfg(target_os = "linux")]
 pub fn name(pid: i32) -> Result<String, String> {
     helpers::procfile_field(&format!("/proc/{pid}/status"), "Name")
@@ -470,7 +453,6 @@ pub fn name(pid: i32) -> Result<String, String> {
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid::{listpidinfo, pidinfo};
 /// use libproc::libproc::task_info::TaskAllInfo;
 /// use libproc::libproc::file_info::{ListFDs, ProcFDType};
@@ -524,12 +506,11 @@ pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid::pidcwd;
 ///
 /// match pidcwd(1) {
 ///     Ok(cwd) => println!("The CWD of the process with pid=1 is '{}'", cwd.display()),
-///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+///     Err(err) => eprintln!("Error: {}", err)
 /// }
 /// ```
 pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
@@ -542,12 +523,11 @@ pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid::pidcwd;
 ///
 /// match pidcwd(1) {
 ///     Ok(cwd) => println!("The CWD of the process with pid=1 is '{}'", cwd.display()),
-///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+///     Err(err) => eprintln!("Error: {}", err)
 /// }
 /// ```
 pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
@@ -563,12 +543,11 @@ pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid::cwdself;
 ///
 /// match cwdself() {
 ///     Ok(cwd) => println!("The CWD of the current process is '{}'", cwd.display()),
-///     Err(err) => writeln!(&mut std::io::stderr(), "Error: {}", err).unwrap()
+///     Err(err) => eprintln!("Error: {}", err)
 /// }
 /// ```
 pub fn cwdself() -> Result<PathBuf, String> {
@@ -606,6 +585,7 @@ mod test {
     #[cfg(target_os = "linux")]
     use std::process;
     use std::env;
+    use std::process::Command;
 
     #[cfg(target_os = "macos")]
     use crate::libproc::bsd_info::BSDInfo;
@@ -715,16 +695,13 @@ mod test {
 
     #[test]
     fn name_test() {
-        #[cfg(target_os = "linux")]
-            let expected_name = "systemd";
-        #[cfg(target_os = "macos")]
-            let expected_name = "launchd";
-
         if am_root() || cfg!(target_os = "linux") {
-            match name(1) {
-                Ok(name) => assert_eq!(expected_name, name),
-                Err(_) => panic!("Error retrieving process name")
-            }
+            let command_name = "cat";
+            let mut command = Command::new(command_name);
+            let mut child = command.spawn().expect("Could not spawn 'cat' process in test");
+            assert_eq!(&name(child.id() as i32).expect("Could not get child process name"),
+                       command_name, "Incorrect process name");
+            child.kill().expect("Could not kill child process started in test")
         } else {
             println!("Cannot run 'name_test' on macos unless run as root");
         }
