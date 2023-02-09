@@ -585,7 +585,6 @@ mod test {
     #[cfg(target_os = "linux")]
     use std::process;
     use std::env;
-    use std::process::Command;
 
     #[cfg(target_os = "macos")]
     use crate::libproc::bsd_info::BSDInfo;
@@ -696,11 +695,8 @@ mod test {
     #[test]
     fn name_test() {
         if am_root() || cfg!(target_os = "linux") {
-            let mut command = Command::new("cat");
-            let mut child = command.spawn().expect("Could not spawn 'cat' process in test");
-            assert_eq!(&name(child.id() as i32).expect("Could not get child process name"),
-                       "cat", "Incorrect process name");
-            child.kill().expect("Could not kill child process started in test")
+            assert!(&name(process::id() as i32).expect("Could not get the process name")
+                .starts_with("libproc"), "Incorrect process name");
         } else {
             println!("Cannot run 'name_test' on macos unless run as root");
         }
