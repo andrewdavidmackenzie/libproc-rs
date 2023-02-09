@@ -58,7 +58,11 @@ pub fn kmsgbuf() -> Result<String, String> {
 /// has blocked and can't send anymore. Returning will end the thread and the channel.
 #[cfg(target_os = "linux")]
 pub fn kmsgbuf() -> Result<String, String> {
-    let file = File::open("/dev/kmsg").map_err(|_| "Could not open /dev/kmsg file '{}'")?;
+    let mut file = File::open("/dev/kmsg");
+    if file.is_err() {
+        file = File::open("/dev/console");
+    }
+    let file = file.map_err(|_| "Could not open /dev/kmsg nor /dev/console file '{}'")?;
     let kmsg_channel = spawn_kmsg_channel(file);
     let duration = time::Duration::from_millis(1);
     let mut buf = String::new();
@@ -90,9 +94,6 @@ fn spawn_kmsg_channel(file: File) -> Receiver<String> {
 
 #[cfg(test)]
 mod test {
-    use std::io;
-    use std::io::Write;
-
     use crate::libproc::proc_pid::am_root;
 
     use super::kmsgbuf;
@@ -105,7 +106,7 @@ mod test {
                 Err(message) => panic!("{}", message)
             }
         } else {
-            writeln!(&mut io::stdout(), "test libproc::kmesg_buffer::kmessage_buffer_test ... skipped as it needs to be run as root").unwrap();
+            println!("test skipped as it needs to be run as root");
         }
     }
 }
