@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/libproc/proc_pid.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>proc_pid.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-6827029ac823cab7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-8af5e100b21cd173.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../libproc/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/libproc/proc_pid.rs`."><title>proc_pid.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-0ef3deca4ed45ad8.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-f501212b8b071243.css"><link rel="stylesheet" disabled href="../../../static.files/dark-e92fc12c34ff89d3.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-a0090c8b1ced384f.css"><script src="../../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-364b95f387bc3166.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../libproc/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -748,41 +748,6 @@
 <a href="#748" id="748">748</a>
 <a href="#749" id="749">749</a>
 <a href="#750" id="750">750</a>
-<a href="#751" id="751">751</a>
-<a href="#752" id="752">752</a>
-<a href="#753" id="753">753</a>
-<a href="#754" id="754">754</a>
-<a href="#755" id="755">755</a>
-<a href="#756" id="756">756</a>
-<a href="#757" id="757">757</a>
-<a href="#758" id="758">758</a>
-<a href="#759" id="759">759</a>
-<a href="#760" id="760">760</a>
-<a href="#761" id="761">761</a>
-<a href="#762" id="762">762</a>
-<a href="#763" id="763">763</a>
-<a href="#764" id="764">764</a>
-<a href="#765" id="765">765</a>
-<a href="#766" id="766">766</a>
-<a href="#767" id="767">767</a>
-<a href="#768" id="768">768</a>
-<a href="#769" id="769">769</a>
-<a href="#770" id="770">770</a>
-<a href="#771" id="771">771</a>
-<a href="#772" id="772">772</a>
-<a href="#773" id="773">773</a>
-<a href="#774" id="774">774</a>
-<a href="#775" id="775">775</a>
-<a href="#776" id="776">776</a>
-<a href="#777" id="777">777</a>
-<a href="#778" id="778">778</a>
-<a href="#779" id="779">779</a>
-<a href="#780" id="780">780</a>
-<a href="#781" id="781">781</a>
-<a href="#782" id="782">782</a>
-<a href="#783" id="783">783</a>
-<a href="#784" id="784">784</a>
-<a href="#785" id="785">785</a>
 </pre><pre class="rust"><code><span class="kw">extern crate </span>libc;
 
 <span class="kw">use </span>std::env;
@@ -948,21 +913,7 @@
 ///
 /// This function is deprecated in favor of
 /// [`libproc::processes::pids_by_type()`][crate::processes::pids_by_type],
-/// which lets you specify what PGRP / TTY / UID / RUID / PPID you want to
-/// filter by.
-///
-/// # Examples
-///
-/// Get the list of running process IDs using `listpids`
-///
-/// ```
-/// use std::io::Write;
-/// use libproc::libproc::proc_pid;
-///
-/// if let Ok(pids) = proc_pid::listpids(proc_pid::ProcType::ProcAllPIDS) {
-///     println!(&quot;Found {} processes using listpids()&quot;, pids.len());
-/// }
-/// ```
+/// which lets you specify what PGRP / TTY / UID / RUID / PPID you want to filter by
 </span><span class="attr">#[deprecated(
     since = <span class="string">&quot;0.13.0&quot;</span>,
     note = <span class="string">&quot;Please use `libproc::processes::pids_by_type()` instead.&quot;
@@ -1018,7 +969,7 @@
 /// // Get the `BSDInfo` for Process of pid 0
 /// match pidinfo::&lt;BSDInfo&gt;(pid, 0) {
 ///     Ok(info) =&gt; assert_eq!(info.pbi_pid as i32, pid),
-///     Err(err) =&gt; assert!(false, &quot;Error retrieving process info: {}&quot;, err)
+///     Err(err) =&gt; eprintln!(&quot;Error retrieving process info: {}&quot;, err)
 /// };
 /// ```
 </span><span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
@@ -1059,7 +1010,7 @@
 /// if am_root() {
 ///     match regionfilename(1, 0) {
 ///         Ok(regionfilename) =&gt; println!(&quot;Region Filename (at address = 0) of init process PID = 1 is &#39;{}&#39;&quot;, regionfilename),
-///         Err(message) =&gt; panic!(message)
+///         Err(err) =&gt; eprintln!(&quot;Error: {}&quot;, err)
 ///     }
 /// }
 /// ```
@@ -1090,7 +1041,7 @@
 /// if am_root() {
 ///     match regionfilename(1, 0) {
 ///         Ok(regionfilename) =&gt; println!(&quot;Region Filename (at address = 0) of init process PID = 1 is &#39;{}&#39;&quot;, regionfilename),
-///         Err(message) =&gt; panic!(message)
+///         Err(err) =&gt; eprintln!(&quot;Error: {}&quot;, err)
 ///     }
 /// }
 /// ```
@@ -1108,7 +1059,7 @@
 ///
 /// match pidpath(1) {
 ///     Ok(path) =&gt; println!(&quot;Path of init process with PID = 1 is &#39;{}&#39;&quot;, path),
-///     Err(message) =&gt; assert!(false, &quot;{}&quot;, message)
+///     Err(err) =&gt; eprintln!(&quot;Error: {}&quot;, err)
 /// }
 /// ```
 </span><span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
@@ -1135,8 +1086,8 @@
 /// match pidpath(1) {
 ///     Ok(path) =&gt; println!(&quot;Path of init process with PID = 1 is &#39;{}&#39;&quot;, path),
 ///     Err(_) if !am_root() =&gt; println!(&quot;pidpath() needs to be run as root&quot;),
-///     Err(message) if am_root() =&gt; assert!(false, &quot;{}&quot;, message),
-///     _ =&gt; assert!(false, &quot;Unknown error&quot;)
+///     Err(err) if am_root() =&gt; eprintln!(&quot;Error: {}&quot;, err),
+///     _ =&gt; panic!(&quot;Unknown error&quot;)
 /// }
 /// ```
 </span><span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
@@ -1158,12 +1109,11 @@
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid;
 ///
 /// match proc_pid::libversion() {
 ///     Ok((major, minor)) =&gt; println!(&quot;Libversion: {}.{}&quot;, major, minor),
-///     Err(err) =&gt; writeln!(&amp;mut std::io::stderr(), &quot;Error: {}&quot;, err).unwrap()
+///     Err(err) =&gt; eprintln!(&quot;Error: {}&quot;, err)
 /// }
 /// ```
 </span><span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
@@ -1189,12 +1139,11 @@
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid;
 ///
 /// match proc_pid::libversion() {
 ///     Ok((major, minor)) =&gt; println!(&quot;Libversion: {}.{}&quot;, major, minor),
-///     Err(err) =&gt; writeln!(&amp;mut std::io::stderr(), &quot;Error: {}&quot;, err).unwrap()
+///     Err(err) =&gt; eprintln!(&quot;Error: {}&quot;, err)
 /// }
 /// ```
 </span><span class="attr">#[cfg(not(target_os = <span class="string">&quot;macos&quot;</span>))]
@@ -1202,17 +1151,16 @@
     <span class="prelude-val">Err</span>(<span class="string">&quot;Linux does not use a library, so no library version number&quot;</span>.to_owned())
 }
 
-<span class="doccomment">/// Get the name of a process
+<span class="doccomment">/// Get the name of a process, using it&#39;s process id (pid)
 ///
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid;
 ///
 /// match proc_pid::name(1) {
 ///     Ok(name) =&gt; println!(&quot;Name: {}&quot;, name),
-///     Err(err) =&gt; writeln!(&amp;mut std::io::stderr(), &quot;Error: {}&quot;, err).unwrap()
+///     Err(err) =&gt; eprintln!(&quot;Error: {}&quot;, err)
 /// }
 /// ```
 </span><span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
@@ -1241,7 +1189,7 @@
 }
 
 
-<span class="doccomment">/// Get the name of a Process using it&#39;s Pid
+<span class="doccomment">/// Get the name of a process, using it&#39;s process id (pid)
 </span><span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
 </span><span class="kw">pub fn </span>name(pid: i32) -&gt; <span class="prelude-ty">Result</span>&lt;String, String&gt; {
     helpers::procfile_field(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;/proc/{pid}/status&quot;</span>), <span class="string">&quot;Name&quot;</span>)
@@ -1255,7 +1203,6 @@
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid::{listpidinfo, pidinfo};
 /// use libproc::libproc::task_info::TaskAllInfo;
 /// use libproc::libproc::file_info::{ListFDs, ProcFDType};
@@ -1309,12 +1256,11 @@
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid::pidcwd;
 ///
 /// match pidcwd(1) {
 ///     Ok(cwd) =&gt; println!(&quot;The CWD of the process with pid=1 is &#39;{}&#39;&quot;, cwd.display()),
-///     Err(err) =&gt; writeln!(&amp;mut std::io::stderr(), &quot;Error: {}&quot;, err).unwrap()
+///     Err(err) =&gt; eprintln!(&quot;Error: {}&quot;, err)
 /// }
 /// ```
 </span><span class="kw">pub fn </span>pidcwd(_pid: pid_t) -&gt; <span class="prelude-ty">Result</span>&lt;PathBuf, String&gt; {
@@ -1327,12 +1273,11 @@
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid::pidcwd;
 ///
 /// match pidcwd(1) {
 ///     Ok(cwd) =&gt; println!(&quot;The CWD of the process with pid=1 is &#39;{}&#39;&quot;, cwd.display()),
-///     Err(err) =&gt; writeln!(&amp;mut std::io::stderr(), &quot;Error: {}&quot;, err).unwrap()
+///     Err(err) =&gt; eprintln!(&quot;Error: {}&quot;, err)
 /// }
 /// ```
 </span><span class="kw">pub fn </span>pidcwd(pid: pid_t) -&gt; <span class="prelude-ty">Result</span>&lt;PathBuf, String&gt; {
@@ -1348,12 +1293,11 @@
 /// # Examples
 ///
 /// ```
-/// use std::io::Write;
 /// use libproc::libproc::proc_pid::cwdself;
 ///
 /// match cwdself() {
 ///     Ok(cwd) =&gt; println!(&quot;The CWD of the current process is &#39;{}&#39;&quot;, cwd.display()),
-///     Err(err) =&gt; writeln!(&amp;mut std::io::stderr(), &quot;Error: {}&quot;, err).unwrap()
+///     Err(err) =&gt; eprintln!(&quot;Error: {}&quot;, err)
 /// }
 /// ```
 </span><span class="kw">pub fn </span>cwdself() -&gt; <span class="prelude-ty">Result</span>&lt;PathBuf, String&gt; {
@@ -1388,8 +1332,7 @@
 <span class="comment">// run tests with &#39;cargo test -- --nocapture&#39; to see the test output
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>test {
-    <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
-    </span><span class="kw">use </span>std::process;
+    <span class="kw">use </span>std::process;
     <span class="kw">use </span>std::env;
 
     <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
@@ -1417,7 +1360,6 @@
     <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
     #[test]
     </span><span class="kw">fn </span>pidinfo_test() {
-        <span class="kw">use </span>std::process;
         <span class="kw">let </span>pid = process::id() <span class="kw">as </span>i32;
 
         <span class="kw">match </span>pidinfo::&lt;BSDInfo&gt;(pid, <span class="number">0</span>) {
@@ -1429,7 +1371,6 @@
     <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
     #[test]
     </span><span class="kw">fn </span>taskinfo_test() {
-        <span class="kw">use </span>std::process;
         <span class="kw">let </span>pid = process::id() <span class="kw">as </span>i32;
 
         <span class="kw">match </span>pidinfo::&lt;TaskInfo&gt;(pid, <span class="number">0</span>) {
@@ -1441,7 +1382,6 @@
     <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
     #[test]
     </span><span class="kw">fn </span>taskallinfo_test() {
-        <span class="kw">use </span>std::process;
         <span class="kw">let </span>pid = process::id() <span class="kw">as </span>i32;
 
         <span class="kw">match </span>pidinfo::&lt;TaskAllInfo&gt;(pid, <span class="number">0</span>) {
@@ -1454,7 +1394,6 @@
     #[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
     #[test]
     </span><span class="kw">fn </span>threadinfo_test() {
-        <span class="kw">use </span>std::process;
         <span class="kw">let </span>pid = process::id() <span class="kw">as </span>i32;
 
         <span class="kw">match </span>pidinfo::&lt;ThreadInfo&gt;(pid, <span class="number">0</span>) {
@@ -1467,7 +1406,6 @@
     #[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
     #[test]
     </span><span class="kw">fn </span>workqueueinfo_test() {
-        <span class="kw">use </span>std::process;
         <span class="kw">let </span>pid = process::id() <span class="kw">as </span>i32;
 
         <span class="kw">match </span>pidinfo::&lt;WorkQueueInfo&gt;(pid, <span class="number">0</span>) {
@@ -1479,7 +1417,6 @@
     <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
     #[test]
     </span><span class="kw">fn </span>listpidinfo_test() {
-        <span class="kw">use </span>std::process;
         <span class="kw">let </span>pid = process::id() <span class="kw">as </span>i32;
 
         <span class="kw">if let </span><span class="prelude-val">Ok</span>(info) = pidinfo::&lt;TaskAllInfo&gt;(pid, <span class="number">0</span>) {
@@ -1500,16 +1437,9 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>name_test() {
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;linux&quot;</span>)]
-            </span><span class="kw">let </span>expected_name = <span class="string">&quot;systemd&quot;</span>;
-        <span class="attr">#[cfg(target_os = <span class="string">&quot;macos&quot;</span>)]
-            </span><span class="kw">let </span>expected_name = <span class="string">&quot;launchd&quot;</span>;
-
         <span class="kw">if </span>am_root() || <span class="macro">cfg!</span>(target_os = <span class="string">&quot;linux&quot;</span>) {
-            <span class="kw">match </span>name(<span class="number">1</span>) {
-                <span class="prelude-val">Ok</span>(name) =&gt; <span class="macro">assert_eq!</span>(expected_name, name),
-                <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;Error retrieving process name&quot;</span>)
-            }
+            <span class="macro">assert!</span>(<span class="kw-2">&amp;</span>name(process::id() <span class="kw">as </span>i32).expect(<span class="string">&quot;Could not get the process name&quot;</span>)
+                .starts_with(<span class="string">&quot;libproc&quot;</span>), <span class="string">&quot;Incorrect process name&quot;</span>);
         } <span class="kw">else </span>{
             <span class="macro">println!</span>(<span class="string">&quot;Cannot run &#39;name_test&#39; on macos unless run as root&quot;</span>);
         }
@@ -1569,4 +1499,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="libproc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0 (fc594f156 2023-01-24)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="libproc" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (ef934d9b6 2023-02-08)" data-search-js="search-28136cea55c34037.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
