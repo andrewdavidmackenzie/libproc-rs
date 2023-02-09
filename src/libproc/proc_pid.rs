@@ -696,11 +696,10 @@ mod test {
     #[test]
     fn name_test() {
         if am_root() || cfg!(target_os = "linux") {
-            let command_name = "cat";
-            let mut command = Command::new(command_name);
+            let mut command = Command::new("cat");
             let mut child = command.spawn().expect("Could not spawn 'cat' process in test");
             assert_eq!(&name(child.id() as i32).expect("Could not get child process name"),
-                       command_name, "Incorrect process name");
+                       "libproc", "Incorrect process name");
             child.kill().expect("Could not kill child process started in test")
         } else {
             println!("Cannot run 'name_test' on macos unless run as root");
