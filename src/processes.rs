@@ -5,7 +5,7 @@ use std::path::Path;
 use crate::libproc::sys::*;
 
 /// `ProcFilter` is used to filter process ids. See [`pids_by_type`] and
-/// [`processes::pids_by_type_and_path`] for details.
+/// [`pids_by_type_and_path`] for details.
 #[derive(Copy, Clone)]
 pub enum ProcFilter {
     /// All processes
