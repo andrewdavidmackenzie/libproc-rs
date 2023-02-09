@@ -99,15 +99,26 @@ To build for versions prior to Mac OS 10.7 disable the default features by passi
 To build for Mac OS X 10.7 (or 10.8) you can enable that feature alone using
 --no-default-features --features "macosx_10_7"
 
-# Build and Test
+# Build and Test Locally
 `cargo test` should build and test as usual for rust projects.
 
-However, as some functions need to be run as `root` to work, I run travis-CI tests as `root`. So, when developing in local
-it's best if you use `sudo cargo test`. NOTE: This can get you into permissions problems when switching back and for
-between using `cargo test` and `sudo cargo test`. To fix that run `sudo cargo clean` and then build or test as you prefer.
+However, as some functions need to be run as `root` to work, CI tests are run as `root`. 
+So, when developing in local it's best if you use `sudo cargo test`. 
 
-In order to have tests pass when run as `root` or not, some tests need to check if they are `root` at run-time 
-(using our own `am_root()` function is handy) and avoid failing if *not* run as `root`. 
+NOTE: This can get you into permissions problems when switching back and for
+between using `cargo test` and `sudo cargo test`. 
+To fix that run `sudo cargo clean` and then build or test as you prefer.
+
+In order to have tests pass when run as `root` or not, some tests need to check if they are `root` 
+at run-time (using our own `am_root()` function is handy) and avoid failing if *not* run as `root`. 
+
+## Using "act" to run GH Actions CI workflows locally
+If you develop on macos but want to ensure code builds and tests pass on linux while making changes, 
+you can use the [act](https://github.com/nektos/act) tool to run the Github Actions Workflows on 
+the test matrix.
+
+Just install "act" (`brew install act`) (previously install docker if you don't have it already, 
+and make sure the daemon is running) then run `act` at the command line
 
 ## Macos: clang detection and header file finding
 Newer versions of `bindgen` have improved the detection of `clang` and hence macos header files. 
