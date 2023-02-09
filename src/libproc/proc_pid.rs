@@ -582,7 +582,6 @@ pub fn am_root() -> bool {
 // run tests with 'cargo test -- --nocapture' to see the test output
 #[cfg(test)]
 mod test {
-    #[cfg(target_os = "linux")]
     use std::process;
     use std::env;
 
@@ -611,7 +610,6 @@ mod test {
     #[cfg(target_os = "macos")]
     #[test]
     fn pidinfo_test() {
-        use std::process;
         let pid = process::id() as i32;
 
         match pidinfo::<BSDInfo>(pid, 0) {
@@ -623,7 +621,6 @@ mod test {
     #[cfg(target_os = "macos")]
     #[test]
     fn taskinfo_test() {
-        use std::process;
         let pid = process::id() as i32;
 
         match pidinfo::<TaskInfo>(pid, 0) {
@@ -635,7 +632,6 @@ mod test {
     #[cfg(target_os = "macos")]
     #[test]
     fn taskallinfo_test() {
-        use std::process;
         let pid = process::id() as i32;
 
         match pidinfo::<TaskAllInfo>(pid, 0) {
@@ -648,7 +644,6 @@ mod test {
     #[cfg(target_os = "macos")]
     #[test]
     fn threadinfo_test() {
-        use std::process;
         let pid = process::id() as i32;
 
         match pidinfo::<ThreadInfo>(pid, 0) {
@@ -661,7 +656,6 @@ mod test {
     #[cfg(target_os = "macos")]
     #[test]
     fn workqueueinfo_test() {
-        use std::process;
         let pid = process::id() as i32;
 
         match pidinfo::<WorkQueueInfo>(pid, 0) {
@@ -673,7 +667,6 @@ mod test {
     #[cfg(target_os = "macos")]
     #[test]
     fn listpidinfo_test() {
-        use std::process;
         let pid = process::id() as i32;
 
         if let Ok(info) = pidinfo::<TaskAllInfo>(pid, 0) {
