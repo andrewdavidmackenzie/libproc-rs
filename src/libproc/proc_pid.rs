@@ -699,7 +699,7 @@ mod test {
             let mut command = Command::new("cat");
             let mut child = command.spawn().expect("Could not spawn 'cat' process in test");
             assert_eq!(&name(child.id() as i32).expect("Could not get child process name"),
-                       "libproc", "Incorrect process name");
+                       "cat", "Incorrect process name");
             child.kill().expect("Could not kill child process started in test")
         } else {
             println!("Cannot run 'name_test' on macos unless run as root");
