@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["getpid",""]]};
+window.SIDEBAR_ITEMS = {"fn":["getpid"]};

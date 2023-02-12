@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":[["kmesg_buffer","Get messages from the kernel message buffer"],["pid_rusage","Information about Process Resource Usage - added in Mac OS X 10.9"],["proc_pid","Get basic information about processes by PID"],["work_queue_info","Information about Work Queues - very MacOS specific"]]};
+window.SIDEBAR_ITEMS = {"mod":["kmesg_buffer","pid_rusage","proc_pid","work_queue_info"]};

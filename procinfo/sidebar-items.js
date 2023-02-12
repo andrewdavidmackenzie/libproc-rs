@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["getpid",""],["main",""],["procinfo",""]],"mod":[["c",""]]};
+window.SIDEBAR_ITEMS = {"fn":["getpid","main","procinfo"],"mod":["c"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":[["WorkQueueInfo","Structure for work queue items"]]};
+window.SIDEBAR_ITEMS = {"struct":["WorkQueueInfo"]};

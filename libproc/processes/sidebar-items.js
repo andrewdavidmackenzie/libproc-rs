@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":[["ProcFilter","`ProcFilter` is used to filter process ids. See [`pids_by_type`] and `pids_by_type_and_path` (macos only) for details."]],"fn":[["pids_by_type","Returns the PIDs of active processes that match the given [`ProcFilter`] filter."]]};
+window.SIDEBAR_ITEMS = {"enum":["ProcFilter"],"fn":["pids_by_type"]};
