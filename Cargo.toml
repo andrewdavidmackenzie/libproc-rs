@@ -34,5 +34,5 @@ path = "src/dmesg.rs"
 bindgen = { version = "0.64.0", default-features = false, features = ["runtime"] }
 
 [target.'cfg(target_os = "linux")'.dev-dependencies]
-procfs = "0.14.1"
+procfs = "0.15.0"
 tempfile = "3.3.0"
