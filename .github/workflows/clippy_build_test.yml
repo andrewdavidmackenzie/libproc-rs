@@ -48,6 +48,7 @@ jobs:
       run: make clippy
 
     - name: Compile check on redox
+      if: runner.os == 'Linux'
       run: |
         rustup target add x86_64-unknown-redox
         cargo +nightly check --target x86_64-unknown-redox
