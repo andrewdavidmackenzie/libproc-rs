@@ -66,15 +66,3 @@ jobs:
     - name: UploadCoverage
       if: matrix.rust == 'nightly'
       run: make upload-coverage
-
-    - name: CheckDocsBuild
-      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable'
-      run: make build-docs
-
-    # Only deploy docs once - from one matrix combination, and only when on master (i.e. post PR merge)
-    - name: DeployDocsToGHPagesFromMaster
-      uses: JamesIves/github-pages-deploy-action@4.1.4
-      if: matrix.os == 'ubuntu-latest' && matrix.rust == 'stable' && github.ref == 'refs/heads/master'
-      with:
-        branch: gh-pages
-        folder: target/doc
