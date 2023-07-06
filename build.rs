@@ -6,10 +6,12 @@ fn main() {
     let bindings = bindgen::builder()
         .header_contents("libproc_rs.h", "#include <libproc.h>")
         .layout_tests(false)
+        .clang_args(&["-x", "c++"])
         .generate()
         .expect("Failed to build libproc bindings");
 
-    let output_path = Path::new(&env::var("OUT_DIR").expect("OUT_DIR env var was not defined"))
+    let output_path = Path::new(&env::var("OUT_DIR")
+        .expect("OUT_DIR env var was not defined"))
         .join("osx_libproc_bindings.rs");
 
     bindings
