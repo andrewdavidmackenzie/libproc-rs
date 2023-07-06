@@ -47,6 +47,11 @@ jobs:
     - name: Clippy
       run: make clippy
 
+    - name: Compile check on redox
+      run: |
+        rustup target add x86_64-unknown-redox
+        cargo +nightly check --target x86_64-unknown-redox
+
     - name: ConfigureCoverage
       if: matrix.rust == 'nightly'
       run: |
@@ -62,11 +67,6 @@ jobs:
     - name: Run Tests as Root on Mac
       if: runner.os == 'macOS'
       run: sudo env "PATH=$PATH" cargo test
-
-    - name: Compile check on redox
-      run: |
-        rustup target add x86_64-unknown-redox
-        cargo +nightly check --target x86_64-unknown-redox
 
     - name: UploadCoverage
       if: matrix.rust == 'nightly'

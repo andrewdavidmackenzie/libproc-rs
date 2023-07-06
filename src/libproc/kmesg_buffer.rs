@@ -7,15 +7,15 @@ use std::str;
 #[cfg(target_os = "macos")]
 use self::libc::c_void;
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 use std::fs::File;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 use std::io::{BufRead, BufReader};
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 use std::sync::mpsc;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 use std::sync::mpsc::Receiver;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 use std::{thread, time};
 
 #[cfg(target_os = "macos")]
@@ -56,7 +56,7 @@ pub fn kmsgbuf() -> Result<String, String> {
 /// reading methods will block at the end of file, so a workaround is required. Do the blocking
 /// reads on a thread that sends lines read back through a channel, and then return when the thread
 /// has blocked and can't send anymore. Returning will end the thread and the channel.
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 pub fn kmsgbuf() -> Result<String, String> {
     let mut file = File::open("/dev/kmsg");
     if file.is_err() {
@@ -75,7 +75,7 @@ pub fn kmsgbuf() -> Result<String, String> {
 
 // Create a channel to return lines read from a file on, then create a thread that reads the lines
 // and sends them back on the channel one by one. Eventually it will get to EOF or block
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 fn spawn_kmsg_channel(file: File) -> Receiver<String> {
     let mut reader = BufReader::new(file);
     let (tx, rx) = mpsc::channel::<String>();

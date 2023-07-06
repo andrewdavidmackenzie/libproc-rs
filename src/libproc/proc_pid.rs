@@ -595,10 +595,10 @@ mod test {
     #[cfg(target_os = "macos")]
     use super::{libversion, listpidinfo, ListThreads, pidinfo};
     use super::{name, cwdself, pidpath};
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "redox"))]
     use super::pidcwd;
     use super::am_root;
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "redox"))]
     use crate::libproc::helpers;
     #[cfg(target_os = "macos")]
     use crate::libproc::task_info::TaskInfo;
@@ -687,7 +687,7 @@ mod test {
 
     #[test]
     fn name_test() {
-        if am_root() || cfg!(target_os = "linux") {
+        if am_root() || cfg!(any(target_os = "linux", target_os = "redox")) {
             assert!(&name(process::id() as i32).expect("Could not get the process name")
                 .starts_with("libproc"), "Incorrect process name");
         } else {
@@ -700,7 +700,7 @@ mod test {
     fn pidpath_test_unknown_pid_test() {
         #[cfg(target_os = "macos")]
             let error_message = "No such process";
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "redox"))]
             let error_message = "No such file or directory";
 
         match pidpath(-1) {
