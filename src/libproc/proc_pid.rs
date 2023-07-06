@@ -1,16 +1,16 @@
 extern crate libc;
 
 use std::env;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 use std::ffi::CString;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 use std::fs;
 #[cfg(target_os = "macos")]
 use std::mem;
 use std::path::PathBuf;
 
 use libc::pid_t;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 use libc::PATH_MAX;
 
 #[cfg(target_os = "macos")]
@@ -29,7 +29,7 @@ use crate::osx_libproc_bindings::{
 
 #[cfg(target_os = "macos")]
 use self::libc::c_void;
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 use self::libc::{c_char, readlink};
 
 use crate::processes;
@@ -242,7 +242,7 @@ pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
 }
 
 /// pidinfo not implemented on linux - Pull Requests welcome - TODO
-#[cfg(not(target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
     unimplemented!()
 }
@@ -295,7 +295,7 @@ pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
 ///     }
 /// }
 /// ```
-#[cfg(not(target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
     Err("'regionfilename' not implemented on linux".to_owned())
 }
@@ -340,7 +340,7 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 ///     _ => panic!("Unknown error")
 /// }
 /// ```
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 pub fn pidpath(pid: i32) -> Result<String, String> {
     let exe_path = CString::new(format!("/proc/{pid}/exe"))
         .map_err(|_| "Could not create CString")?;
@@ -396,7 +396,7 @@ pub fn libversion() -> Result<(i32, i32), String> {
 ///     Err(err) => eprintln!("Error: {}", err)
 /// }
 /// ```
-#[cfg(not(target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 pub fn libversion() -> Result<(i32, i32), String> {
     Err("Linux does not use a library, so no library version number".to_owned())
 }
@@ -440,7 +440,7 @@ pub fn name(pid: i32) -> Result<String, String> {
 
 
 /// Get the name of a process, using it's process id (pid)
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 pub fn name(pid: i32) -> Result<String, String> {
     helpers::procfile_field(&format!("/proc/{pid}/status"), "Name")
 }
@@ -495,7 +495,7 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
 }
 
 /// listpidinfo is not implemented on Linux - Pull Requests welcome - TODO
-#[cfg(not(target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::Item>, String> {
     unimplemented!()
 }
@@ -517,7 +517,7 @@ pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
     Err("pidcwd is not implemented for macos".into())
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 /// Gets the path of current working directory for the process with the provided pid.
 ///
 /// # Examples
@@ -573,7 +573,7 @@ pub fn am_root() -> bool {
 }
 
 /// Return true if the calling process is being run by the root user, false otherwise
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 pub fn am_root() -> bool {
     // when this becomes stable in rust libc then we can remove this function or combine for mac and linux
     unsafe { libc::geteuid() == 0 }
@@ -724,7 +724,7 @@ mod test {
                    cwdself().expect("cwdself() failed"));
     }
 
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "redox"))]
     #[test]
     fn pidcwd_of_self_test() {
         assert_eq!(env::current_dir().expect("Could not get current directory"),
@@ -741,7 +741,7 @@ mod test {
     }
 
     #[test]
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "redox"))]
     fn procfile_field_test() {
         if am_root() {
             assert!(helpers::procfile_field("/proc/1/status", "invalid").is_err());
