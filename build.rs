@@ -19,5 +19,5 @@ fn main() {
         .expect("Failed to write libproc bindings");
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 fn main() {}

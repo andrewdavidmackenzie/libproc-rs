@@ -169,7 +169,7 @@ pub fn pidfdinfo<T: PIDFDInfo>(pid: i32, fd: i32) -> Result<T, String> {
     }
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 pub fn pidfdinfo<T: PIDFDInfo>(_pid: i32, _fd: i32) -> Result<T, String> {
     unimplemented!()
 }
