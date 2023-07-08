@@ -36,6 +36,6 @@ bindgen = { version = "0.66.1", default-features = false, features = ["runtime"]
 # NOTE: This assumes that there is a procfs compatible FS in redox and the procfs crate
 # supports it. It's quite probably that neither of those two things ever happen.
 # But making this assumption for now so that everything compiles at least for redox
-[target.'cfg(any(target_os = "linux", target_os = "redox"))'.dev-dependencies]
+[target.'cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))'.dev-dependencies]
 procfs = "0.15.0"
 tempfile = "3.3.0"

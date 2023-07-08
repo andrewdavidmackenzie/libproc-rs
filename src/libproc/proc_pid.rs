@@ -1,16 +1,16 @@
 extern crate libc;
 
 use std::env;
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use std::ffi::CString;
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use std::fs;
 #[cfg(target_os = "macos")]
 use std::mem;
 use std::path::PathBuf;
 
 use libc::pid_t;
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use libc::PATH_MAX;
 
 #[cfg(target_os = "macos")]
@@ -29,7 +29,7 @@ use crate::osx_libproc_bindings::{
 
 #[cfg(target_os = "macos")]
 use self::libc::c_void;
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use self::libc::{c_char, readlink};
 
 use crate::processes;
@@ -242,7 +242,7 @@ pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
 }
 
 /// pidinfo not implemented on linux - Pull Requests welcome - TODO
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
     unimplemented!()
 }
@@ -295,7 +295,7 @@ pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
 ///     }
 /// }
 /// ```
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
     Err("'regionfilename' not implemented on linux".to_owned())
 }
@@ -340,7 +340,7 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 ///     _ => panic!("Unknown error")
 /// }
 /// ```
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn pidpath(pid: i32) -> Result<String, String> {
     let exe_path = CString::new(format!("/proc/{pid}/exe"))
         .map_err(|_| "Could not create CString")?;
@@ -396,7 +396,7 @@ pub fn libversion() -> Result<(i32, i32), String> {
 ///     Err(err) => eprintln!("Error: {}", err)
 /// }
 /// ```
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn libversion() -> Result<(i32, i32), String> {
     Err("Linux does not use a library, so no library version number".to_owned())
 }
@@ -440,7 +440,7 @@ pub fn name(pid: i32) -> Result<String, String> {
 
 
 /// Get the name of a process, using it's process id (pid)
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn name(pid: i32) -> Result<String, String> {
     helpers::procfile_field(&format!("/proc/{pid}/status"), "Name")
 }
@@ -495,7 +495,7 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
 }
 
 /// listpidinfo is not implemented on Linux - Pull Requests welcome - TODO
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::Item>, String> {
     unimplemented!()
 }
@@ -517,7 +517,7 @@ pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
     Err("pidcwd is not implemented for macos".into())
 }
 
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 /// Gets the path of current working directory for the process with the provided pid.
 ///
 /// # Examples
@@ -573,7 +573,7 @@ pub fn am_root() -> bool {
 }
 
 /// Return true if the calling process is being run by the root user, false otherwise
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn am_root() -> bool {
     // when this becomes stable in rust libc then we can remove this function or combine for mac and linux
     unsafe { libc::geteuid() == 0 }
@@ -595,10 +595,10 @@ mod test {
     #[cfg(target_os = "macos")]
     use super::{libversion, listpidinfo, ListThreads, pidinfo};
     use super::{name, cwdself, pidpath};
-    #[cfg(any(target_os = "linux", target_os = "redox"))]
+    #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     use super::pidcwd;
     use super::am_root;
-    #[cfg(any(target_os = "linux", target_os = "redox"))]
+    #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     use crate::libproc::helpers;
     #[cfg(target_os = "macos")]
     use crate::libproc::task_info::TaskInfo;
@@ -687,7 +687,7 @@ mod test {
 
     #[test]
     fn name_test() {
-        if am_root() || cfg!(any(target_os = "linux", target_os = "redox")) {
+        if am_root() || cfg!(any(target_os = "linux", target_os = "redox", target_os = "android")) {
             assert!(&name(process::id() as i32).expect("Could not get the process name")
                 .starts_with("libproc"), "Incorrect process name");
         } else {
@@ -700,7 +700,7 @@ mod test {
     fn pidpath_test_unknown_pid_test() {
         #[cfg(target_os = "macos")]
             let error_message = "No such process";
-        #[cfg(any(target_os = "linux", target_os = "redox"))]
+        #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
             let error_message = "No such file or directory";
 
         match pidpath(-1) {
@@ -724,7 +724,7 @@ mod test {
                    cwdself().expect("cwdself() failed"));
     }
 
-    #[cfg(any(target_os = "linux", target_os = "redox"))]
+    #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     #[test]
     fn pidcwd_of_self_test() {
         assert_eq!(env::current_dir().expect("Could not get current directory"),
@@ -741,7 +741,7 @@ mod test {
     }
 
     #[test]
-    #[cfg(any(target_os = "linux", target_os = "redox"))]
+    #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     fn procfile_field_test() {
         if am_root() {
             assert!(helpers::procfile_field("/proc/1/status", "invalid").is_err());

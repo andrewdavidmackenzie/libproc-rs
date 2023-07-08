@@ -1,7 +1,7 @@
 use crate::errno::errno;
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use std::fs::File;
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use std::io::{BufRead, BufReader};
 
 /// Helper function to get errno and return a String with the passed in return_code, the error
@@ -30,7 +30,7 @@ pub fn check_errno(ret: i32, buf: &mut Vec<u8>) -> Result<String, String> {
     }
 }
 
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 /// A helper function for finding named fields in specific /proc FS files for processes
 /// This will be more useful when implementing more linux functions
 pub fn procfile_field(filename: &str, field_name: &str) -> Result<String, String> {
@@ -53,7 +53,7 @@ pub fn procfile_field(filename: &str, field_name: &str) -> Result<String, String
     Err(format!("Could not find the field named '{field_name}' in the /proc FS file name '{filename}'"))
 }
 
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 /// Parse a memory amount string into integer number of bytes
 /// e.g. 220844 kB -->
 pub fn parse_memory_string(line: &str) -> Result<u64, String> {
@@ -83,7 +83,7 @@ mod test {
     use crate::errno::{set_errno, Errno};
     use super::check_errno;
 
-    #[cfg(any(target_os = "linux", target_os = "redox"))]
+    #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     mod linux {
         use crate::libproc::helpers::parse_memory_string;
 
@@ -143,7 +143,7 @@ mod test {
         if let Err(mes) = check_errno(-1, &mut buf) {
             #[cfg(target_os = "macos")]
             assert_eq!(mes, "return code = -1, errno = -1, message = 'Unknown error: -1'");
-            #[cfg(any(target_os = "linux", target_os = "redox"))]
+            #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
             assert_eq!(mes, "return code = -1, errno = -1, message = 'Unknown error -1'");
         }
     }

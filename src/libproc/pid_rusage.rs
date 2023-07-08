@@ -6,7 +6,7 @@ use crate::libproc::helpers;
 #[cfg(target_os = "macos")]
 use self::libc::c_void;
 
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use crate::libproc::helpers::{procfile_field, parse_memory_string};
 #[cfg(target_os = "macos")]
 use crate::osx_libproc_bindings::proc_pid_rusage;
@@ -386,7 +386,7 @@ pub fn pidrusage<T: PIDRUsage>(pid : i32) -> Result<T, String> {
     }
 }
 
-#[cfg(any(target_os = "linux", target_os = "redox"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 /// Returns the information about resources of the process that match pid passed in.
 ///
 /// # Examples
