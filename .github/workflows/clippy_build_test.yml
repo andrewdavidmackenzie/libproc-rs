@@ -17,7 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Install redoxer prerequisites
-      run: sudo apt-get install fuse
+      run: |
+        sudo apt-get install fuse
+        sudo apt install libfuse3-3
 
     - name: Install redoxer
       run: cargo install redoxer
