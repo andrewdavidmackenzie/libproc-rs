@@ -22,6 +22,15 @@ jobs:
         sudo apt install libfuse3-3
         which pkg-config
 
+    - uses: actions/checkout@v2
+
+    - name: Install latest nightly
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: nightly
+        override: true
+
     - name: Install redoxer
       run: cargo install redoxer
 
