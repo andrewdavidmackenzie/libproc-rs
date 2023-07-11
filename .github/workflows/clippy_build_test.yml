@@ -18,7 +18,8 @@ jobs:
     steps:
     - name: Install redoxer prerequisites
       run: |
-        sudo apt-get install fuse
+        sudo apt-get install fuse libfuse2
+        sudo apt-get install libfuse-dev pkg-config
         sudo apt install libfuse3-3
         which pkg-config
 
