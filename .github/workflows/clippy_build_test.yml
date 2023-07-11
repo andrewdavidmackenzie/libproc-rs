@@ -16,6 +16,9 @@ jobs:
   test-redox:
     runs-on: ubuntu-latest
     steps:
+    - name: Install redoxer prerequisites
+      run: sudo apt-get install fuse
+
     - name: Install redoxer
       run: cargo install redoxer
 
