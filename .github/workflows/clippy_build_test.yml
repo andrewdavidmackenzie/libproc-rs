@@ -20,6 +20,7 @@ jobs:
       run: |
         sudo apt-get install fuse
         sudo apt install libfuse3-3
+        which pkg-config
 
     - name: Install redoxer
       run: cargo install redoxer
