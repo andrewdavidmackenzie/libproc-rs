@@ -13,7 +13,15 @@ env:
   RUST_BACKTRACE: full
 
 jobs:
-  build:
+  test-redox:
+    steps:
+    - name: Install redoxer
+      run: cargo install redoxer
+
+    - name: build on redox-os
+      run: redoxer build
+
+  build-and-test:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
