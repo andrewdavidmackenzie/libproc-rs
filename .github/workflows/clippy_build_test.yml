@@ -18,12 +18,14 @@ jobs:
     steps:
     - name: Install redoxer prerequisites
       run: |
-        sudo apt-get install fuse libfuse2
-        sudo apt-get install libfuse-dev pkg-config
-        sudo apt install libfuse3-3
-        which pkg-config
+        sudo apt-get install fuse libfuse-dev
+        sudo apt-get update -qq
+        sudo apt-get install -qq bison build-essential curl dosfstools flex fuse genisoimage git
+        sudo apt-get install gnupg nasm parted pkg-config software-properties-common syslinux
+        sudo apt-get install syslinux-utils texinfo wget    
 
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
 
     - name: Install latest nightly
       uses: actions-rs/toolchain@v1
