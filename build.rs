@@ -6,7 +6,7 @@ fn main() {
     let bindings = bindgen::builder()
         .header_contents("libproc_rs.h", "#include <libproc.h>")
         .layout_tests(false)
-        .clang_args(&["-x", "c++"])
+        .clang_args(&["-x", "c++", "-I", "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/"])
         .generate()
         .expect("Failed to build libproc bindings");
 
