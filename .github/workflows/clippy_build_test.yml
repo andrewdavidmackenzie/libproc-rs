@@ -17,7 +17,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-11, macos-12 ]
+        os: [ ubuntu-latest, macos-11, macos-12, macos-13 ]
         rust: [stable, beta]
         experimental: [false]
         include:
@@ -28,6 +28,9 @@ jobs:
             rust: nightly
             experimental: true
           - os: macos-12
+            rust: nightly
+            experimental: true
+          - os: macos-13
             rust: nightly
             experimental: true
 
