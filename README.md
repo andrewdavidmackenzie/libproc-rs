@@ -15,6 +15,11 @@ match proc_pid::pidpath(pid) {
 }
 ```
 
+# Experiment in OSS funding
+I am exploring the ideas around Open Source Software funding from [RadWorks Foundation]([https://radworks.org/) via the [Drips Project](https://www.drips.network/)
+
+This project is in Drips [here](https://www.drips.network/app/projects/github/andrewdavidmackenzie/libproc-rs)
+
 # Documentation
 [Online code docs](https://andrewdavidmackenzie.github.io/libproc-rs/libproc/)
 
