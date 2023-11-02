@@ -31,7 +31,7 @@ name = "dmesg"
 path = "src/dmesg.rs"
 
 [build-dependencies]
-bindgen = { version = "0.68.1", default-features = false, features = ["runtime"] }
+bindgen = { version = "0.69.0", default-features = false, features = ["runtime"] }
 
 # NOTE: This assumes that there is a procfs compatible FS in redox and the procfs crate
 # supports it. It's quite probably that neither of those two things ever happen.
