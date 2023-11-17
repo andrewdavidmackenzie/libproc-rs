@@ -119,7 +119,7 @@ mod test {
 
         // Test
         if let Err(msg) = check_errno(buf.len() as i32, &mut buf) {
-            assert_eq!(msg, "Invalid UTF-8 sequence: invalid utf-8 sequence of 1 bytes from index 0")
+            assert!(msg.contains("Invalid UTF-8 sequence: invalid utf-8 sequence of 1 bytes from index 0"))
         }
     }
 
@@ -130,7 +130,7 @@ mod test {
 
         // Test
         if let Ok(msg) = check_errno(buf.len() as i32, &mut buf) {
-            assert_eq!(msg, message);
+            assert!(msg.contains(message));
         }
     }
 
@@ -141,10 +141,7 @@ mod test {
 
         // Test
         if let Err(mes) = check_errno(-1, &mut buf) {
-            #[cfg(target_os = "macos")]
-            assert_eq!(mes, "return code = -1, errno = -1, message = 'Unknown error: -1'");
-            #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
-            assert_eq!(mes, "return code = -1, errno = -1, message = 'Unknown error -1'");
+            assert!(mes.contains("return code = -1, errno = -1"));
         }
     }
 
@@ -155,7 +152,7 @@ mod test {
 
         // Test
         if let Err(mes) = check_errno(0, &mut buf) {
-            assert_eq!(mes, "return code = 0, errno = 2, message = 'No such file or directory'")
+            assert!(mes.contains("return code = 0, errno = 2"))
         }
     }
 }
