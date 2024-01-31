@@ -33,6 +33,9 @@ jobs:
           - os: macos-13
             rust: nightly
             experimental: true
+          - os: macos-14
+            rust: nightly
+            experimental: true
 
     continue-on-error: ${{ matrix.experimental }}
 
