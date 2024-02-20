@@ -96,9 +96,6 @@ mod test {
     use std::collections::{HashMap, HashSet};
     use std::io::{Error, Write};
 
-    use procfs;
-    use tempfile;
-
     use super::*;
 
     #[test]

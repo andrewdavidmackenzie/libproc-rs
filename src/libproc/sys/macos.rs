@@ -131,7 +131,6 @@ pub(crate) fn listpidspath(
 #[cfg(test)]
 mod test {
     use std::collections::{HashMap, HashSet};
-    use std::io;
 
     use super::*;
 
