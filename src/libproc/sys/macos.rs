@@ -61,7 +61,7 @@ pub(crate) fn listpids(proc_type: ProcFilter) -> io::Result<Vec<u32>> {
     match ret {
         value if value <= 0 => Err(io::Error::last_os_error()),
         _ => {
-            let items_count = ret as usize / mem::size_of::<u32>() - 1;
+            let items_count = ret as usize / mem::size_of::<u32>();
             unsafe {
                 pids.set_len(items_count);
             }
@@ -119,7 +119,7 @@ pub(crate) fn listpidspath(
     match ret {
         value if value <= 0 => Err(io::Error::last_os_error()),
         _ => {
-            let items_count = ret as usize / mem::size_of::<u32>() - 1;
+            let items_count = ret as usize / mem::size_of::<u32>();
             unsafe {
                 pids.set_len(items_count);
             }
