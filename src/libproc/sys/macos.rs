@@ -1,7 +1,7 @@
 use std::os::unix::ffi::OsStrExt;
 use std::{ffi, io, mem, path, ptr};
 
-use libc::{c_char, c_void};
+use libc::{c_char, c_void, c_int};
 
 use crate::osx_libproc_bindings;
 use crate::processes::ProcFilter;
@@ -32,6 +32,23 @@ impl From<ProcFilter> for u32 {
     }
 }
 
+// Common code for handling the special case of listpids return, where 0 is a valid return
+// but is also used in the error case - so we need to look at errno to distringish between a valid
+// 0 return and an error return
+fn list_pids_ret(ret: c_int, mut pids: Vec<u32>) -> io::Result<Vec<u32>> {
+    let errno = std::io::Error::last_os_error().raw_os_error().unwrap_or(0);
+    match ret {
+        value if value < 0 || errno < 0 => Err(io::Error::last_os_error()),
+        _ => {
+            let items_count = ret as usize / mem::size_of::<u32>();
+            unsafe {
+                pids.set_len(items_count);
+            }
+            Ok(pids)
+        }
+    }
+
+}
 pub(crate) fn listpids(proc_type: ProcFilter) -> io::Result<Vec<u32>> {
     let buffer_size = unsafe {
         osx_libproc_bindings::proc_listpids(
@@ -58,16 +75,7 @@ pub(crate) fn listpids(proc_type: ProcFilter) -> io::Result<Vec<u32>> {
         )
     };
 
-    match ret {
-        value if value <= 0 => Err(io::Error::last_os_error()),
-        _ => {
-            let items_count = ret as usize / mem::size_of::<u32>() - 1;
-            unsafe {
-                pids.set_len(items_count);
-            }
-            Ok(pids)
-        }
-    }
+    list_pids_ret(ret, pids)
 }
 
 pub(crate) fn listpidspath(
@@ -116,16 +124,7 @@ pub(crate) fn listpidspath(
         )
     };
 
-    match ret {
-        value if value <= 0 => Err(io::Error::last_os_error()),
-        _ => {
-            let items_count = ret as usize / mem::size_of::<u32>() - 1;
-            unsafe {
-                pids.set_len(items_count);
-            }
-            Ok(pids)
-        }
-    }
+    list_pids_ret(ret, pids)
 }
 
 #[cfg(test)]
@@ -203,149 +202,134 @@ mod test {
     const NODEV: u32 = u32::MAX;
 
     #[test]
-    fn test_listpids_tty() -> io::Result<()> {
-        for _ in 0..MAX_RETRIES {
-            let mut bsdinfo_ttys: HashMap<_, HashSet<_>> = HashMap::new();
-            for info in get_all_pid_bsdinfo()? {
-                if info.e_tdev == NODEV || info.e_tpgid == info.pbi_pid {
-                    continue;
-                }
-                bsdinfo_ttys
-                    .entry(info.e_tdev)
-                    .and_modify(|pids| {
-                        pids.insert(info.pbi_pid);
-                    })
-                    .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
+    fn test_listpids_tty() {
+        let mut bsdinfo_ttys: HashMap<_, HashSet<_>> = HashMap::new();
+        for info in get_all_pid_bsdinfo()
+            .expect("Could not get all pids info") {
+            if info.e_tdev == NODEV || info.e_tpgid == info.pbi_pid {
+                continue;
             }
-            let mut not_matched = 0;
-            for (tty_nr, bsdinfo_pids) in bsdinfo_ttys.iter_mut() {
-                if bsdinfo_pids.len() <= 1 {
-                    continue;
-                }
-                let pids = listpids(ProcFilter::ByTTY { tty: *tty_nr }).unwrap_or_default();
-                for pid in pids {
-                    if !bsdinfo_pids.remove(&pid) {
-                        not_matched += 1;
-                        break;
-                    }
-                }
-                if !bsdinfo_pids.is_empty() {
+            bsdinfo_ttys
+                .entry(info.e_tdev)
+                .and_modify(|pids| {
+                    pids.insert(info.pbi_pid);
+                })
+                .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
+        }
+        let mut not_matched = 0;
+        for (tty_nr, bsdinfo_pids) in bsdinfo_ttys.iter_mut() {
+            if bsdinfo_pids.len() <= 1 {
+                continue;
+            }
+            let pids = listpids(ProcFilter::ByTTY { tty: *tty_nr })
+                .expect("Could not listpids");
+            for pid in pids {
+                if !bsdinfo_pids.remove(&pid) {
                     not_matched += 1;
+                    break;
                 }
             }
-            if not_matched <= PROCESS_DIFF_TOLERANCE {
-                return Ok(());
+            if !bsdinfo_pids.is_empty() {
+                not_matched += 1;
             }
         }
-        panic!("Test failed");
+        assert!(not_matched <= PROCESS_DIFF_TOLERANCE);
     }
 
     #[test]
-    fn test_listpids_uid() -> io::Result<()> {
-        for _ in 0..MAX_RETRIES {
-            let mut bsdinfo_uids: HashMap<_, HashSet<_>> = HashMap::new();
-            for info in get_all_pid_bsdinfo()? {
-                bsdinfo_uids
-                    .entry(info.pbi_uid)
-                    .and_modify(|pids| {
-                        pids.insert(info.pbi_pid);
-                    })
-                    .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
+    fn test_listpids_uid() {
+        let mut bsdinfo_uids: HashMap<_, HashSet<_>> = HashMap::new();
+        for info in get_all_pid_bsdinfo()
+            .expect("Could not get all pids info") {
+            bsdinfo_uids
+                .entry(info.pbi_uid)
+                .and_modify(|pids| {
+                    pids.insert(info.pbi_pid);
+                })
+                .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
+        }
+        let mut not_matched = 0;
+        for (uid, bsdinfo_pids) in bsdinfo_uids.iter_mut() {
+            if bsdinfo_pids.len() <= 1 {
+                continue;
             }
-            let mut not_matched = 0;
-            for (uid, bsdinfo_pids) in bsdinfo_uids.iter_mut() {
-                if bsdinfo_pids.len() <= 1 {
-                    continue;
-                }
-                let pids = listpids(ProcFilter::ByUID { uid: *uid }).unwrap_or_default();
-                for pid in pids {
-                    if !bsdinfo_pids.remove(&pid) {
-                        not_matched += 1;
-                        break;
-                    }
-                }
-                if !bsdinfo_pids.is_empty() {
+            let pids = listpids(ProcFilter::ByUID { uid: *uid })
+                .expect("Could not listpids");
+            for pid in pids {
+                if !bsdinfo_pids.remove(&pid) {
                     not_matched += 1;
+                    break;
                 }
             }
-            if not_matched <= PROCESS_DIFF_TOLERANCE {
-                return Ok(());
+            if !bsdinfo_pids.is_empty() {
+                not_matched += 1;
             }
         }
-        panic!("Test failed");
+        assert!(not_matched <= PROCESS_DIFF_TOLERANCE);
     }
 
     #[test]
-    fn test_listpids_real_uid() -> io::Result<()> {
-        for _ in 0..MAX_RETRIES {
-            let mut bsdinfo_ruids: HashMap<_, HashSet<_>> = HashMap::new();
-            for info in get_all_pid_bsdinfo()? {
-                bsdinfo_ruids
-                    .entry(info.pbi_ruid)
-                    .and_modify(|pids| {
-                        pids.insert(info.pbi_pid);
-                    })
-                    .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
-            }
-            let mut not_matched = 0;
-            for (ruid, bsdinfo_pids) in bsdinfo_ruids.iter_mut() {
-                if bsdinfo_pids.len() <= 1 {
-                    continue;
-                }
-                let pids = listpids(ProcFilter::ByRealUID { ruid: *ruid }).unwrap_or_default();
-                for pid in pids {
-                    if !bsdinfo_pids.remove(&pid) {
-                        not_matched += 1;
-                        println!("pid {pid} not matched for ruid {ruid}");
-                        break;
-                    }
-                }
-                // PROC_ALL_PIDS and PROC_RUID_ONLY are regulargy not agreeing, with PROC_ALL_PIDS
-                // listing more than PROC_RUID_ONLY for the same ruid. Testing if bsdinfo_pids is
-                // empty is futile here.
-            }
-            if not_matched <= PROCESS_DIFF_TOLERANCE {
-                return Ok(());
-            }
+    fn test_listpids_real_uid() {
+        let mut bsdinfo_ruids: HashMap<_, HashSet<_>> = HashMap::new();
+        for info in get_all_pid_bsdinfo()
+            .expect("Could not get all pids info"){
+            bsdinfo_ruids
+                .entry(info.pbi_ruid)
+                .and_modify(|pids| {
+                    pids.insert(info.pbi_pid);
+                })
+                .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
         }
-        panic!("Test failed");
+        let mut not_matched = 0;
+        for (ruid, bsdinfo_pids) in bsdinfo_ruids.iter_mut() {
+            if bsdinfo_pids.len() <= 1 {
+                continue;
+            }
+            let pids = listpids(ProcFilter::ByRealUID { ruid: *ruid })
+                .expect("Could not listpids");
+            for pid in pids {
+                if !bsdinfo_pids.remove(&pid) {
+                    not_matched += 1;
+                    println!("pid {pid} not matched for ruid {ruid}");
+                    break;
+                }
+            }
+            // PROC_ALL_PIDS and PROC_RUID_ONLY are regulargy not agreeing, with PROC_ALL_PIDS
+            // listing more than PROC_RUID_ONLY for the same ruid. Testing if bsdinfo_pids is
+            // empty is futile here.
+        }
+        assert!(not_matched <= PROCESS_DIFF_TOLERANCE);
     }
 
     #[test]
-    fn test_listpids_parent_pid() -> io::Result<()> {
-        for _ in 0..MAX_RETRIES {
-            let mut bsdinfo_ppids: HashMap<_, HashSet<_>> = HashMap::new();
-            for info in get_all_pid_bsdinfo()? {
-                bsdinfo_ppids
-                    .entry(info.pbi_ppid)
-                    .and_modify(|pids| {
-                        pids.insert(info.pbi_pid);
-                    })
-                    .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
-            }
-            let mut not_matched = 0;
-            for (ppid, bsdinfo_pids) in bsdinfo_ppids.iter_mut() {
-                if bsdinfo_pids.len() <= 1 {
-                    continue;
-                }
-                let pids =
-                    listpids(ProcFilter::ByParentProcess { ppid: *ppid }).unwrap_or_default();
-                for pid in pids {
-                    if !bsdinfo_pids.remove(&pid) {
-                        not_matched += 1;
-                        break;
-                    }
-                }
-                // PROC_ALL_PIDS is consistently producing processes that are
-                // not listed by PROC_PPID_ONLY, so we can't make assertions
-                // about having matched all child processes. There is no
-                // signal that I can see on why this is.
-            }
-            if not_matched <= PROCESS_DIFF_TOLERANCE {
-                return Ok(());
-            }
+    fn test_listpids_parent_pid() {
+        let mut bsdinfo_ppids: HashMap<_, HashSet<_>> = HashMap::new();
+        for info in get_all_pid_bsdinfo()
+            .expect("Could not get all pids info") {
+            bsdinfo_ppids
+                .entry(info.pbi_ppid)
+                .and_modify(|pids| {
+                    pids.insert(info.pbi_pid);
+                })
+                .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
         }
-        panic!("Test failed");
+        let mut not_matched = 0;
+        for (ppid, bsdinfo_pids) in bsdinfo_ppids.iter_mut() {
+            let pids =
+                listpids(ProcFilter::ByParentProcess { ppid: *ppid })
+                    .expect("Could not listpids by parent process");
+            for pid in pids {
+                if !bsdinfo_pids.remove(&pid) {
+                    not_matched += 1;
+                    break;
+                }
+            }
+            // PROC_ALL_PIDS is consistently producing processes that are
+            // not listed by PROC_PPID_ONLY, so we can't make assertions
+            // about having matched all child processes. There is no
+            // signal that I can see on why this is.
+        }
+        assert!(not_matched <= PROCESS_DIFF_TOLERANCE);
     }
 
     // No point in writing test cases for all ProcFilter members, as the Darwin
