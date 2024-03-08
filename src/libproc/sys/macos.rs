@@ -32,6 +32,18 @@ impl From<ProcFilter> for u32 {
     }
 }
 
+// similar to list_pids_ret() below, there are two cases when 0 is returned, one when there are
+// no pids, and the other when there is an error
+fn check_listpid_ret(ret: c_int) -> io::Result<Vec<u32>> {
+    let errno = std::io::Error::last_os_error().raw_os_error().unwrap_or(0);
+    if ret < 0 || (ret == 0 && errno < 0) {
+        return Err(io::Error::last_os_error());
+    }
+
+    let capacity = ret as usize / mem::size_of::<u32>();
+    Ok(Vec::with_capacity(capacity))
+}
+
 // Common code for handling the special case of listpids return, where 0 is a valid return
 // but is also used in the error case - so we need to look at errno to distringish between a valid
 // 0 return and an error return
@@ -47,8 +59,8 @@ fn list_pids_ret(ret: c_int, mut pids: Vec<u32>) -> io::Result<Vec<u32>> {
             Ok(pids)
         }
     }
-
 }
+
 pub(crate) fn listpids(proc_type: ProcFilter) -> io::Result<Vec<u32>> {
     let buffer_size = unsafe {
         osx_libproc_bindings::proc_listpids(
@@ -58,12 +70,7 @@ pub(crate) fn listpids(proc_type: ProcFilter) -> io::Result<Vec<u32>> {
             0,
         )
     };
-    if buffer_size <= 0 {
-        return Err(io::Error::last_os_error());
-    }
-
-    let capacity = buffer_size as usize / mem::size_of::<u32>();
-    let mut pids: Vec<u32> = Vec::with_capacity(capacity);
+    let mut pids = check_listpid_ret(buffer_size)?;
     let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
 
     let ret = unsafe {
@@ -105,12 +112,7 @@ pub(crate) fn listpidspath(
             0,
         )
     };
-    if buffer_size <= 0 {
-        return Err(io::Error::last_os_error());
-    }
-
-    let capacity = buffer_size as usize / mem::size_of::<u32>();
-    let mut pids: Vec<u32> = Vec::with_capacity(capacity);
+    let mut pids = check_listpid_ret(buffer_size)?;
     let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
 
     let ret = unsafe {
