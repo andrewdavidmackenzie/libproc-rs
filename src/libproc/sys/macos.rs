@@ -158,45 +158,41 @@ mod test {
     // avoid random failures.
 
     const PROCESS_DIFF_TOLERANCE: usize = 15;
-    const MAX_RETRIES: usize = 5;
 
     #[test]
-    fn test_listpids_pgid() -> io::Result<()> {
-        for _ in 0..MAX_RETRIES {
-            let mut bsdinfo_pgrps: HashMap<_, HashSet<_>> = HashMap::new();
-            for info in get_all_pid_bsdinfo()? {
-                if info.pbi_pgid == info.pbi_pid {
-                    continue;
-                }
-                bsdinfo_pgrps
-                    .entry(info.pbi_pgid)
-                    .and_modify(|pids| {
-                        pids.insert(info.pbi_pid);
-                    })
-                    .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
+    fn test_listpids_pgid() {
+        let mut bsdinfo_pgrps: HashMap<_, HashSet<_>> = HashMap::new();
+        for info in get_all_pid_bsdinfo()
+            .expect("Could not get all pids info") {
+            if info.pbi_pgid == info.pbi_pid {
+                continue;
             }
-            let mut not_matched = 0;
-            for (pgrp, bsdinfo_pids) in bsdinfo_pgrps.iter_mut() {
-                if bsdinfo_pids.len() <= 1 {
-                    continue;
-                }
-                let pids =
-                    listpids(ProcFilter::ByProgramGroup { pgrpid: *pgrp }).unwrap_or_default();
-                for pid in pids {
-                    if !bsdinfo_pids.remove(&pid) {
-                        not_matched += 1;
-                        break;
-                    }
-                }
-                if !bsdinfo_pids.is_empty() {
+            bsdinfo_pgrps
+                .entry(info.pbi_pgid)
+                .and_modify(|pids| {
+                    pids.insert(info.pbi_pid);
+                })
+                .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
+        }
+        let mut not_matched = 0;
+        for (pgrp, bsdinfo_pids) in bsdinfo_pgrps.iter_mut() {
+            if bsdinfo_pids.len() <= 1 {
+                continue;
+            }
+            let pids =
+                listpids(ProcFilter::ByProgramGroup { pgrpid: *pgrp })
+                    .expect("Could not listpids");
+            for pid in pids {
+                if !bsdinfo_pids.remove(&pid) {
                     not_matched += 1;
+                    break;
                 }
             }
-            if not_matched <= PROCESS_DIFF_TOLERANCE {
-                return Ok(());
+            if !bsdinfo_pids.is_empty() {
+                not_matched += 1;
             }
         }
-        panic!("Test failed");
+        assert!(not_matched <= PROCESS_DIFF_TOLERANCE);
     }
 
     const NODEV: u32 = u32::MAX;
