@@ -1,6 +1,6 @@
 [package]
 name = "libproc"
-version = "0.14.2"
+version = "0.14.3"
 description = "A library to get information about running processes - for Mac OS X and Linux"
 authors = ["Andrew Mackenzie <andrew@mackenzie-serres.net>"]
 repository = "https://github.com/andrewdavidmackenzie/libproc-rs"
