@@ -34,9 +34,9 @@ impl From<ProcFilter> for u32 {
 
 // similar to list_pids_ret() below, there are two cases when 0 is returned, one when there are
 // no pids, and the other when there is an error
+// when `errno` is set to indicate an error in the input type, the return value is 0
 fn check_listpid_ret(ret: c_int) -> io::Result<Vec<u32>> {
-    let errno = std::io::Error::last_os_error().raw_os_error().unwrap_or(0);
-    if ret < 0 || (ret == 0 && errno < 0) {
+    if ret < 0 || (ret == 0 && io::Error::last_os_error().raw_os_error().unwrap_or(0) != 0) {
         return Err(io::Error::last_os_error());
     }
 
@@ -47,10 +47,13 @@ fn check_listpid_ret(ret: c_int) -> io::Result<Vec<u32>> {
 // Common code for handling the special case of listpids return, where 0 is a valid return
 // but is also used in the error case - so we need to look at errno to distringish between a valid
 // 0 return and an error return
+// when `errno` is set to indicate an error in the input type, the return value is 0
 fn list_pids_ret(ret: c_int, mut pids: Vec<u32>) -> io::Result<Vec<u32>> {
-    let errno = std::io::Error::last_os_error().raw_os_error().unwrap_or(0);
     match ret {
-        value if value < 0 || errno < 0 => Err(io::Error::last_os_error()),
+        value if value < 0 ||
+            (ret == 0 && io::Error::last_os_error().raw_os_error().unwrap_or(0) != 0) => {
+                Err(io::Error::last_os_error())
+            },
         _ => {
             let items_count = ret as usize / mem::size_of::<u32>();
             unsafe {
@@ -270,7 +273,7 @@ mod test {
     fn test_listpids_real_uid() {
         let mut bsdinfo_ruids: HashMap<_, HashSet<_>> = HashMap::new();
         for info in get_all_pid_bsdinfo()
-            .expect("Could not get all pids info"){
+            .expect("Could not get all pids info") {
             bsdinfo_ruids
                 .entry(info.pbi_ruid)
                 .and_modify(|pids| {
@@ -330,6 +333,13 @@ mod test {
         assert!(not_matched <= PROCESS_DIFF_TOLERANCE);
     }
 
+    #[test]
+    fn test_listpids_invalid_parent_pid() {
+        let pids = listpids(ProcFilter::ByParentProcess { ppid: u32::MAX })
+            .expect("Error requesting children of inexistant process");
+        assert!(pids.is_empty());
+    }
+
     // No point in writing test cases for all ProcFilter members, as the Darwin
     // implementation of proc_listpidspath is essentially a wrapper acound
     // proc_listpids with calls to proc_pidinfo to gather path information.
@@ -339,8 +349,9 @@ mod test {
     #[test]
     fn test_listpidspath() -> Result<(), io::Error> {
         let root = std::path::Path::new("/");
-        let pids =
-            listpidspath(ProcFilter::All, root, true, false).expect("Failed to load PIDs for path");
+        let pids: Vec<u32> =
+            listpidspath(ProcFilter::All, root, true, false)
+                .expect("Failed to load PIDs for path");
         assert!(!pids.is_empty());
         Ok(())
     }
