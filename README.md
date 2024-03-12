@@ -74,11 +74,6 @@ pub fn pidrusage<T: PIDRUsage>(pid : i32) -> Result<T, String> (macos)
 pub fn kmsgbuf() -> Result<String, String>
 ```
 
-# Binaries
-`cargo build` builds the following binaries:
-- `procinfo` that takes a PID as an optional argument (uses it's own pid if none supplied) and returns information about the process on stdout
-- `dmesg` is a version of dmesg implemented in rust that uses libproc-rs.
-
 # Rust Versions
 The Github Actions CI matrix tests for rust `stable`, `beta` and `nightly` on all platforms
 
@@ -103,6 +98,17 @@ To build for versions prior to Mac OS 10.7 disable the default features by passi
 
 To build for Mac OS X 10.7 (or 10.8) you can enable that feature alone using
 --no-default-features --features "macosx_10_7"
+
+# Examples
+Two simple examples are included to show libproc-rs working.
+
+- `procinfo` that takes a PID as an optional argument (uses it's own pid if none supplied) and returns
+  information about the process on stdout
+- `dmesg` is a version of dmesg implemented in rust that uses libproc-rs.
+
+These can be ran thus:
+`sudo cargo run --example procinfo` or 
+`sudo cargo run --example dmesg` 
 
 # Build and Test Locally
 `cargo test` should build and test as usual for rust projects.
