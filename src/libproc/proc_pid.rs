@@ -9,7 +9,8 @@ use std::fs;
 use std::mem;
 use std::path::PathBuf;
 
-use libc::pid_t;
+use libc::{c_int, pid_t};
+
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use libc::PATH_MAX;
 
@@ -231,7 +232,9 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 #[cfg(target_os = "macos")]
 pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
     let flavor = T::flavor() as i32;
-    let buffer_size = mem::size_of::<T>() as i32;
+    // No type `T` will be bigger than `i32::MAX`!!
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+    let buffer_size = mem::size_of::<T>() as c_int;
     let mut pidinfo = unsafe { mem::zeroed() };
     let buffer_ptr = &mut pidinfo as *mut _ as *mut c_void;
     let ret: i32;
@@ -277,7 +280,9 @@ pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
 #[cfg(target_os = "macos")]
 pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
     let mut buf: Vec<u8> = Vec::with_capacity((PROC_PIDPATHINFO_MAXSIZE - 1) as _);
-    let buffer_ptr = buf.as_mut_ptr() as *mut c_void;
+    let buffer_ptr = buf.as_mut_ptr().cast::<c_void>();
+    // PROC_PIDPATHINFO_MAXSIZE will be smaller than `u32::MAX`
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
     let buffer_size = buf.capacity() as u32;
     let ret: i32;
 
@@ -330,6 +335,8 @@ pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
 pub fn pidpath(pid: i32) -> Result<String, String> {
     let mut buf: Vec<u8> = Vec::with_capacity((PROC_PIDPATHINFO_MAXSIZE - 1) as _);
     let buffer_ptr = buf.as_mut_ptr() as *mut c_void;
+    // PROC_PIDPATHINFO_MAXSIZE will be smaller than `u32::MAX`
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
     let buffer_size = buf.capacity() as u32;
     let ret: i32;
 
@@ -356,14 +363,12 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 /// ```
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn pidpath(pid: i32) -> Result<String, String> {
-    let exe_path = CString::new(format!("/proc/{pid}/exe"))
-        .map_err(|_| "Could not create CString")?;
+    let exe_path =
+        CString::new(format!("/proc/{pid}/exe")).map_err(|_| "Could not create CString")?;
     let mut buf: Vec<u8> = Vec::with_capacity(PATH_MAX as usize - 1);
     let buffer_ptr = buf.as_mut_ptr() as *mut c_char;
     let buffer_size = buf.capacity();
-    let ret = unsafe {
-        readlink(exe_path.as_ptr(), buffer_ptr, buffer_size)
-    };
+    let ret = unsafe { readlink(exe_path.as_ptr(), buffer_ptr, buffer_size) };
 
     helpers::check_errno(ret as i32, &mut buf)
 }
@@ -440,8 +445,10 @@ pub fn libversion() -> Result<(i32, i32), String> {
 pub fn name(pid: i32) -> Result<String, String> {
     let mut namebuf: Vec<u8> = Vec::with_capacity((PROC_PIDPATHINFO_MAXSIZE - 1) as _);
     let buffer_ptr = namebuf.as_ptr() as *mut c_void;
+    // No type `T` will be bigger than `i32::MAX`!!
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
     let buffer_size = namebuf.capacity() as u32;
-    let ret: i32;
+    let ret: c_int;
 
     unsafe {
         ret = proc_name(pid, buffer_ptr, buffer_size);
@@ -451,16 +458,17 @@ pub fn name(pid: i32) -> Result<String, String> {
         Err(helpers::get_errno_with_message(ret))
     } else {
         unsafe {
+            // `ret` must be greater than 0 here, so no sign-loss
+            #[allow(clippy::cast_sign_loss)]
             namebuf.set_len(ret as usize);
         }
 
         match String::from_utf8(namebuf) {
             Ok(name) => Ok(name),
-            Err(e) => Err(format!("Invalid UTF-8 sequence: {e}"))
+            Err(e) => Err(format!("Invalid UTF-8 sequence: {e}")),
         }
     }
 }
-
 
 /// Get the name of a process, using it's process id (pid)
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
@@ -499,7 +507,9 @@ pub fn name(pid: i32) -> Result<String, String> {
 #[cfg(target_os = "macos")]
 pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::Item>, String> {
     let flavor = T::flavor() as i32;
-    let buffer_size = mem::size_of::<T::Item>() as i32 * max_len as i32;
+    // No type `T` will be bigger than `c_int::MAX`!!
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+    let buffer_size = mem::size_of::<T::Item>() as c_int * max_len as c_int;
     let mut buffer = Vec::<T::Item>::with_capacity(max_len);
     let buffer_ptr = unsafe {
         buffer.set_len(max_len);
@@ -515,6 +525,8 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
     if ret <= 0 {
         Err(helpers::get_errno_with_message(ret))
     } else {
+        // `ret` must be greater than 0 here, so no sign-loss
+        #[allow(clippy::cast_sign_loss)]
         let actual_len = ret as usize / mem::size_of::<T::Item>();
         buffer.truncate(actual_len);
         Ok(buffer)
@@ -562,9 +574,7 @@ pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
 /// }
 /// ```
 pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
-    fs::read_link(format!("/proc/{pid}/cwd")).map_err(|e| {
-        e.to_string()
-    })
+    fs::read_link(format!("/proc/{pid}/cwd")).map_err(|e| e.to_string())
 }
 
 /// Gets path of current working directory for the current process.
@@ -619,9 +629,11 @@ pub fn am_root() -> bool {
 
 // run tests with 'cargo test -- --nocapture' to see the test output
 #[cfg(test)]
+// Don't worry about wrapping in tests
+#[allow(clippy::cast_possible_wrap)]
 mod test {
-    use std::process;
     use std::env;
+    use std::process;
 
     #[cfg(target_os = "macos")]
     use crate::libproc::bsd_info::BSDInfo;
@@ -630,12 +642,12 @@ mod test {
     #[cfg(target_os = "macos")]
     use crate::libproc::task_info::TaskAllInfo;
 
-    #[cfg(target_os = "macos")]
-    use super::{libversion, listpidinfo, ListThreads, pidinfo};
-    use super::{name, cwdself, pidpath};
+    use super::am_root;
     #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     use super::pidcwd;
-    use super::am_root;
+    use super::{cwdself, name, pidpath};
+    #[cfg(target_os = "macos")]
+    use super::{libversion, listpidinfo, pidinfo, ListThreads};
     #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     use crate::libproc::helpers;
     #[cfg(target_os = "macos")]
@@ -652,7 +664,7 @@ mod test {
 
         match pidinfo::<BSDInfo>(pid, 0) {
             Ok(info) => assert_eq!(info.pbi_pid as i32, pid),
-            Err(e) => panic!("Error retrieving BSDInfo: {}", e)
+            Err(e) => panic!("Error retrieving BSDInfo: {}", e),
         };
     }
 
@@ -663,7 +675,7 @@ mod test {
 
         match pidinfo::<TaskInfo>(pid, 0) {
             Ok(info) => assert!(info.pti_virtual_size > 0),
-            Err(e) => panic!("Error retrieving TaskInfo: {}", e)
+            Err(e) => panic!("Error retrieving TaskInfo: {}", e),
         };
     }
 
@@ -674,7 +686,7 @@ mod test {
 
         match pidinfo::<TaskAllInfo>(pid, 0) {
             Ok(info) => assert!(info.ptinfo.pti_virtual_size > 0),
-            Err(e) => panic!("Error retrieving TaskAllInfo: {}", e)
+            Err(e) => panic!("Error retrieving TaskAllInfo: {}", e),
         };
     }
 
@@ -686,7 +698,7 @@ mod test {
 
         match pidinfo::<ThreadInfo>(pid, 0) {
             Ok(info) => assert!(info.pth_user_time > 0),
-            Err(e) => panic!("Error retrieving ThreadInfo: {}", e)
+            Err(e) => panic!("Error retrieving ThreadInfo: {}", e),
         };
     }
 
@@ -698,17 +710,19 @@ mod test {
 
         match pidinfo::<WorkQueueInfo>(pid, 0) {
             Ok(info) => assert!(info.pwq_nthreads > 0),
-            Err(e) => panic!("{}: {}", "Error retrieving WorkQueueInfo", e)
+            Err(e) => panic!("{}: {}", "Error retrieving WorkQueueInfo", e),
         };
     }
 
     #[cfg(target_os = "macos")]
     #[test]
+    #[allow(clippy::cast_sign_loss)]
     fn listpidinfo_test() {
         let pid = process::id() as i32;
 
         if let Ok(info) = pidinfo::<TaskAllInfo>(pid, 0) {
-            if let Ok(threads) = listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize) {
+            if let Ok(threads) = listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize)
+            {
                 assert!(!threads.is_empty());
             }
             if let Ok(fds) = listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
@@ -725,9 +739,19 @@ mod test {
 
     #[test]
     fn name_test() {
-        if am_root() || cfg!(any(target_os = "linux", target_os = "redox", target_os = "android")) {
-            assert!(&name(process::id() as i32).expect("Could not get the process name")
-                .starts_with("libproc"), "Incorrect process name");
+        if am_root()
+            || cfg!(any(
+                target_os = "linux",
+                target_os = "redox",
+                target_os = "android"
+            ))
+        {
+            assert!(
+                &name(process::id() as i32)
+                    .expect("Could not get the process name")
+                    .starts_with("libproc"),
+                "Incorrect process name"
+            );
         } else {
             println!("Cannot run 'name_test' on macos unless run as root");
         }
@@ -737,12 +761,15 @@ mod test {
     // This checks that it cannot find the path of the process with pid -1 and returns correct error message
     fn pidpath_test_unknown_pid_test() {
         #[cfg(target_os = "macos")]
-            let error_message = "No such process";
+        let error_message = "No such process";
         #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
-            let error_message = "No such file or directory";
+        let error_message = "No such file or directory";
 
         match pidpath(-1) {
-            Ok(path) => panic!("It found the path of process with ID = -1 (path = {}), that's not possible\n", path),
+            Ok(path) => panic!(
+                "It found the path of process with ID = -1 (path = {}), that's not possible\n",
+                path
+            ),
             Err(message) => assert!(message.contains(error_message)),
         }
     }
@@ -758,15 +785,19 @@ mod test {
     // should check it can be called and returns correct value
     #[test]
     fn cwd_self_test() {
-        assert_eq!(env::current_dir().expect("Could not get current directory"),
-                   cwdself().expect("cwdself() failed"));
+        assert_eq!(
+            env::current_dir().expect("Could not get current directory"),
+            cwdself().expect("cwdself() failed")
+        );
     }
 
     #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     #[test]
     fn pidcwd_of_self_test() {
-        assert_eq!(env::current_dir().expect("Could not get current directory"),
-                   pidcwd(process::id() as i32).expect("pidcwd() failed"));
+        assert_eq!(
+            env::current_dir().expect("Could not get current directory"),
+            pidcwd(process::id() as i32).expect("pidcwd() failed")
+        );
     }
 
     #[test]

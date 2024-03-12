@@ -19,7 +19,7 @@ use std::sync::mpsc::Receiver;
 use std::{thread, time};
 
 #[cfg(target_os = "macos")]
-use crate::osx_libproc_bindings::{MAXBSIZE as MAX_MSG_BSIZE, proc_kmsgbuf};
+use crate::osx_libproc_bindings::{proc_kmsgbuf, MAXBSIZE as MAX_MSG_BSIZE};
 
 /// Get the contents of the kernel message buffer
 ///
@@ -38,8 +38,13 @@ pub fn kmsgbuf() -> Result<String, String> {
     let ret: i32;
 
     unsafe {
-        ret = proc_kmsgbuf(buffer_ptr, message_buffer.capacity() as u32);
+        // This assumes that MAX_MSG_BSIZE < u32::MAX - but compile time asserts are experimental
+        #[allow(clippy::cast_possible_truncation)]
+        let buffersize = message_buffer.capacity() as u32;
+        ret = proc_kmsgbuf(buffer_ptr, buffersize);
         if ret > 0 {
+            // `ret` cannot be negative here - so cannot lose the sign
+            #[allow(clippy::cast_sign_loss)]
             message_buffer.set_len(ret as usize - 1);
         }
     }
@@ -49,7 +54,8 @@ pub fn kmsgbuf() -> Result<String, String> {
     } else {
         let msg = str::from_utf8(&message_buffer)
             .map_err(|_| "Could not convert kernel message buffer from utf8".to_string())?
-            .parse().map_err(|_| "Could not parse kernel message")?;
+            .parse()
+            .map_err(|_| "Could not parse kernel message")?;
         Ok(msg)
     }
 }
@@ -86,9 +92,11 @@ fn spawn_kmsg_channel(file: File) -> Receiver<String> {
         let mut line = String::new();
         match reader.read_line(&mut line) {
             Ok(_) => {
-                if tx.send(line).is_err() { break; }
+                if tx.send(line).is_err() {
+                    break;
+                }
             }
-            _ => break
+            _ => break,
         }
     });
 
@@ -105,8 +113,8 @@ mod test {
     fn kmessage_buffer_test() {
         if am_root() {
             match kmsgbuf() {
-                Ok(_) => { },
-                Err(message) => panic!("{}", message)
+                Ok(_) => {}
+                Err(message) => panic!("{}", message),
             }
         } else {
             println!("test skipped as it needs to be run as root");

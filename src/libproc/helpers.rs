@@ -19,13 +19,15 @@ pub fn check_errno(ret: i32, buf: &mut Vec<u8>) -> Result<String, String> {
     if ret <= 0 {
         Err(get_errno_with_message(ret))
     } else {
+        // `ret` mucg be greater than 0 here so no sign-loss
+        #[allow(clippy::cast_sign_loss)]
         unsafe {
             buf.set_len(ret as usize);
         }
 
         match String::from_utf8(buf.clone()) {
             Ok(return_value) => Ok(return_value),
-            Err(e) => Err(format!("Invalid UTF-8 sequence: {e}"))
+            Err(e) => Err(format!("Invalid UTF-8 sequence: {e}")),
         }
     }
 }
@@ -38,7 +40,8 @@ pub fn procfile_field(filename: &str, field_name: &str) -> Result<String, String
     let line_header = format!("{field_name}{SEPARATOR}");
 
     // Open the file in read-only mode (ignoring errors).
-    let file = File::open(filename).map_err(|_| format!("Could not open /proc file '{filename}'"))?;
+    let file =
+        File::open(filename).map_err(|_| format!("Could not open /proc file '{filename}'"))?;
     let reader = BufReader::new(file);
 
     // Read the file line by line using the lines() iterator from std::io::BufRead.
@@ -50,7 +53,9 @@ pub fn procfile_field(filename: &str, field_name: &str) -> Result<String, String
         }
     }
 
-    Err(format!("Could not find the field named '{field_name}' in the /proc FS file name '{filename}'"))
+    Err(format!(
+        "Could not find the field named '{field_name}' in the /proc FS file name '{filename}'"
+    ))
 }
 
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
@@ -59,20 +64,21 @@ pub fn procfile_field(filename: &str, field_name: &str) -> Result<String, String
 pub fn parse_memory_string(line: &str) -> Result<u64, String> {
     let parts: Vec<&str> = line.trim().split(' ').collect();
     if parts.is_empty() {
-        return Err(format!("Could not parse Memory String: {line}"))
+        return Err(format!("Could not parse Memory String: {line}"));
     }
     let multiplier: u64 = if parts.len() == 2 {
         match parts[1] {
             "MB" => 1024 * 1024,
             "kB" => 1024,
             "B" => 1,
-            _ => return Err(format!("Could not parse units of Memory String: {line}"))
+            _ => return Err(format!("Could not parse units of Memory String: {line}")),
         }
     } else {
         1
     };
 
-    let value:u64 = parts[0].parse()
+    let value: u64 = parts[0]
+        .parse()
         .map_err(|_| "Could not parse value as integer")?;
 
     Ok(value * multiplier)
@@ -80,8 +86,8 @@ pub fn parse_memory_string(line: &str) -> Result<u64, String> {
 
 #[cfg(test)]
 mod test {
-    use crate::errno::{set_errno, Errno};
     use super::check_errno;
+    use crate::errno::{set_errno, Errno};
 
     #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     mod linux {
@@ -115,11 +121,14 @@ mod test {
 
     #[test]
     fn invalid_utf8() {
-        let mut buf: Vec<u8> = vec!(255, 0, 0);
+        let mut buf: Vec<u8> = vec![255, 0, 0];
 
-        // Test
+        // Test - small test buffer so no problem truncating
+        #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
         if let Err(msg) = check_errno(buf.len() as i32, &mut buf) {
-            assert!(msg.contains("Invalid UTF-8 sequence: invalid utf-8 sequence of 1 bytes from index 0"));
+            assert!(msg.contains(
+                "Invalid UTF-8 sequence: invalid utf-8 sequence of 1 bytes from index 0"
+            ));
         }
     }
 
@@ -128,7 +137,8 @@ mod test {
         let message = "custom message";
         let mut buf: Vec<u8> = Vec::from(message.as_bytes());
 
-        // Test
+        // Test - small test buffer so no problem truncating
+        #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
         if let Ok(msg) = check_errno(buf.len() as i32, &mut buf) {
             assert!(msg.contains(message));
         }
@@ -136,7 +146,7 @@ mod test {
 
     #[test]
     fn negative_ret() {
-        let mut buf: Vec<u8> = vec!();
+        let mut buf: Vec<u8> = vec![];
         set_errno(Errno(-1));
 
         // Test
@@ -147,7 +157,7 @@ mod test {
 
     #[test]
     fn zero_ret() {
-        let mut buf: Vec<u8> = vec!();
+        let mut buf: Vec<u8> = vec![];
         set_errno(Errno(2));
 
         // Test

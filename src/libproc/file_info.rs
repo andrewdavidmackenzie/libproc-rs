@@ -35,7 +35,9 @@ pub struct ListFDs;
 
 impl ListPIDInfo for ListFDs {
     type Item = ProcFDInfo;
-    fn flavor() -> PidInfoFlavor { PidInfoFlavor::ListFDs }
+    fn flavor() -> PidInfoFlavor {
+        PidInfoFlavor::ListFDs
+    }
 }
 
 /// Struct to hold info about a Processes `FileDescriptor` Info
@@ -159,6 +161,8 @@ pub trait PIDFDInfo: Default {
 #[cfg(target_os = "macos")]
 pub fn pidfdinfo<T: PIDFDInfo>(pid: i32, fd: i32) -> Result<T, String> {
     let flavor = T::flavor() as i32;
+    // No `T` will have size greater than `i32::MAX` so no truncation
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
     let buffer_size = mem::size_of::<T>() as i32;
     let mut pidinfo = T::default();
     let buffer_ptr = &mut pidinfo as *mut _ as *mut c_void;
@@ -190,23 +194,26 @@ mod test {
     use super::pidfdinfo;
 
     #[test]
+    #[allow(clippy::cast_possible_wrap)]
     fn pidfdinfo_test() {
-        use std::process;
         use std::net::TcpListener;
+        use std::process;
         let pid = process::id() as i32;
 
         let _listener = TcpListener::bind("127.0.0.1:65535");
 
         let info = pidinfo::<BSDInfo>(pid, 0).expect("pidinfo() failed");
-        let fds = listpidinfo::<ListFDs>(pid, info.pbi_nfiles as usize).expect("listpidinfo() failed");
+        let fds =
+            listpidinfo::<ListFDs>(pid, info.pbi_nfiles as usize).expect("listpidinfo() failed");
         for fd in fds {
             if let ProcFDType::Socket = fd.proc_fdtype.into() {
-                let socket = pidfdinfo::<SocketFDInfo>(pid, fd.proc_fd).expect("pidfdinfo() failed");
+                let socket =
+                    pidfdinfo::<SocketFDInfo>(pid, fd.proc_fd).expect("pidfdinfo() failed");
                 if let SocketInfoKind::Tcp = socket.psi.soi_kind.into() {
                     unsafe {
                         let info = socket.psi.soi_proto.pri_tcp;
                         assert_eq!(socket.psi.soi_protocol, libc::IPPROTO_TCP);
-                        assert_eq!(info.tcpsi_ini.insi_lport as u32, 65535);
+                        assert_eq!(info.tcpsi_ini.insi_lport, 65535);
                     }
                 }
             }
