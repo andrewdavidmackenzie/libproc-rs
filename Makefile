@@ -3,7 +3,7 @@ all: clippy run-tests build-docs
 
 .PHONY: clippy
 clippy:
-	cargo clippy --all --tests --all-targets --all-features -- -D warnings
+	cargo clippy --all --tests --all-targets --all-features -- --warn clippy::pedantic -D warnings
 
 .PHONY: configure-coverage
 configure-coverage:
