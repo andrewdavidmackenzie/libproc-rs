@@ -22,14 +22,6 @@ macosx_10_9 = ["macosx_10_7"]
 name = "libproc"
 path = "src/lib.rs"
 
-[[bin]]
-name = "procinfo"
-path = "src/procinfo.rs"
-
-[[bin]]
-name = "dmesg"
-path = "src/dmesg.rs"
-
 [build-dependencies]
 bindgen = { version = "0.69.0", default-features = false, features = ["runtime"] }
 
