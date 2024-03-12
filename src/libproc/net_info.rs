@@ -1,9 +1,13 @@
-extern crate libc;
-
 use crate::libproc::file_info::{PIDFDInfo, PIDFDInfoFlavor};
 
-use self::libc::{c_char, c_int, c_short, c_uchar, c_ushort, gid_t, IF_NAMESIZE, in6_addr, in_addr,
-                 off_t, SOCK_MAXADDRLEN, sockaddr_un, uid_t};
+#[cfg(target_os = "macos")]
+use libc::SOCK_MAXADDRLEN;
+use libc::{
+    c_char, c_int, c_short, c_uchar, c_ushort, gid_t, in6_addr, in_addr, off_t, sockaddr_un, uid_t,
+    IF_NAMESIZE,
+};
+#[cfg(target_os = "linux")]
+pub const SOCK_MAXADDRLEN: c_int = 255;
 
 /// Socket File Descriptor Info
 #[repr(C)]
@@ -22,17 +26,19 @@ pub struct ProcFileInfo {
     /// Open flags
     pub fi_openflags: u32,
     /// Status
-    pub fi_status   : u32,
+    pub fi_status: u32,
     /// Offset
-    pub fi_offset   : off_t,
+    pub fi_offset: off_t,
     /// Type
-    pub fi_type     : i32,
+    pub fi_type: i32,
     /// Reserved for future use
-    pub rfu_1       : i32,
+    pub rfu_1: i32,
 }
 
 impl PIDFDInfo for SocketFDInfo {
-    fn flavor() -> PIDFDInfoFlavor { PIDFDInfoFlavor::SocketInfo }
+    fn flavor() -> PIDFDInfoFlavor {
+        PIDFDInfoFlavor::SocketInfo
+    }
 }
 
 /// Socket Info Kind

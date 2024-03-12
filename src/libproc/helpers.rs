@@ -1,4 +1,4 @@
-use crate::errno::errno;
+use errno::errno;
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use std::fs::File;
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
@@ -87,7 +87,7 @@ pub fn parse_memory_string(line: &str) -> Result<u64, String> {
 #[cfg(test)]
 mod test {
     use super::check_errno;
-    use crate::errno::{set_errno, Errno};
+    use errno::{set_errno, Errno};
 
     #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     mod linux {

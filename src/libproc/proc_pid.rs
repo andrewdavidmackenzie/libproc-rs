@@ -1,5 +1,3 @@
-extern crate libc;
-
 use std::env;
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use std::ffi::CString;
@@ -23,6 +21,7 @@ use crate::libproc::helpers;
 use crate::libproc::task_info::{TaskAllInfo, TaskInfo};
 #[cfg(target_os = "macos")]
 use crate::libproc::thread_info::ThreadInfo;
+#[cfg(target_os = "macos")]
 use crate::libproc::work_queue_info::WorkQueueInfo;
 #[cfg(target_os = "macos")]
 use crate::osx_libproc_bindings::{
@@ -31,9 +30,9 @@ use crate::osx_libproc_bindings::{
 };
 
 #[cfg(target_os = "macos")]
-use self::libc::c_void;
+use libc::c_void;
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
-use self::libc::{c_char, readlink};
+use libc::{c_char, readlink};
 
 use crate::processes;
 
@@ -121,6 +120,7 @@ pub enum PidInfo {
     /// `PathInfo` of the executable being run as the process
     PathInfo(String),
     /// `WorkQueueInfo`
+    #[cfg(target_os = "macos")]
     WorkQueueInfo(WorkQueueInfo),
 }
 
@@ -252,13 +252,7 @@ pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
     }
 }
 
-#[allow(clippy::missing_errors_doc)]
-/// pidinfo not implemented on linux - Pull Requests welcome - TODO
-#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
-pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
-    unimplemented!()
-}
-
+#[cfg(any(target_os = "macos", doc))]
 /// Get the filename associated with a memory region
 ///
 /// # Errors
@@ -296,24 +290,6 @@ pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
     helpers::check_errno(ret, &mut buf)
 }
 
-#[allow(clippy::missing_errors_doc)]
-/// Get the filename associated with a memory region
-///
-/// # Examples
-///
-/// ```
-/// use libproc::libproc::proc_pid::regionfilename;
-///
-/// // This checks that it can find the regionfilename of the region at address 0, of the init process with PID 1
-/// use libproc::libproc::proc_pid::am_root;
-///
-/// if am_root() {
-///     match regionfilename(1, 0) {
-///         Ok(regionfilename) => println!("Region Filename (at address = 0) of init process PID = 1 is '{}'", regionfilename),
-///         Err(err) => eprintln!("Error: {}", err)
-///     }
-/// }
-/// ```
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
     Err("'regionfilename' not implemented on linux".to_owned())
@@ -383,6 +359,7 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
     helpers::check_errno(ret as i32, &mut buf)
 }
 
+#[cfg(any(target_os = "macos", doc))]
 /// Get the major and minor version numbers of the native libproc library (Mac OS X)
 ///
 /// # Errors
@@ -418,22 +395,6 @@ pub fn libversion() -> Result<(i32, i32), String> {
     }
 }
 
-/// Get the major and minor version numbers of the native libproc library (Mac OS X)
-///
-/// # Errors
-///
-/// On linux, since no library is used, an `Err` is always returned.
-///
-/// # Examples
-///
-/// ```
-/// use libproc::libproc::proc_pid;
-///
-/// match proc_pid::libversion() {
-///     Ok((major, minor)) => println!("Libversion: {}.{}", major, minor),
-///     Err(err) => eprintln!("Error: {}", err)
-/// }
-/// ```
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn libversion() -> Result<(i32, i32), String> {
     Err("Linux does not use a library, so no library version number".to_owned())
@@ -549,13 +510,6 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
         buffer.truncate(actual_len);
         Ok(buffer)
     }
-}
-
-#[allow(clippy::missing_errors_doc)]
-/// listpidinfo is not implemented on Linux - Pull Requests welcome - TODO
-#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
-pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::Item>, String> {
-    unimplemented!()
 }
 
 #[cfg(target_os = "macos")]

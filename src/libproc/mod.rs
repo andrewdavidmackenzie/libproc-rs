@@ -1,34 +1,34 @@
-//! `libproc` module provides library methods for getting various types of
-//! information about running processes.
-//!
-//! In the future there will probably be a shorter list of public
-//! modules implementing a cleaner and reduced API - built on these
-//! methods.
-//!
+#[cfg(any(target_os = "macos", doc))]
+/// BSD specific information - very macos specific
+pub mod bsd_info;
+
+#[cfg(any(target_os = "macos", doc))]
+/// Information about Files and File Descriptors used by processes
+pub mod file_info;
+
+/// Get messages from the kernel message buffer
+pub mod kmesg_buffer;
+
+/// Information about Process Resource Usage - added in Mac OS X 10.9
+pub mod pid_rusage;
 
 /// Get basic information about processes by PID
 pub mod proc_pid;
-/// Get messages from the kernel message buffer
-pub mod kmesg_buffer;
+
+#[cfg(any(target_os = "macos", doc))]
+/// Information about Tasks - very macos specific
+pub mod task_info;
+
+#[cfg(any(target_os = "macos", doc))]
+/// Information about Threads running inside processes
+pub mod thread_info;
+
+#[cfg(any(target_os = "macos", doc))]
 /// Information about Work Queues - very macos specific
 pub mod work_queue_info;
-/// Information about Threads running inside processes
-#[cfg(target_os = "macos")]
-pub mod thread_info;
-/// Information about Tasks - very macos specific
-#[cfg(target_os = "macos")]
-pub mod task_info;
-/// BSD specific information - very macos specific
-#[cfg(target_os = "macos")]
-pub mod bsd_info;
-/// Information about Process Resource Usage - added in Mac OS X 10.9
-pub mod pid_rusage;
-/// Information about Files and File Descriptors used by processes
-#[cfg(target_os = "macos")]
-pub mod file_info;
 
+#[cfg(any(target_os = "macos", doc))]
 /// Information about Network usage by a process
-#[cfg(target_os = "macos")]
 pub mod net_info;
 
 mod helpers;

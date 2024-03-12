@@ -1,14 +1,11 @@
-extern crate libc;
-
-use std::mem;
-
 use crate::libproc::helpers;
 use crate::libproc::proc_pid::{ListPIDInfo, PidInfoFlavor};
+use std::mem;
 
 #[cfg(target_os = "macos")]
-use self::libc::c_void;
-#[cfg(target_os = "macos")]
 use crate::osx_libproc_bindings::proc_pidfdinfo;
+#[cfg(target_os = "macos")]
+use libc::c_void;
 
 /// Flavor of Pid `FileDescriptor` info for different types of File Descriptors
 pub enum PIDFDInfoFlavor {
