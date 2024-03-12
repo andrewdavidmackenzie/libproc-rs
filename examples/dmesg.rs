@@ -1,4 +1,5 @@
-//! A `dmesg` command that is a simple demonstration program for using the [`libproc`](../libproc/index.html) library
+//! A `dmesg` command that is a simple demonstration program for using
+//! the `libproc` library
 //!
 //! Usage
 //! =
@@ -6,14 +7,11 @@
 //! `> dmesg`
 //!
 
-extern crate libproc;
-extern crate libc;
-
-use crate::libproc::libproc::kmesg_buffer;
+use libproc::kmesg_buffer;
 
 fn main() {
     match kmesg_buffer::kmsgbuf() {
         Ok(message) => print!("{message}"),
-        Err(e) => eprintln!("{e}")
+        Err(e) => eprintln!("{e}"),
     }
 }

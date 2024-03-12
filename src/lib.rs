@@ -9,10 +9,29 @@
 extern crate errno;
 extern crate libc;
 
+pub use libproc::kmesg_buffer;
+pub use libproc::pid_rusage;
+pub use libproc::proc_pid;
+pub use libproc::work_queue_info;
+
+#[cfg(target_os = "macos")]
+pub use libproc::bsd_info;
+#[cfg(target_os = "macos")]
+pub use libproc::file_info;
+#[cfg(target_os = "macos")]
+pub use libproc::net_info;
+#[cfg(target_os = "macos")]
+pub use libproc::task_info;
+#[cfg(target_os = "macos")]
+pub use libproc::thread_info;
+
+/// List processes by type, path or by type and path.
+pub mod processes;
+
 /// Get information (such as name, path, process info, fd) about running processes by pid, process type, etc.
 /// At the moment these methods have been implemented, most of which have examples in their docs:
 ///
-/// # `libproc::libproc` (names that way for bad, historical reasons!)
+/// # `libproc::libproc`
 /// ## Process / PID related
 /// `pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> (macos) (linux)`
 ///
@@ -44,14 +63,6 @@ extern crate libc;
 ///  ## Kernel Message Buffer - kmsgbuf
 ///  `pub fn kmsgbuf() -> Result<String, String>`
 pub mod libproc;
-/// List processes by type, path or by type and path.
-///
-///  `pub fn pids_by_type(filter: ProcFilter)` (macos) (linux)
-///
-///  `pub fn pids_by_path(path: &Path, is_volume: bool, exclude_event_only: bool)` (macos)
-///
-///  `pub fn pids_by_type_and_path(filter: ProcFilter, path: &Path, is_volume: bool, exclude_event_only: bool)` (macos)
-pub mod processes;
 
 #[cfg(target_os = "macos")]
 #[allow(warnings, missing_docs)]
