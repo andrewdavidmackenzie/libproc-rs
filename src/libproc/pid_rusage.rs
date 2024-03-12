@@ -386,11 +386,11 @@ impl PIDRUsage for RUsageInfoV4 {
 pub fn pidrusage<T: PIDRUsage>(pid: i32) -> Result<T, String> {
     let flavor = T::flavor() as i32;
     let mut pidrusage = T::default();
-    let buffer_ptr = &mut pidrusage as *mut _ as *mut c_void;
+    let buffer_ptr = std::ptr::from_mut::<T>(&mut pidrusage).cast::<c_void>();
     let ret: i32;
 
     unsafe {
-        ret = proc_pid_rusage(pid, flavor, buffer_ptr as _);
+        ret = proc_pid_rusage(pid, flavor, buffer_ptr.cast());
     };
 
     if ret < 0 {

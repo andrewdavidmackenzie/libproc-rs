@@ -80,7 +80,7 @@ pub(crate) fn listpids(proc_type: ProcFilter) -> io::Result<Vec<u32>> {
         )
     };
     let mut pids = check_listpid_ret(buffer_size)?;
-    let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
+    let buffer_ptr = pids.as_mut_ptr().cast::<c_void>();
 
     let ret = unsafe {
         osx_libproc_bindings::proc_listpids(
@@ -115,20 +115,20 @@ pub(crate) fn listpidspath(
         osx_libproc_bindings::proc_listpidspath(
             proc_type.into(),
             proc_type.typeinfo(),
-            c_path.as_ptr() as *const c_char,
+            c_path.as_ptr().cast::<c_char>(),
             pathflags,
             ptr::null_mut(),
             0,
         )
     };
     let mut pids = check_listpid_ret(buffer_size)?;
-    let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
+    let buffer_ptr = pids.as_mut_ptr().cast::<c_void>();
 
     let ret = unsafe {
         osx_libproc_bindings::proc_listpidspath(
             proc_type.into(),
             proc_type.typeinfo(),
-            c_path.as_ptr() as *const c_char,
+            c_path.as_ptr().cast::<c_char>(),
             0,
             buffer_ptr,
             buffer_size,

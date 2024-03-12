@@ -236,7 +236,7 @@ pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
     #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
     let buffer_size = mem::size_of::<T>() as c_int;
     let mut pidinfo = unsafe { mem::zeroed() };
-    let buffer_ptr = &mut pidinfo as *mut _ as *mut c_void;
+    let buffer_ptr = std::ptr::from_mut::<T>(&mut pidinfo).cast::<c_void>();
     let ret: i32;
 
     unsafe {
@@ -334,7 +334,7 @@ pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
 #[cfg(target_os = "macos")]
 pub fn pidpath(pid: i32) -> Result<String, String> {
     let mut buf: Vec<u8> = Vec::with_capacity((PROC_PIDPATHINFO_MAXSIZE - 1) as _);
-    let buffer_ptr = buf.as_mut_ptr() as *mut c_void;
+    let buffer_ptr = buf.as_mut_ptr().cast::<c_void>();
     // PROC_PIDPATHINFO_MAXSIZE will be smaller than `u32::MAX`
     #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
     let buffer_size = buf.capacity() as u32;
@@ -513,7 +513,7 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
     let mut buffer = Vec::<T::Item>::with_capacity(max_len);
     let buffer_ptr = unsafe {
         buffer.set_len(max_len);
-        buffer.as_mut_ptr() as *mut c_void
+        buffer.as_mut_ptr().cast::<c_void>()
     };
 
     let ret: i32;

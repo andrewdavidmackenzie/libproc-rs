@@ -34,7 +34,7 @@ use crate::osx_libproc_bindings::{proc_kmsgbuf, MAXBSIZE as MAX_MSG_BSIZE};
 #[cfg(target_os = "macos")]
 pub fn kmsgbuf() -> Result<String, String> {
     let mut message_buffer: Vec<u8> = Vec::with_capacity(MAX_MSG_BSIZE as _);
-    let buffer_ptr = message_buffer.as_mut_ptr() as *mut c_void;
+    let buffer_ptr = message_buffer.as_mut_ptr().cast::<c_void>();
     let ret: i32;
 
     unsafe {
