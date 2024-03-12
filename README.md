@@ -4,9 +4,13 @@
 # libproc-rs
 This is a library for getting information about running processes for Mac OS X and Linux.
 
-# Using it
+Add it to your project's `Cargo.toml`:
+```toml
+libproc = "0.14.4"
 ```
-extern crate libproc;
+
+And then use it in your code:
+```rust
 use libproc::libproc::proc_pid;
 
 match proc_pid::pidpath(pid) {
@@ -15,66 +19,13 @@ match proc_pid::pidpath(pid) {
 }
 ```
 
-# Experiment in OSS funding
-I am exploring the ideas around Open Source Software funding from [RadWorks Foundation]([https://radworks.org/) via the [Drips Project](https://www.drips.network/)
+You can find the latest published release on [crates.io](https://crates.io/crates/libproc)
 
-This project is in Drips [here](https://www.drips.network/app/projects/github/andrewdavidmackenzie/libproc-rs)
+You can find the browseable docs for the latest release on [docs.rs](https://docs.rs/libproc/latest/libproc/).
 
-# Documentation
-[Online code docs](https://andrewdavidmackenzie.github.io/libproc-rs/libproc/)
+NOTE: `master` branch (code and docs) can differ from those docs prior to a new release.
 
-# API
-At the moment these methods have been implemented:
-
-## Process / PID related
-```
-pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> (macos) (linux)
-```
-```
-pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String> (macos) (linux)
-```
-```
-pub fn pidinfo<T: PIDInfo>(pid : i32, arg: u64) -> Result<T, String> (macos)
-```
-```
-pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> (macos)
-```
-```
-pub fn pidpath(pid : i32) -> Result<String, String> (macos) (linux)
-```
-```
-pub fn libversion() -> Result<(i32, i32), String> (macos)
-```
-```
-pub fn name(pid: i32) -> Result<String, String> (linux) (macos)
-```
-```
-pub fn listpidinfo<T: ListPIDInfo>(pid : i32, max_len: usize) -> Result<Vec<T::Item>, String> (macos)
-```
-```
-pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> (linux)
-```
-```
-pub fn cwdself() -> Result<PathBuf, String> (linux)
-```
-
-## File and FileDescriptor related
-```
-pub fn pidfdinfo<T: PIDFDInfo>(pid : i32, fd: i32) -> Result<T, String> (macos)
-```
-
-## PID Resource Usage related
-(Added in Mac OS X 10.9 - under "macosx_10_9" feature)
-```
-pub fn pidrusage<T: PIDRUsage>(pid : i32) -> Result<T, String> (macos)
-```
-
-## Kernel Message Buffer - kmsgbuf
-```
-pub fn kmsgbuf() -> Result<String, String>
-```
-
-# Rust Versions
+# Rust Channels Tested
 The Github Actions CI matrix tests for rust `stable`, `beta` and `nightly` on all platforms
 
 # Platforms
@@ -108,45 +59,22 @@ Two simple examples are included to show libproc-rs working.
 
 These can be ran thus:
 `sudo cargo run --example procinfo` or 
-`sudo cargo run --example dmesg` 
+`sudo cargo run --example dmesg`
 
-# Build and Test Locally
-`cargo test` should build and test as usual for rust projects.
+# Contributing
+You are welcome to fork this repo and make a pull request, or write an issue.
 
-However, as some functions need to be run as `root` to work, CI tests are run as `root`. 
-So, when developing in local it's best if you use `sudo cargo test`. 
+## Experiment in OSS funding
+I am exploring the ideas around Open Source Software funding from [RadWorks Foundation]([https://radworks.org/) via the [Drips Project](https://www.drips.network/)
 
-NOTE: This can get you into permissions problems when switching back and for
-between using `cargo test` and `sudo cargo test`. 
-To fix that run `sudo cargo clean` and then build or test as you prefer.
+This project is in Drips [here](https://www.drips.network/app/projects/github/andrewdavidmackenzie/libproc-rs)
 
-In order to have tests pass when run as `root` or not, some tests need to check if they are `root` 
-at run-time (using our own `am_root()` function is handy) and avoid failing if *not* run as `root`. 
-
-## Using "act" to run GH Actions CI workflows locally
-If you develop on macos but want to ensure code builds and tests pass on linux while making changes, 
-you can use the [act](https://github.com/nektos/act) tool to run the Github Actions Workflows on 
-the test matrix.
-
-Just install "act" (`brew install act`) (previously install docker if you don't have it already, 
-and make sure the daemon is running) then run `act` at the command line
-
-## Macos: clang detection and header file finding
-Newer versions of `bindgen` have improved the detection of `clang` and hence macos header files. 
-If you also have llvm/clang installed directly or via `brew` this may cause the build to fail saying it 
-cannot find `libproc.h`. This can be fixed by setting `CLANG_PATH="/usr/bin/clang"` so that `bindgen` 
-detects the Xcode version and hence can fidn the correct header files.
-
-# CI Testing
-Continuous Integration testing has been moved from travis-ci to GitHub Actions. For details see the 
-[rust.yml](`.github/workflows/rust.yml`) GitHub Actions workflow
-
-# Input Requested
+## Input Requested
 * Suggestions for API, module re-org and cross-platform abstractions are welcome.
 * How to do error reporting? Define own new Errors, or keep simple with Strings?
 * Would like Path/PathBuf returned when it makes sense instead of String?
 
-# TODO
+## TODO
 See the [list of issues](https://github.com/andrewdavidmackenzie/libproc-rs/issues). 
 I put the "help wanted" label where I need help from others.
  
@@ -155,8 +83,36 @@ I put the "help wanted" label where I need help from others.
 - Add more documentation (including samples with documentation test)
 - Add own custom error type and implement From::from to ease reporting of multiple error types in clients
 
+## Build and Test Locally
+If you're feeling lucky today, start with 
+`make`
+
+`cargo test` will build and test as usual.
+
+However, as some functions need to be run as `root` to work, CI tests are run as `root`.
+So, when developing in local it's best if you use `sudo cargo test`.
+
+[!NOTE] This can get you into permissions problems when switching back and for
+between using `cargo test` and `sudo cargo test`.
+To fix that run `sudo cargo clean` and then build or test as you prefer.
+
+In order to have tests pass when run as `root` or not, some tests need to check if they are `root`
+at run-time (using our own `am_root()` function is handy) and avoid failing if *not* run as `root`.
+
+### Using "act" to run GH Actions CI workflows locally
+If you develop on macos but want to ensure code builds and tests pass on linux while making changes,
+you can use the [act](https://github.com/nektos/act) tool to run the Github Actions Workflows on
+the test matrix.
+
+Just install "act" (`brew install act`) (previously install docker if you don't have it already,
+and make sure the daemon is running) then run `act` at the command line
+
+### Macos: clang detection and header file finding
+Newer versions of `bindgen` have improved the detection of `clang` and hence macos header files.
+If you also have llvm/clang installed directly or via `brew` this may cause the build to fail saying it
+cannot find `libproc.h`. This can be fixed by setting `CLANG_PATH="/usr/bin/clang"` so that `bindgen`
+detects the Xcode version and hence can fidn the correct header files.
+
 # LICENSE
 This code is licensed under MIT license (see LICENCE).
 
-# CONTRIBUTING
-You are welcome to fork this repo and make a pull request, or write an issue.
