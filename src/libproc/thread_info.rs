@@ -1,4 +1,5 @@
 use crate::libproc::proc_pid::{PIDInfo, PidInfoFlavor};
+#[cfg(target_os = "macos")]
 pub use crate::osx_libproc_bindings::proc_threadinfo as ThreadInfo;
 
 impl PIDInfo for ThreadInfo {

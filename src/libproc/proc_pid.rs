@@ -274,6 +274,7 @@ pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
 ///     }
 /// }
 /// ```
+#[cfg(target_os = "macos")]
 pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
     let mut buf: Vec<u8> = Vec::with_capacity((PROC_PIDPATHINFO_MAXSIZE - 1) as _);
     let buffer_ptr = buf.as_mut_ptr().cast::<c_void>();
@@ -376,6 +377,7 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 ///     Err(err) => eprintln!("Error: {}", err)
 /// }
 /// ```
+#[cfg(target_os = "macos")]
 pub fn libversion() -> Result<(i32, i32), String> {
     let mut major = 0;
     let mut minor = 0;

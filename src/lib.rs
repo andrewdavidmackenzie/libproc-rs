@@ -31,29 +31,29 @@ pub use libproc::pid_rusage;
 /// Get information specific to BSD/Darwin on macos
 pub use libproc::bsd_info;
 
-/// Get information about a process's use of different types of file descriptors
 #[cfg(any(target_os = "macos", doc))]
 #[doc(inline)]
+/// Get information about a process's use of different types of file descriptors
 pub use libproc::file_info;
 
-/// Get information about a processes use of network, sockets etc.
 #[cfg(any(target_os = "macos", doc))]
 #[doc(inline)]
+/// Get information about a processes use of network, sockets etc.
 pub use libproc::net_info;
 
-/// Get information about a process's BSD Tasks
 #[cfg(any(target_os = "macos", doc))]
 #[doc(inline)]
+/// Get information about a process's BSD Tasks
 pub use libproc::task_info;
 
-/// Get information about threads within a process
 #[cfg(any(target_os = "macos", doc))]
 #[doc(inline)]
+/// Get information about threads within a process
 pub use libproc::thread_info;
 
-/// Get information about Work Queues
 #[cfg(any(target_os = "macos", doc))]
 #[doc(inline)]
+/// Get information about Work Queues
 pub use libproc::work_queue_info;
 
 // Not documenting this as this export is legacy, and replaced by all the re-exports of

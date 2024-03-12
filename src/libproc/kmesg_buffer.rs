@@ -18,6 +18,7 @@ use std::{thread, time};
 #[cfg(target_os = "macos")]
 use crate::osx_libproc_bindings::{proc_kmsgbuf, MAXBSIZE as MAX_MSG_BSIZE};
 
+#[cfg(any(target_os = "macos", doc))]
 /// Read messages from the kernel message buffer
 ///
 /// Entries are in the format:
@@ -34,8 +35,7 @@ use crate::osx_libproc_bindings::{proc_kmsgbuf, MAXBSIZE as MAX_MSG_BSIZE};
 /// # Errors
 ///
 /// An `Err` will be returned if `/dev/kmsg` device cannot be read
-///
-#[cfg(any(target_os = "macos", doc))]
+#[cfg(target_os = "macos")]
 pub fn kmsgbuf() -> Result<String, String> {
     let mut message_buffer: Vec<u8> = Vec::with_capacity(MAX_MSG_BSIZE as _);
     let buffer_ptr = message_buffer.as_mut_ptr().cast::<c_void>();

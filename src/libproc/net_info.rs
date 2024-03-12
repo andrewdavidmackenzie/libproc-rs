@@ -1,9 +1,13 @@
 use crate::libproc::file_info::{PIDFDInfo, PIDFDInfoFlavor};
 
+#[cfg(target_os = "macos")]
+use libc::SOCK_MAXADDRLEN;
 use libc::{
     c_char, c_int, c_short, c_uchar, c_ushort, gid_t, in6_addr, in_addr, off_t, sockaddr_un, uid_t,
-    IF_NAMESIZE, SOCK_MAXADDRLEN,
+    IF_NAMESIZE,
 };
+#[cfg(target_os = "linux")]
+pub const SOCK_MAXADDRLEN: c_int = 255;
 
 /// Socket File Descriptor Info
 #[repr(C)]
