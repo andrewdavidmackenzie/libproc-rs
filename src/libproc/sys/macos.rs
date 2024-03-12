@@ -1,7 +1,7 @@
 use std::os::unix::ffi::OsStrExt;
 use std::{ffi, io, mem, path, ptr};
 
-use libc::{c_char, c_void, c_int};
+use libc::{c_char, c_int, c_void};
 
 use crate::osx_libproc_bindings;
 use crate::processes::ProcFilter;
@@ -40,6 +40,8 @@ fn check_listpid_ret(ret: c_int) -> io::Result<Vec<u32>> {
         return Err(io::Error::last_os_error());
     }
 
+    // `ret` cannot be negative here - so no possible loss of sign
+    #[allow(clippy::cast_sign_loss)]
     let capacity = ret as usize / mem::size_of::<u32>();
     Ok(Vec::with_capacity(capacity))
 }
@@ -50,11 +52,15 @@ fn check_listpid_ret(ret: c_int) -> io::Result<Vec<u32>> {
 // when `errno` is set to indicate an error in the input type, the return value is 0
 fn list_pids_ret(ret: c_int, mut pids: Vec<u32>) -> io::Result<Vec<u32>> {
     match ret {
-        value if value < 0 ||
-            (ret == 0 && io::Error::last_os_error().raw_os_error().unwrap_or(0) != 0) => {
-                Err(io::Error::last_os_error())
-            },
+        value
+            if value < 0
+                || (ret == 0 && io::Error::last_os_error().raw_os_error().unwrap_or(0) != 0) =>
+        {
+            Err(io::Error::last_os_error())
+        }
         _ => {
+            // `ret` cannot be negative here - so no possible loss of sign
+            #[allow(clippy::cast_sign_loss)]
             let items_count = ret as usize / mem::size_of::<u32>();
             unsafe {
                 pids.set_len(items_count);
@@ -74,7 +80,7 @@ pub(crate) fn listpids(proc_type: ProcFilter) -> io::Result<Vec<u32>> {
         )
     };
     let mut pids = check_listpid_ret(buffer_size)?;
-    let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
+    let buffer_ptr = pids.as_mut_ptr().cast::<c_void>();
 
     let ret = unsafe {
         osx_libproc_bindings::proc_listpids(
@@ -109,20 +115,20 @@ pub(crate) fn listpidspath(
         osx_libproc_bindings::proc_listpidspath(
             proc_type.into(),
             proc_type.typeinfo(),
-            c_path.as_ptr() as *const c_char,
+            c_path.as_ptr().cast::<c_char>(),
             pathflags,
             ptr::null_mut(),
             0,
         )
     };
     let mut pids = check_listpid_ret(buffer_size)?;
-    let buffer_ptr = pids.as_mut_ptr() as *mut c_void;
+    let buffer_ptr = pids.as_mut_ptr().cast::<c_void>();
 
     let ret = unsafe {
         osx_libproc_bindings::proc_listpidspath(
             proc_type.into(),
             proc_type.typeinfo(),
-            c_path.as_ptr() as *const c_char,
+            c_path.as_ptr().cast::<c_char>(),
             0,
             buffer_ptr,
             buffer_size,
@@ -140,6 +146,8 @@ mod test {
 
     use crate::libproc::{bsd_info, proc_pid};
 
+    // Don't worry about > i32::MAX number of processes
+    #[allow(clippy::cast_possible_wrap)]
     fn get_all_pid_bsdinfo() -> io::Result<Vec<bsd_info::BSDInfo>> {
         let pids = listpids(ProcFilter::All)?;
         Ok(pids
@@ -167,8 +175,7 @@ mod test {
     #[test]
     fn test_listpids_pgid() {
         let mut bsdinfo_pgrps: HashMap<_, HashSet<_>> = HashMap::new();
-        for info in get_all_pid_bsdinfo()
-            .expect("Could not get all pids info") {
+        for info in get_all_pid_bsdinfo().expect("Could not get all pids info") {
             if info.pbi_pgid == info.pbi_pid {
                 continue;
             }
@@ -180,13 +187,12 @@ mod test {
                 .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
         }
         let mut not_matched = 0;
-        for (pgrp, bsdinfo_pids) in bsdinfo_pgrps.iter_mut() {
+        for (pgrp, bsdinfo_pids) in &mut bsdinfo_pgrps {
             if bsdinfo_pids.len() <= 1 {
                 continue;
             }
             let pids =
-                listpids(ProcFilter::ByProgramGroup { pgrpid: *pgrp })
-                    .expect("Could not listpids");
+                listpids(ProcFilter::ByProgramGroup { pgrpid: *pgrp }).expect("Could not listpids");
             for pid in pids {
                 if !bsdinfo_pids.remove(&pid) {
                     not_matched += 1;
@@ -205,8 +211,7 @@ mod test {
     #[test]
     fn test_listpids_tty() {
         let mut bsdinfo_ttys: HashMap<_, HashSet<_>> = HashMap::new();
-        for info in get_all_pid_bsdinfo()
-            .expect("Could not get all pids info") {
+        for info in get_all_pid_bsdinfo().expect("Could not get all pids info") {
             if info.e_tdev == NODEV || info.e_tpgid == info.pbi_pid {
                 continue;
             }
@@ -218,12 +223,11 @@ mod test {
                 .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
         }
         let mut not_matched = 0;
-        for (tty_nr, bsdinfo_pids) in bsdinfo_ttys.iter_mut() {
+        for (tty_nr, bsdinfo_pids) in &mut bsdinfo_ttys {
             if bsdinfo_pids.len() <= 1 {
                 continue;
             }
-            let pids = listpids(ProcFilter::ByTTY { tty: *tty_nr })
-                .expect("Could not listpids");
+            let pids = listpids(ProcFilter::ByTTY { tty: *tty_nr }).expect("Could not listpids");
             for pid in pids {
                 if !bsdinfo_pids.remove(&pid) {
                     not_matched += 1;
@@ -240,8 +244,7 @@ mod test {
     #[test]
     fn test_listpids_uid() {
         let mut bsdinfo_uids: HashMap<_, HashSet<_>> = HashMap::new();
-        for info in get_all_pid_bsdinfo()
-            .expect("Could not get all pids info") {
+        for info in get_all_pid_bsdinfo().expect("Could not get all pids info") {
             bsdinfo_uids
                 .entry(info.pbi_uid)
                 .and_modify(|pids| {
@@ -250,12 +253,11 @@ mod test {
                 .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
         }
         let mut not_matched = 0;
-        for (uid, bsdinfo_pids) in bsdinfo_uids.iter_mut() {
+        for (uid, bsdinfo_pids) in &mut bsdinfo_uids {
             if bsdinfo_pids.len() <= 1 {
                 continue;
             }
-            let pids = listpids(ProcFilter::ByUID { uid: *uid })
-                .expect("Could not listpids");
+            let pids = listpids(ProcFilter::ByUID { uid: *uid }).expect("Could not listpids");
             for pid in pids {
                 if !bsdinfo_pids.remove(&pid) {
                     not_matched += 1;
@@ -272,8 +274,7 @@ mod test {
     #[test]
     fn test_listpids_real_uid() {
         let mut bsdinfo_ruids: HashMap<_, HashSet<_>> = HashMap::new();
-        for info in get_all_pid_bsdinfo()
-            .expect("Could not get all pids info") {
+        for info in get_all_pid_bsdinfo().expect("Could not get all pids info") {
             bsdinfo_ruids
                 .entry(info.pbi_ruid)
                 .and_modify(|pids| {
@@ -282,12 +283,11 @@ mod test {
                 .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
         }
         let mut not_matched = 0;
-        for (ruid, bsdinfo_pids) in bsdinfo_ruids.iter_mut() {
+        for (ruid, bsdinfo_pids) in &mut bsdinfo_ruids {
             if bsdinfo_pids.len() <= 1 {
                 continue;
             }
-            let pids = listpids(ProcFilter::ByRealUID { ruid: *ruid })
-                .expect("Could not listpids");
+            let pids = listpids(ProcFilter::ByRealUID { ruid: *ruid }).expect("Could not listpids");
             for pid in pids {
                 if !bsdinfo_pids.remove(&pid) {
                     not_matched += 1;
@@ -305,8 +305,7 @@ mod test {
     #[test]
     fn test_listpids_parent_pid() {
         let mut bsdinfo_ppids: HashMap<_, HashSet<_>> = HashMap::new();
-        for info in get_all_pid_bsdinfo()
-            .expect("Could not get all pids info") {
+        for info in get_all_pid_bsdinfo().expect("Could not get all pids info") {
             bsdinfo_ppids
                 .entry(info.pbi_ppid)
                 .and_modify(|pids| {
@@ -315,10 +314,9 @@ mod test {
                 .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
         }
         let mut not_matched = 0;
-        for (ppid, bsdinfo_pids) in bsdinfo_ppids.iter_mut() {
-            let pids =
-                listpids(ProcFilter::ByParentProcess { ppid: *ppid })
-                    .expect("Could not listpids by parent process");
+        for (ppid, bsdinfo_pids) in &mut bsdinfo_ppids {
+            let pids = listpids(ProcFilter::ByParentProcess { ppid: *ppid })
+                .expect("Could not listpids by parent process");
             for pid in pids {
                 if !bsdinfo_pids.remove(&pid) {
                     not_matched += 1;
@@ -347,12 +345,10 @@ mod test {
     // Darwin libproc library* and not our wrapping of that library.
 
     #[test]
-    fn test_listpidspath() -> Result<(), io::Error> {
+    fn test_listpidspath() {
         let root = std::path::Path::new("/");
         let pids: Vec<u32> =
-            listpidspath(ProcFilter::All, root, true, false)
-                .expect("Failed to load PIDs for path");
+            listpidspath(ProcFilter::All, root, true, false).expect("Failed to load PIDs for path");
         assert!(!pids.is_empty());
-        Ok(())
     }
 }

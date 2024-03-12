@@ -9,7 +9,10 @@ use std::fs;
 use std::mem;
 use std::path::PathBuf;
 
+#[cfg(target_os = "macos")]
+use libc::c_int;
 use libc::pid_t;
+
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use libc::PATH_MAX;
 
@@ -64,17 +67,17 @@ pub trait PIDInfo {
 pub enum PidInfoFlavor {
     /// List of File Descriptors
     ListFDs = 1,
-    /// struct proc_taskallinfo
+    /// struct `proc_taskallinfo`
     TaskAllInfo = 2,
-    /// struct proc_bsdinfo
+    /// struct `proc_bsdinfo`
     TBSDInfo = 3,
-    /// struct proc_taskinfo
+    /// struct `proc_taskinfo`
     TaskInfo = 4,
-    /// struct proc_threadinfo
+    /// struct `proc_threadinfo`
     ThreadInfo = 5,
     /// list if int thread ids
     ListThreads = 6,
-    /// TBD what type RegionInfo is - string?
+    /// TBD what type `RegionInfo` is - string?
     RegionInfo = 7,
     /// Region Path info strings
     RegionPathInfo = 8,
@@ -84,7 +87,7 @@ pub enum PidInfoFlavor {
     ThreadPathInfo = 10,
     /// Strings
     PathInfo = 11,
-    /// struct proc_workqueueinfo
+    /// struct `proc_workqueueinfo`
     WorkQueueInfo = 12,
 }
 
@@ -96,28 +99,28 @@ pub enum PidInfo {
     /// Get all Task Info
     #[cfg(target_os = "macos")]
     TaskAllInfo(TaskAllInfo),
-    /// Get TBSDInfo - TODO doc this
+    /// Get `TBSDInfo`
     #[cfg(target_os = "macos")]
     TBSDInfo(BSDInfo),
     /// Single Task Info
     #[cfg(target_os = "macos")]
     TaskInfo(TaskInfo),
-    /// ThreadInfo
+    /// `ThreadInfo`
     #[cfg(target_os = "macos")]
     ThreadInfo(ThreadInfo),
     /// A list of Thread IDs
     ListThreads(Vec<i32>),
-    /// RegionInfo
+    /// `RegionInfo`
     RegionInfo(String),
-    /// RegionPathInfo
+    /// `RegionPathInfo`
     RegionPathInfo(String),
-    /// VNodePathInfo
+    /// `VNodePathInfo`
     VNodePathInfo(String),
-    /// ThreadPathInfo
+    /// `ThreadPathInfo`
     ThreadPathInfo(String),
-    /// The path of the executable being run as the process
+    /// `PathInfo` of the executable being run as the process
     PathInfo(String),
-    /// WorkQueueInfo
+    /// `WorkQueueInfo`
     WorkQueueInfo(WorkQueueInfo),
 }
 
@@ -126,7 +129,7 @@ pub enum PidInfo {
 pub trait ListPIDInfo {
     /// Item
     type Item;
-    /// Return the PidInfoFlavor of the implementing struct
+    /// Return the `PidInfoFlavor` of the implementing struct
     fn flavor() -> PidInfoFlavor;
 }
 
@@ -157,13 +160,14 @@ impl From<ProcType> for processes::ProcFilter {
     }
 }
 
-/// Returns the PIDs of the active processes that match the ProcType passed in
+/// Returns the PIDs of the active processes that match the `proc_types` parameter
 ///
 /// # Note
 ///
 /// This function is deprecated in favor of
 /// [`libproc::processes::pids_by_type()`][crate::processes::pids_by_type],
 /// which lets you specify what PGRP / TTY / UID / RUID / PPID you want to filter by
+#[allow(clippy::missing_errors_doc)]
 #[deprecated(
     since = "0.13.0",
     note = "Please use `libproc::processes::pids_by_type()` instead."
@@ -186,6 +190,7 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
 /// filter by.
 ///
 #[cfg(target_os = "macos")]
+#[allow(clippy::missing_errors_doc)]
 #[deprecated(
     since = "0.13.0",
     note = "Please use `libproc::processes::pids_by_type_and_path()` instead."
@@ -206,6 +211,10 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 /// - `ThreadInfo`
 /// - `WorkQueueInfo`
 ///
+/// # Errors
+///
+/// Will return an error if underlying Darwin `proc_pidinfo` returns an error or sets `errno`
+///
 /// # Examples
 ///
 /// ```
@@ -225,9 +234,11 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 #[cfg(target_os = "macos")]
 pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
     let flavor = T::flavor() as i32;
-    let buffer_size = mem::size_of::<T>() as i32;
+    // No type `T` will be bigger than `i32::MAX`!!
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+    let buffer_size = mem::size_of::<T>() as c_int;
     let mut pidinfo = unsafe { mem::zeroed() };
-    let buffer_ptr = &mut pidinfo as *mut _ as *mut c_void;
+    let buffer_ptr = std::ptr::from_mut::<T>(&mut pidinfo).cast::<c_void>();
     let ret: i32;
 
     unsafe {
@@ -241,6 +252,7 @@ pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
     }
 }
 
+#[allow(clippy::missing_errors_doc)]
 /// pidinfo not implemented on linux - Pull Requests welcome - TODO
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
@@ -248,6 +260,10 @@ pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
 }
 
 /// Get the filename associated with a memory region
+///
+/// # Errors
+///
+/// Will return an error if underlying Darwin function `proc_regionfilename` returns an error.
 ///
 /// # Examples
 ///
@@ -267,7 +283,9 @@ pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
 #[cfg(target_os = "macos")]
 pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
     let mut buf: Vec<u8> = Vec::with_capacity((PROC_PIDPATHINFO_MAXSIZE - 1) as _);
-    let buffer_ptr = buf.as_mut_ptr() as *mut c_void;
+    let buffer_ptr = buf.as_mut_ptr().cast::<c_void>();
+    // PROC_PIDPATHINFO_MAXSIZE will be smaller than `u32::MAX`
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
     let buffer_size = buf.capacity() as u32;
     let ret: i32;
 
@@ -278,6 +296,7 @@ pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
     helpers::check_errno(ret, &mut buf)
 }
 
+#[allow(clippy::missing_errors_doc)]
 /// Get the filename associated with a memory region
 ///
 /// # Examples
@@ -302,6 +321,10 @@ pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
 
 /// Get the path of the executable file being run for a process
 ///
+/// # Errors
+///
+/// Will return an error if underlying Darwin function `proc_pidpath` returns an error.
+///
 /// # Examples
 ///
 /// ```
@@ -315,7 +338,9 @@ pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
 #[cfg(target_os = "macos")]
 pub fn pidpath(pid: i32) -> Result<String, String> {
     let mut buf: Vec<u8> = Vec::with_capacity((PROC_PIDPATHINFO_MAXSIZE - 1) as _);
-    let buffer_ptr = buf.as_mut_ptr() as *mut c_void;
+    let buffer_ptr = buf.as_mut_ptr().cast::<c_void>();
+    // PROC_PIDPATHINFO_MAXSIZE will be smaller than `u32::MAX`
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
     let buffer_size = buf.capacity() as u32;
     let ret: i32;
 
@@ -327,6 +352,11 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 }
 
 /// Get the path of the executable file being run for a process
+///
+/// # Errors
+///
+/// Will return `Err` if not run as root or the underlying linux `readlink` method returns
+/// a non-zero value and sets `errno`
 ///
 /// # Examples
 ///
@@ -342,19 +372,23 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 /// ```
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn pidpath(pid: i32) -> Result<String, String> {
-    let exe_path = CString::new(format!("/proc/{pid}/exe"))
-        .map_err(|_| "Could not create CString")?;
+    let exe_path =
+        CString::new(format!("/proc/{pid}/exe")).map_err(|_| "Could not create CString")?;
     let mut buf: Vec<u8> = Vec::with_capacity(PATH_MAX as usize - 1);
-    let buffer_ptr = buf.as_mut_ptr() as *mut c_char;
+    let buffer_ptr = buf.as_mut_ptr().cast::<c_char>();
     let buffer_size = buf.capacity();
-    let ret = unsafe {
-        readlink(exe_path.as_ptr(), buffer_ptr, buffer_size)
-    };
+    let ret = unsafe { readlink(exe_path.as_ptr(), buffer_ptr, buffer_size) };
 
+    #[allow(clippy::cast_possible_truncation)]
     helpers::check_errno(ret as i32, &mut buf)
 }
 
 /// Get the major and minor version numbers of the native libproc library (Mac OS X)
+///
+/// # Errors
+///
+/// Should never return an error, but the `Result` return type is used for consistency with
+/// other methods, and potential future use.
 ///
 /// # Examples
 ///
@@ -386,6 +420,10 @@ pub fn libversion() -> Result<(i32, i32), String> {
 
 /// Get the major and minor version numbers of the native libproc library (Mac OS X)
 ///
+/// # Errors
+///
+/// On linux, since no library is used, an `Err` is always returned.
+///
 /// # Examples
 ///
 /// ```
@@ -403,6 +441,10 @@ pub fn libversion() -> Result<(i32, i32), String> {
 
 /// Get the name of a process, using it's process id (pid)
 ///
+/// # Errors
+///
+/// Will return an error if Darwin's `proc_pidinfo` returns 0
+///
 /// # Examples
 ///
 /// ```
@@ -417,8 +459,10 @@ pub fn libversion() -> Result<(i32, i32), String> {
 pub fn name(pid: i32) -> Result<String, String> {
     let mut namebuf: Vec<u8> = Vec::with_capacity((PROC_PIDPATHINFO_MAXSIZE - 1) as _);
     let buffer_ptr = namebuf.as_ptr() as *mut c_void;
+    // No type `T` will be bigger than `i32::MAX`!!
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
     let buffer_size = namebuf.capacity() as u32;
-    let ret: i32;
+    let ret: c_int;
 
     unsafe {
         ret = proc_name(pid, buffer_ptr, buffer_size);
@@ -428,18 +472,23 @@ pub fn name(pid: i32) -> Result<String, String> {
         Err(helpers::get_errno_with_message(ret))
     } else {
         unsafe {
+            // `ret` must be greater than 0 here, so no sign-loss
+            #[allow(clippy::cast_sign_loss)]
             namebuf.set_len(ret as usize);
         }
 
         match String::from_utf8(namebuf) {
             Ok(name) => Ok(name),
-            Err(e) => Err(format!("Invalid UTF-8 sequence: {e}"))
+            Err(e) => Err(format!("Invalid UTF-8 sequence: {e}")),
         }
     }
 }
 
-
 /// Get the name of a process, using it's process id (pid)
+///
+/// # Errors
+///
+/// An `Err` is returned if the information cannot be read from the procfs file system
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn name(pid: i32) -> Result<String, String> {
     helpers::procfile_field(&format!("/proc/{pid}/status"), "Name")
@@ -449,6 +498,10 @@ pub fn name(pid: i32) -> Result<String, String> {
 ///
 /// `max_len` is the maximum number of array to return.
 /// The length of return value: `Vec<T::Item>` may be less than `max_len`.
+///
+/// # Errors
+///
+/// Will return an error if Darwin's `proc_pidinfo` returns 0
 ///
 /// # Examples
 ///
@@ -472,11 +525,13 @@ pub fn name(pid: i32) -> Result<String, String> {
 #[cfg(target_os = "macos")]
 pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::Item>, String> {
     let flavor = T::flavor() as i32;
-    let buffer_size = mem::size_of::<T::Item>() as i32 * max_len as i32;
+    // No type `T` will be bigger than `c_int::MAX`!!
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+    let buffer_size = mem::size_of::<T::Item>() as c_int * max_len as c_int;
     let mut buffer = Vec::<T::Item>::with_capacity(max_len);
     let buffer_ptr = unsafe {
         buffer.set_len(max_len);
-        buffer.as_mut_ptr() as *mut c_void
+        buffer.as_mut_ptr().cast::<c_void>()
     };
 
     let ret: i32;
@@ -488,12 +543,15 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
     if ret <= 0 {
         Err(helpers::get_errno_with_message(ret))
     } else {
+        // `ret` must be greater than 0 here, so no sign-loss
+        #[allow(clippy::cast_sign_loss)]
         let actual_len = ret as usize / mem::size_of::<T::Item>();
         buffer.truncate(actual_len);
         Ok(buffer)
     }
 }
 
+#[allow(clippy::missing_errors_doc)]
 /// listpidinfo is not implemented on Linux - Pull Requests welcome - TODO
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::Item>, String> {
@@ -502,6 +560,10 @@ pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::
 
 #[cfg(target_os = "macos")]
 /// Gets the path of current working directory for the process with the provided pid.
+///
+/// # Errors
+///
+/// Currently always returns an error as this is not implemented yet for macos
 ///
 /// # Examples
 ///
@@ -520,6 +582,11 @@ pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 /// Gets the path of current working directory for the process with the provided pid.
 ///
+/// # Errors
+///
+/// An `Err` is returned if process with PID `pid` does not exist, or the information
+/// about it in the procfs file system cannot be read or parsed
+///
 /// # Examples
 ///
 /// ```
@@ -531,14 +598,18 @@ pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
 /// }
 /// ```
 pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
-    fs::read_link(format!("/proc/{pid}/cwd")).map_err(|e| {
-        e.to_string()
-    })
+    fs::read_link(format!("/proc/{pid}/cwd")).map_err(|e| e.to_string())
 }
 
 /// Gets path of current working directory for the current process.
 ///
-/// Just wraps rusts env::current_dir() function so not so useful.
+/// Just wraps rust's `env::current_dir()` function so not so useful.
+///
+/// # Errors
+///
+/// Returns an Err if the current working directory value is invalid. Possible cases:
+///   * Current directory does not exist.
+///   * There are insufficient permissions to access the current directory.
 ///
 /// # Examples
 ///
@@ -566,6 +637,7 @@ pub fn cwdself() -> Result<PathBuf, String> {
 /// }
 /// ```
 #[cfg(target_os = "macos")]
+#[must_use]
 pub fn am_root() -> bool {
     // geteuid() is unstable still - wait for it or wrap this:
     // https://stackoverflow.com/questions/3214297/how-can-my-c-c-application-determine-if-the-root-user-is-executing-the-command
@@ -574,6 +646,7 @@ pub fn am_root() -> bool {
 
 /// Return true if the calling process is being run by the root user, false otherwise
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
+#[must_use]
 pub fn am_root() -> bool {
     // when this becomes stable in rust libc then we can remove this function or combine for mac and linux
     unsafe { libc::geteuid() == 0 }
@@ -581,9 +654,11 @@ pub fn am_root() -> bool {
 
 // run tests with 'cargo test -- --nocapture' to see the test output
 #[cfg(test)]
+// Don't worry about wrapping in tests
+#[allow(clippy::cast_possible_wrap)]
 mod test {
-    use std::process;
     use std::env;
+    use std::process;
 
     #[cfg(target_os = "macos")]
     use crate::libproc::bsd_info::BSDInfo;
@@ -592,12 +667,12 @@ mod test {
     #[cfg(target_os = "macos")]
     use crate::libproc::task_info::TaskAllInfo;
 
-    #[cfg(target_os = "macos")]
-    use super::{libversion, listpidinfo, ListThreads, pidinfo};
-    use super::{name, cwdself, pidpath};
+    use super::am_root;
     #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     use super::pidcwd;
-    use super::am_root;
+    use super::{cwdself, name, pidpath};
+    #[cfg(target_os = "macos")]
+    use super::{libversion, listpidinfo, pidinfo, ListThreads};
     #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     use crate::libproc::helpers;
     #[cfg(target_os = "macos")]
@@ -614,7 +689,7 @@ mod test {
 
         match pidinfo::<BSDInfo>(pid, 0) {
             Ok(info) => assert_eq!(info.pbi_pid as i32, pid),
-            Err(e) => panic!("Error retrieving BSDInfo: {}", e)
+            Err(e) => panic!("Error retrieving BSDInfo: {}", e),
         };
     }
 
@@ -625,7 +700,7 @@ mod test {
 
         match pidinfo::<TaskInfo>(pid, 0) {
             Ok(info) => assert!(info.pti_virtual_size > 0),
-            Err(e) => panic!("Error retrieving TaskInfo: {}", e)
+            Err(e) => panic!("Error retrieving TaskInfo: {}", e),
         };
     }
 
@@ -636,7 +711,7 @@ mod test {
 
         match pidinfo::<TaskAllInfo>(pid, 0) {
             Ok(info) => assert!(info.ptinfo.pti_virtual_size > 0),
-            Err(e) => panic!("Error retrieving TaskAllInfo: {}", e)
+            Err(e) => panic!("Error retrieving TaskAllInfo: {}", e),
         };
     }
 
@@ -648,7 +723,7 @@ mod test {
 
         match pidinfo::<ThreadInfo>(pid, 0) {
             Ok(info) => assert!(info.pth_user_time > 0),
-            Err(e) => panic!("Error retrieving ThreadInfo: {}", e)
+            Err(e) => panic!("Error retrieving ThreadInfo: {}", e),
         };
     }
 
@@ -660,17 +735,19 @@ mod test {
 
         match pidinfo::<WorkQueueInfo>(pid, 0) {
             Ok(info) => assert!(info.pwq_nthreads > 0),
-            Err(_) => panic!("Error retrieving WorkQueueInfo")
+            Err(e) => panic!("{}: {}", "Error retrieving WorkQueueInfo", e),
         };
     }
 
     #[cfg(target_os = "macos")]
     #[test]
+    #[allow(clippy::cast_sign_loss)]
     fn listpidinfo_test() {
         let pid = process::id() as i32;
 
         if let Ok(info) = pidinfo::<TaskAllInfo>(pid, 0) {
-            if let Ok(threads) = listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize) {
+            if let Ok(threads) = listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize)
+            {
                 assert!(!threads.is_empty());
             }
             if let Ok(fds) = listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
@@ -687,9 +764,19 @@ mod test {
 
     #[test]
     fn name_test() {
-        if am_root() || cfg!(any(target_os = "linux", target_os = "redox", target_os = "android")) {
-            assert!(&name(process::id() as i32).expect("Could not get the process name")
-                .starts_with("libproc"), "Incorrect process name");
+        if am_root()
+            || cfg!(any(
+                target_os = "linux",
+                target_os = "redox",
+                target_os = "android"
+            ))
+        {
+            assert!(
+                &name(process::id() as i32)
+                    .expect("Could not get the process name")
+                    .starts_with("libproc"),
+                "Incorrect process name"
+            );
         } else {
             println!("Cannot run 'name_test' on macos unless run as root");
         }
@@ -699,12 +786,15 @@ mod test {
     // This checks that it cannot find the path of the process with pid -1 and returns correct error message
     fn pidpath_test_unknown_pid_test() {
         #[cfg(target_os = "macos")]
-            let error_message = "No such process";
+        let error_message = "No such process";
         #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
-            let error_message = "No such file or directory";
+        let error_message = "No such file or directory";
 
         match pidpath(-1) {
-            Ok(path) => panic!("It found the path of process with ID = -1 (path = {}), that's not possible\n", path),
+            Ok(path) => panic!(
+                "It found the path of process with ID = -1 (path = {}), that's not possible\n",
+                path
+            ),
             Err(message) => assert!(message.contains(error_message)),
         }
     }
@@ -720,15 +810,19 @@ mod test {
     // should check it can be called and returns correct value
     #[test]
     fn cwd_self_test() {
-        assert_eq!(env::current_dir().expect("Could not get current directory"),
-                   cwdself().expect("cwdself() failed"));
+        assert_eq!(
+            env::current_dir().expect("Could not get current directory"),
+            cwdself().expect("cwdself() failed")
+        );
     }
 
     #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     #[test]
     fn pidcwd_of_self_test() {
-        assert_eq!(env::current_dir().expect("Could not get current directory"),
-                   pidcwd(process::id() as i32).expect("pidcwd() failed"));
+        assert_eq!(
+            env::current_dir().expect("Could not get current directory"),
+            pidcwd(process::id() as i32).expect("pidcwd() failed")
+        );
     }
 
     #[test]

@@ -46,7 +46,7 @@ pub enum SocketInfoKind {
     Tcp = 2,
     /// Unix Domain Sockets
     Un = 3,
-    /// PF_NDRV Sockets
+    /// Net Drive Sockets
     Ndrv = 4,
     /// Kernel Event Sockets
     KernEvent = 5,
@@ -121,47 +121,47 @@ pub struct SocketInfo {
 #[repr(C)]
 #[derive(Default)]
 pub struct VInfoStat {
-    /// Dev
+    /// ID of device containing file
     pub vst_dev: u32,
-    /// Mode
+    /// Mode of file (see below)
     pub vst_mode: u16,
-    /// Nlink
+    /// Number of hard links
     pub vst_nlink: u16,
-    /// Ino
+    /// File serial number
     pub vst_ino: u64,
-    /// UID
+    /// User ID of the file
     pub vst_uid: uid_t,
-    /// GID
+    /// Group ID of the file
     pub vst_gid: gid_t,
-    /// ATime
+    /// Time of last access
     pub vst_atime: i64,
-    /// ATime nano seconds
+    /// Time of last access in nano seconds
     pub vst_atimensec: i64,
-    /// MTime
+    /// Last data modification time
     pub vst_mtime: i64,
-    /// MTime nano seconds
+    /// Last data modification time in nano seconds
     pub vst_mtimensec: i64,
-    /// CTime
+    /// Time of last status change
     pub vst_ctime: i64,
-    /// CTime nano seconds
+    /// Time of last status change in nano seconds
     pub vst_ctimensec: i64,
-    /// Birthtime
+    /// File creation time(birth)
     pub vst_birthtime: i64,
-    /// Birthtime nano seconds
+    /// File creation time(birth) in nano seconds
     pub vst_birthtimensec: i64,
-    /// Size
+    /// file size, in bytes
     pub vst_size: off_t,
-    /// Blocks
+    /// blocks allocated for file
     pub vst_blocks: i64,
-    /// Block Size
+    /// optimal blocksize for I/O
     pub vst_blksize: i32,
-    /// Flags
+    /// user defined flags for file
     pub vst_flags: u32,
-    /// Gen
+    /// file generation number
     pub vst_gen: u32,
-    /// RDev
+    /// Device ID
     pub vst_rdev: u32,
-    /// Q spare
+    /// RESERVED: DO NOT USE!
     pub vst_qspare: [i64; 2],
 }
 
@@ -171,7 +171,7 @@ pub struct VInfoStat {
 pub struct SockBufInfo {
     /// CC
     pub sbi_cc: u32,
-    /// HiWat
+    /// Hiwat
     pub sbi_hiwat: u32,
     /// MB Count
     pub sbi_mbcnt: u32,
@@ -196,7 +196,7 @@ pub union SocketInfoProto {
     pub pri_un: UnSockInfo,
     /// N Drive Info
     pub pri_ndrv: NdrvInfo,
-    /// KernEventInfo
+    /// Kern Event Info
     pub pri_kern_event: KernEventInfo,
     /// Kernel Control Info
     pub pri_kern_ctl: KernCtlInfo,
@@ -205,12 +205,12 @@ pub union SocketInfoProto {
 impl Default for SocketInfoProto {
     fn default() -> SocketInfoProto {
         SocketInfoProto {
-            pri_in: Default::default(),
+            pri_in: InSockInfo::default(),
         }
     }
 }
 
-/// In4In6Addr struct
+/// struct for holding IP4 or IP6 addresses
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct In4In6Addr {
@@ -229,29 +229,29 @@ impl Default for In4In6Addr {
     }
 }
 
-/// InSocket info struct
+/// `InSocketInfo` struct
 #[repr(C)]
 #[derive(Copy, Clone, Default)]
 pub struct InSockInfo {
-    /// F Port
+    /// Foreign Port
     pub insi_fport: c_int,
-    /// L Port
+    /// Local Port
     pub insi_lport: c_int,
-    /// General Count
+    /// generation count of this instance
     pub insi_gencnt: u64,
-    /// Flags
+    /// generic IP/datagram flags
     pub insi_flags: u32,
     /// Flow
     pub insi_flow: u32,
-    /// VFlag
+    /// In Socket Info IPV4 or IPV6
     pub insi_vflag: u8,
-    /// IP TTL
+    /// time to live proto
     pub insi_ip_ttl: u8,
     /// Reserved for future use
     pub rfu_1: u32,
-    /// F Address
+    /// foreign host table entry
     pub insi_faddr: InSIAddr,
-    /// L Address
+    /// local host table entry
     pub insi_laddr: InSIAddr,
     /// V4 info
     pub insi_v4: InSIV4,
@@ -259,19 +259,19 @@ pub struct InSockInfo {
     pub insi_v6: InSIV6,
 }
 
-/// InSIV4 struct
+/// In Socket Info `InSIV4` struct
 #[repr(C)]
 #[derive(Copy, Clone, Default)]
 pub struct InSIV4 {
-    /// InV4 top
-    pub in4_top: c_uchar,
+    /// Input socket V4 type of service
+    pub in4_top: c_uchar, // NOTE: Should be in4_tos!
 }
 
-/// InSIV6 struct
+/// In Socket Info `InSIV6` struct
 #[repr(C)]
 #[derive(Copy, Clone, Default)]
 pub struct InSIV6 {
-    /// Hlim
+    /// `Hlim`
     pub in6_hlim: u8,
     /// Checksum
     pub in6_cksum: c_int,
@@ -281,7 +281,7 @@ pub struct InSIV6 {
     pub in6_hops: c_short,
 }
 
-/// InSIAddress union for v4 and v6 addresses
+/// In Socket Info `InSIAddr` union for v4 and v6 addresses
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union InSIAddr {
@@ -294,7 +294,7 @@ pub union InSIAddr {
 impl Default for InSIAddr {
     fn default() -> InSIAddr {
         InSIAddr {
-            ina_46: Default::default(),
+            ina_46: In4In6Addr::default(),
         }
     }
 }
@@ -372,27 +372,27 @@ pub struct TcpSockInfo {
     pub tcpsi_tp: u64,
 }
 
-/// Un Socket Info struct
+/// Unix Domain Socket Info `UnSockInfo` struct
 #[repr(C)]
 #[derive(Copy, Clone, Default)]
 pub struct UnSockInfo {
-    /// Conn SO
+    /// opaque handle of connected socket
     pub unsi_conn_so: u64,
-    /// Conn PCB
+    /// opaque handle of connected protocol control block
     pub unsi_conn_pcb: u64,
-    /// Address
+    /// bound address
     pub unsi_addr: UnSIAddr,
-    /// CAddress
+    /// address of socket connected to
     pub unsi_caddr: UnSIAddr,
 }
 
-/// UnSI Address struct
+/// Unix Socket Info Address `UnSIAddr` union
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub union UnSIAddr {
-    /// Socket address Un
+    /// Socket address
     pub ua_sun: sockaddr_un,
-    /// Dummy
+    /// Dummy for padding
     pub ua_dummy: [c_char; SOCK_MAXADDRLEN as usize],
 }
 
@@ -404,7 +404,7 @@ impl Default for UnSIAddr {
     }
 }
 
-/// NDrvInfo struct
+/// `NDrvInfo` struct for `PF_NDRV Sockets`
 #[repr(C)]
 #[derive(Copy, Clone, Default)]
 pub struct NdrvInfo {

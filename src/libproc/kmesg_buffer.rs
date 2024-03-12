@@ -19,7 +19,7 @@ use std::sync::mpsc::Receiver;
 use std::{thread, time};
 
 #[cfg(target_os = "macos")]
-use crate::osx_libproc_bindings::{MAXBSIZE as MAX_MSG_BSIZE, proc_kmsgbuf};
+use crate::osx_libproc_bindings::{proc_kmsgbuf, MAXBSIZE as MAX_MSG_BSIZE};
 
 /// Get the contents of the kernel message buffer
 ///
@@ -27,27 +27,36 @@ use crate::osx_libproc_bindings::{MAXBSIZE as MAX_MSG_BSIZE, proc_kmsgbuf};
 /// faclev,seqnum,timestamp[optional, ...];message\n
 ///  TAGNAME=value (0 or more Tags)
 /// See <http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c>
+///
+/// # Errors
+///
+/// Will return an `Err` if Darwin's method `proc_kmsgbuf` returns an empty message buffer
 #[cfg(target_os = "macos")]
 pub fn kmsgbuf() -> Result<String, String> {
     let mut message_buffer: Vec<u8> = Vec::with_capacity(MAX_MSG_BSIZE as _);
-    let buffer_ptr = message_buffer.as_mut_ptr() as *mut c_void;
+    let buffer_ptr = message_buffer.as_mut_ptr().cast::<c_void>();
     let ret: i32;
 
     unsafe {
-        ret = proc_kmsgbuf(buffer_ptr, message_buffer.capacity() as u32);
+        // This assumes that MAX_MSG_BSIZE < u32::MAX - but compile time asserts are experimental
+        #[allow(clippy::cast_possible_truncation)]
+        let buffersize = message_buffer.capacity() as u32;
+        ret = proc_kmsgbuf(buffer_ptr, buffersize);
         if ret > 0 {
+            // `ret` cannot be negative here - so cannot lose the sign
+            #[allow(clippy::cast_sign_loss)]
             message_buffer.set_len(ret as usize - 1);
         }
     }
 
-    if !message_buffer.is_empty() {
+    if message_buffer.is_empty() {
+        Err("Could not read kernel message buffer".to_string())
+    } else {
         let msg = str::from_utf8(&message_buffer)
             .map_err(|_| "Could not convert kernel message buffer from utf8".to_string())?
-            .parse().map_err(|_| "Could not parse kernel message")?;
-
+            .parse()
+            .map_err(|_| "Could not parse kernel message")?;
         Ok(msg)
-    } else {
-        Err("Could not read kernel message buffer".to_string())
     }
 }
 
@@ -56,6 +65,11 @@ pub fn kmsgbuf() -> Result<String, String> {
 /// reading methods will block at the end of file, so a workaround is required. Do the blocking
 /// reads on a thread that sends lines read back through a channel, and then return when the thread
 /// has blocked and can't send anymore. Returning will end the thread and the channel.
+///
+/// # Errors
+///
+/// An `Err` will be returned if `/dev/kmsg` device cannot be read
+///
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn kmsgbuf() -> Result<String, String> {
     let mut file = File::open("/dev/kmsg");
@@ -67,7 +81,7 @@ pub fn kmsgbuf() -> Result<String, String> {
     let duration = time::Duration::from_millis(1);
     let mut buf = String::new();
     while let Ok(line) = kmsg_channel.recv_timeout(duration) {
-        buf.push_str(&line)
+        buf.push_str(&line);
     }
 
     Ok(buf)
@@ -83,9 +97,11 @@ fn spawn_kmsg_channel(file: File) -> Receiver<String> {
         let mut line = String::new();
         match reader.read_line(&mut line) {
             Ok(_) => {
-                if tx.send(line).is_err() { break; }
+                if tx.send(line).is_err() {
+                    break;
+                }
             }
-            _ => break
+            _ => break,
         }
     });
 
@@ -102,8 +118,8 @@ mod test {
     fn kmessage_buffer_test() {
         if am_root() {
             match kmsgbuf() {
-                Ok(_) => { },
-                Err(message) => panic!("{}", message)
+                Ok(_) => {}
+                Err(message) => panic!("{}", message),
             }
         } else {
             println!("test skipped as it needs to be run as root");

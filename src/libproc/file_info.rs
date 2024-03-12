@@ -10,23 +10,23 @@ use self::libc::c_void;
 #[cfg(target_os = "macos")]
 use crate::osx_libproc_bindings::proc_pidfdinfo;
 
-/// Flavor of Pid FileDescriptor info for different types of File Descriptors
+/// Flavor of Pid `FileDescriptor` info for different types of File Descriptors
 pub enum PIDFDInfoFlavor {
-    /// VNode Info
+    /// `VNodeInfo`
     VNodeInfo = 1,
-    /// VNode Path Info
+    /// `VNodePathInfo`
     VNodePathInfo = 2,
-    /// Socket info
+    /// `SocketInfo`
     SocketInfo = 3,
-    /// PSEM Info
+    /// `PSEMInfo`
     PSEMInfo = 4,
-    /// PSHM Info
+    /// `PSHMInfo`
     PSHMInfo = 5,
-    /// Pipe Info
+    /// `PipeInfo`
     PipeInfo = 6,
-    /// KQueue Info
+    /// `KQueueInfo`
     KQueueInfo = 7,
-    /// Apple Talk Info
+    /// `AppleTalkInfo`
     ATalkInfo = 8,
 }
 
@@ -35,22 +35,24 @@ pub struct ListFDs;
 
 impl ListPIDInfo for ListFDs {
     type Item = ProcFDInfo;
-    fn flavor() -> PidInfoFlavor { PidInfoFlavor::ListFDs }
+    fn flavor() -> PidInfoFlavor {
+        PidInfoFlavor::ListFDs
+    }
 }
 
-/// Struct to hold info about a Processes FileDescriptor Info
+/// Struct to hold info about a Processes `FileDescriptor` Info
 #[repr(C)]
 pub struct ProcFDInfo {
-    /// File Descriptor
+    /// `FileDescriptor`
     pub proc_fd: i32,
-    /// File Descriptor type
+    /// `FileDescriptor` type
     pub proc_fdtype: u32,
 }
 
-/// Enum for different File Descriptor types
+/// Enum for different `FileDescriptor` types
 #[derive(Copy, Clone, Debug)]
 pub enum ProcFDType {
-    /// AppleTalk
+    /// `AppleTalk`
     ATalk = 0,
     /// Vnode
     VNode = 1,
@@ -64,8 +66,10 @@ pub enum ProcFDType {
     KQueue = 5,
     /// Pipe
     Pipe = 6,
-    /// FSEvents
+    /// `FSEvents`
     FSEvents = 7,
+    /// `NetPolicy`
+    NetPolicy = 9,
     /// Unknown
     Unknown,
 }
@@ -94,6 +98,10 @@ pub trait PIDFDInfo: Default {
 }
 
 /// Returns the information about file descriptors of the process that match pid passed in.
+///
+/// # Errors
+///
+/// Will return `Err`if the underlying Darwin method `proc_pidfdinfo` returns 0
 ///
 /// # Examples
 ///
@@ -153,9 +161,11 @@ pub trait PIDFDInfo: Default {
 #[cfg(target_os = "macos")]
 pub fn pidfdinfo<T: PIDFDInfo>(pid: i32, fd: i32) -> Result<T, String> {
     let flavor = T::flavor() as i32;
+    // No `T` will have size greater than `i32::MAX` so no truncation
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
     let buffer_size = mem::size_of::<T>() as i32;
     let mut pidinfo = T::default();
-    let buffer_ptr = &mut pidinfo as *mut _ as *mut c_void;
+    let buffer_ptr = std::ptr::from_mut::<T>(&mut pidinfo).cast::<c_void>();
     let ret: i32;
 
     unsafe {
@@ -184,23 +194,26 @@ mod test {
     use super::pidfdinfo;
 
     #[test]
+    #[allow(clippy::cast_possible_wrap)]
     fn pidfdinfo_test() {
-        use std::process;
         use std::net::TcpListener;
+        use std::process;
         let pid = process::id() as i32;
 
         let _listener = TcpListener::bind("127.0.0.1:65535");
 
         let info = pidinfo::<BSDInfo>(pid, 0).expect("pidinfo() failed");
-        let fds = listpidinfo::<ListFDs>(pid, info.pbi_nfiles as usize).expect("listpidinfo() failed");
+        let fds =
+            listpidinfo::<ListFDs>(pid, info.pbi_nfiles as usize).expect("listpidinfo() failed");
         for fd in fds {
             if let ProcFDType::Socket = fd.proc_fdtype.into() {
-                let socket = pidfdinfo::<SocketFDInfo>(pid, fd.proc_fd).expect("pidfdinfo() failed");
+                let socket =
+                    pidfdinfo::<SocketFDInfo>(pid, fd.proc_fd).expect("pidfdinfo() failed");
                 if let SocketInfoKind::Tcp = socket.psi.soi_kind.into() {
                     unsafe {
                         let info = socket.psi.soi_proto.pri_tcp;
                         assert_eq!(socket.psi.soi_protocol, libc::IPPROTO_TCP);
-                        assert_eq!(info.tcpsi_ini.insi_lport as u32, 65535);
+                        assert_eq!(info.tcpsi_ini.insi_lport, 65535);
                     }
                 }
             }
