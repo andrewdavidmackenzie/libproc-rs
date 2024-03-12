@@ -1,10 +1,8 @@
-extern crate libc;
-
 #[cfg(target_os = "macos")]
 use crate::libproc::helpers;
 
 #[cfg(target_os = "macos")]
-use self::libc::c_void;
+use libc::c_void;
 
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use crate::libproc::helpers::{parse_memory_string, procfile_field};

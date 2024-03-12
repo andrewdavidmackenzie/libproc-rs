@@ -1,11 +1,8 @@
-extern crate errno;
-extern crate libc;
-
 #[cfg(target_os = "macos")]
 use std::str;
 
 #[cfg(target_os = "macos")]
-use self::libc::c_void;
+use libc::c_void;
 
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use std::fs::File;
@@ -21,17 +18,24 @@ use std::{thread, time};
 #[cfg(target_os = "macos")]
 use crate::osx_libproc_bindings::{proc_kmsgbuf, MAXBSIZE as MAX_MSG_BSIZE};
 
-/// Get the contents of the kernel message buffer
+/// Read messages from the kernel message buffer
 ///
 /// Entries are in the format:
 /// faclev,seqnum,timestamp[optional, ...];message\n
 ///  TAGNAME=value (0 or more Tags)
 /// See <http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c>
 ///
+/// On linux:
+/// Turns out that reading to the end of an "infinite file" like "/dev/kmsg" with standard file
+/// reading methods will block at the end of file, so a workaround is required. Do the blocking
+/// reads on a thread that sends lines read back through a channel, and then return when the thread
+/// has blocked and can't send anymore. Returning will end the thread and the channel.
+///
 /// # Errors
 ///
-/// Will return an `Err` if Darwin's method `proc_kmsgbuf` returns an empty message buffer
-#[cfg(target_os = "macos")]
+/// An `Err` will be returned if `/dev/kmsg` device cannot be read
+///
+#[cfg(any(target_os = "macos", doc))]
 pub fn kmsgbuf() -> Result<String, String> {
     let mut message_buffer: Vec<u8> = Vec::with_capacity(MAX_MSG_BSIZE as _);
     let buffer_ptr = message_buffer.as_mut_ptr().cast::<c_void>();
@@ -60,16 +64,6 @@ pub fn kmsgbuf() -> Result<String, String> {
     }
 }
 
-/// Get a message (String) from the kernel message ring buffer
-/// Turns out that reading to the end of an "infinite file" like "/dev/kmsg" with standard file
-/// reading methods will block at the end of file, so a workaround is required. Do the blocking
-/// reads on a thread that sends lines read back through a channel, and then return when the thread
-/// has blocked and can't send anymore. Returning will end the thread and the channel.
-///
-/// # Errors
-///
-/// An `Err` will be returned if `/dev/kmsg` device cannot be read
-///
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn kmsgbuf() -> Result<String, String> {
     let mut file = File::open("/dev/kmsg");
