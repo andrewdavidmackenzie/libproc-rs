@@ -35,7 +35,7 @@ pub fn check_errno(ret: i32, buf: &mut Vec<u8>) -> Result<String, String> {
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 /// A helper function for finding named fields in specific /proc FS files for processes
 /// This will be more useful when implementing more linux functions
-pub fn procfile_field(filename: &str, field_name: &str) -> Result<String, String> {
+pub(crate) fn procfile_field(filename: &str, field_name: &str) -> Result<String, String> {
     const SEPARATOR: &str = ":";
     let line_header = format!("{field_name}{SEPARATOR}");
 
@@ -67,10 +67,10 @@ pub fn parse_memory_string(line: &str) -> Result<u64, String> {
         return Err(format!("Could not parse Memory String: {line}"));
     }
     let multiplier: u64 = if parts.len() == 2 {
-        match parts[1] {
-            "MB" => 1024 * 1024,
-            "kB" => 1024,
-            "B" => 1,
+        match parts.get(1) {
+            Some(&"MB") => 1024 * 1024,
+            Some(&"kB") => 1024,
+            Some(&"B") => 1,
             _ => return Err(format!("Could not parse units of Memory String: {line}")),
         }
     } else {
@@ -115,7 +115,7 @@ mod test {
 
         #[test]
         fn test_invalid_memory_string_empty() {
-            assert!(parse_memory_string("gobble dee gook").is_err())
+            assert!(parse_memory_string("gobble dee gook").is_err());
         }
     }
 

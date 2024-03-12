@@ -92,6 +92,7 @@ pub fn listpids(proc_types: ProcFilter) -> io::Result<Vec<u32>> {
 }
 
 #[cfg(test)]
+#[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
 mod test {
     use std::collections::{HashMap, HashSet};
     use std::io::{Error, Write};
@@ -177,7 +178,7 @@ mod test {
                 }
             }
             let mut not_matched = 0;
-            for (pgrp, procfs_pids) in procfs_pgrps.iter_mut() {
+            for (pgrp, procfs_pids) in &mut procfs_pgrps {
                 if procfs_pids.len() <= 1 {
                     continue;
                 }
@@ -217,7 +218,7 @@ mod test {
                 }
             }
             let mut not_matched = 0;
-            for (tty_nr, procfs_pids) in procfs_ttys.iter_mut() {
+            for (tty_nr, procfs_pids) in &mut procfs_ttys {
                 if procfs_pids.len() <= 1 {
                     continue;
                 }
@@ -257,7 +258,7 @@ mod test {
                 }
             }
             let mut not_matched = 0;
-            for (uid, procfs_pids) in procfs_uids.iter_mut() {
+            for (uid, procfs_pids) in &mut procfs_uids {
                 if procfs_pids.len() <= 1 {
                     continue;
                 }
@@ -294,7 +295,7 @@ mod test {
                 }
             }
             let mut not_matched = 0;
-            for (ruid, procfs_pids) in procfs_ruids.iter_mut() {
+            for (ruid, procfs_pids) in &mut procfs_ruids {
                 if procfs_pids.len() <= 1 {
                     continue;
                 }
@@ -331,7 +332,7 @@ mod test {
                 }
             }
             let mut not_matched = 0;
-            for (ppid, procfs_pids) in procfs_ppids.iter_mut() {
+            for (ppid, procfs_pids) in &mut procfs_ppids {
                 if procfs_pids.len() <= 1 {
                     continue;
                 }

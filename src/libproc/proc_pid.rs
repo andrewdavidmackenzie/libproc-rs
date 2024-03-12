@@ -375,10 +375,11 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
     let exe_path =
         CString::new(format!("/proc/{pid}/exe")).map_err(|_| "Could not create CString")?;
     let mut buf: Vec<u8> = Vec::with_capacity(PATH_MAX as usize - 1);
-    let buffer_ptr = buf.as_mut_ptr() as *mut c_char;
+    let buffer_ptr = buf.as_mut_ptr().cast::<c_char>();
     let buffer_size = buf.capacity();
     let ret = unsafe { readlink(exe_path.as_ptr(), buffer_ptr, buffer_size) };
 
+    #[allow(clippy::cast_possible_truncation)]
     helpers::check_errno(ret as i32, &mut buf)
 }
 
@@ -418,6 +419,10 @@ pub fn libversion() -> Result<(i32, i32), String> {
 }
 
 /// Get the major and minor version numbers of the native libproc library (Mac OS X)
+///
+/// # Errors
+///
+/// On linux, since no library is used, an `Err` is always returned.
 ///
 /// # Examples
 ///
@@ -480,6 +485,10 @@ pub fn name(pid: i32) -> Result<String, String> {
 }
 
 /// Get the name of a process, using it's process id (pid)
+///
+/// # Errors
+///
+/// An `Err` is returned if the information cannot be read from the procfs file system
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn name(pid: i32) -> Result<String, String> {
     helpers::procfile_field(&format!("/proc/{pid}/status"), "Name")
@@ -542,6 +551,7 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
     }
 }
 
+#[allow(clippy::missing_errors_doc)]
 /// listpidinfo is not implemented on Linux - Pull Requests welcome - TODO
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::Item>, String> {
@@ -571,6 +581,11 @@ pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
 
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 /// Gets the path of current working directory for the process with the provided pid.
+///
+/// # Errors
+///
+/// An `Err` is returned if process with PID `pid` does not exist, or the information
+/// about it in the procfs file system cannot be read or parsed
 ///
 /// # Examples
 ///
@@ -631,6 +646,7 @@ pub fn am_root() -> bool {
 
 /// Return true if the calling process is being run by the root user, false otherwise
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
+#[must_use]
 pub fn am_root() -> bool {
     // when this becomes stable in rust libc then we can remove this function or combine for mac and linux
     unsafe { libc::geteuid() == 0 }

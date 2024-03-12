@@ -65,6 +65,11 @@ pub fn kmsgbuf() -> Result<String, String> {
 /// reading methods will block at the end of file, so a workaround is required. Do the blocking
 /// reads on a thread that sends lines read back through a channel, and then return when the thread
 /// has blocked and can't send anymore. Returning will end the thread and the channel.
+///
+/// # Errors
+///
+/// An `Err` will be returned if `/dev/kmsg` device cannot be read
+///
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn kmsgbuf() -> Result<String, String> {
     let mut file = File::open("/dev/kmsg");
@@ -76,7 +81,7 @@ pub fn kmsgbuf() -> Result<String, String> {
     let duration = time::Duration::from_millis(1);
     let mut buf = String::new();
     while let Ok(line) = kmsg_channel.recv_timeout(duration) {
-        buf.push_str(&line)
+        buf.push_str(&line);
     }
 
     Ok(buf)

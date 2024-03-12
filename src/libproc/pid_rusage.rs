@@ -403,6 +403,11 @@ pub fn pidrusage<T: PIDRUsage>(pid: i32) -> Result<T, String> {
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 /// Returns the information about resources of the process that match pid passed in.
 ///
+/// # Errors
+///
+/// Will return `Err` if no process with PID `pid` esists, if the procfs file system cannot be
+/// read or the information `VmSize` cannot be read from it for the process in question
+///
 /// # Examples
 ///
 /// ```
