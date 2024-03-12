@@ -252,6 +252,7 @@ pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
     }
 }
 
+#[allow(clippy::missing_errors_doc)]
 /// pidinfo not implemented on linux - Pull Requests welcome - TODO
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
@@ -295,6 +296,7 @@ pub fn regionfilename(pid: i32, address: u64) -> Result<String, String> {
     helpers::check_errno(ret, &mut buf)
 }
 
+#[allow(clippy::missing_errors_doc)]
 /// Get the filename associated with a memory region
 ///
 /// # Examples
@@ -350,6 +352,11 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 }
 
 /// Get the path of the executable file being run for a process
+///
+/// # Errors
+///
+/// Will return `Err` if not run as root or the underlying linux `readlink` method returns
+/// a non-zero value and sets `errno`
 ///
 /// # Examples
 ///
