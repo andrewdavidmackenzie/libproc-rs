@@ -4,7 +4,7 @@ use std::fs::File;
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use std::io::{BufRead, BufReader};
 
-/// Helper function to get errno and return a String with the passed in return_code, the error
+/// Helper function to get errno and return a String with the passed in `return_code`, the error
 /// number and a possible message
 pub fn get_errno_with_message(return_code: i32) -> String {
     let e = errno();
@@ -23,7 +23,7 @@ pub fn check_errno(ret: i32, buf: &mut Vec<u8>) -> Result<String, String> {
             buf.set_len(ret as usize);
         }
 
-        match String::from_utf8(buf.to_vec()) {
+        match String::from_utf8(buf.clone()) {
             Ok(return_value) => Ok(return_value),
             Err(e) => Err(format!("Invalid UTF-8 sequence: {e}"))
         }
@@ -119,7 +119,7 @@ mod test {
 
         // Test
         if let Err(msg) = check_errno(buf.len() as i32, &mut buf) {
-            assert!(msg.contains("Invalid UTF-8 sequence: invalid utf-8 sequence of 1 bytes from index 0"))
+            assert!(msg.contains("Invalid UTF-8 sequence: invalid utf-8 sequence of 1 bytes from index 0"));
         }
     }
 
@@ -152,7 +152,7 @@ mod test {
 
         // Test
         if let Err(mes) = check_errno(0, &mut buf) {
-            assert!(mes.contains("return code = 0, errno = 2"))
+            assert!(mes.contains("return code = 0, errno = 2"));
         }
     }
 }

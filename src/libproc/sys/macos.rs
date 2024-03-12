@@ -180,7 +180,7 @@ mod test {
                 .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
         }
         let mut not_matched = 0;
-        for (pgrp, bsdinfo_pids) in bsdinfo_pgrps.iter_mut() {
+        for (pgrp, bsdinfo_pids) in &mut bsdinfo_pgrps {
             if bsdinfo_pids.len() <= 1 {
                 continue;
             }
@@ -218,7 +218,7 @@ mod test {
                 .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
         }
         let mut not_matched = 0;
-        for (tty_nr, bsdinfo_pids) in bsdinfo_ttys.iter_mut() {
+        for (tty_nr, bsdinfo_pids) in &mut bsdinfo_ttys {
             if bsdinfo_pids.len() <= 1 {
                 continue;
             }
@@ -250,7 +250,7 @@ mod test {
                 .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
         }
         let mut not_matched = 0;
-        for (uid, bsdinfo_pids) in bsdinfo_uids.iter_mut() {
+        for (uid, bsdinfo_pids) in &mut bsdinfo_uids {
             if bsdinfo_pids.len() <= 1 {
                 continue;
             }
@@ -282,7 +282,7 @@ mod test {
                 .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
         }
         let mut not_matched = 0;
-        for (ruid, bsdinfo_pids) in bsdinfo_ruids.iter_mut() {
+        for (ruid, bsdinfo_pids) in &mut bsdinfo_ruids {
             if bsdinfo_pids.len() <= 1 {
                 continue;
             }
@@ -315,7 +315,7 @@ mod test {
                 .or_insert_with(|| vec![info.pbi_pid].into_iter().collect());
         }
         let mut not_matched = 0;
-        for (ppid, bsdinfo_pids) in bsdinfo_ppids.iter_mut() {
+        for (ppid, bsdinfo_pids) in &mut bsdinfo_ppids {
             let pids =
                 listpids(ProcFilter::ByParentProcess { ppid: *ppid })
                     .expect("Could not listpids by parent process");
@@ -347,12 +347,11 @@ mod test {
     // Darwin libproc library* and not our wrapping of that library.
 
     #[test]
-    fn test_listpidspath() -> Result<(), io::Error> {
+    fn test_listpidspath() {
         let root = std::path::Path::new("/");
         let pids: Vec<u32> =
             listpidspath(ProcFilter::All, root, true, false)
                 .expect("Failed to load PIDs for path");
         assert!(!pids.is_empty());
-        Ok(())
     }
 }

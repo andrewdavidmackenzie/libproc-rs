@@ -2,7 +2,7 @@ use std::io;
 #[cfg(target_os = "macos")]
 use std::path::Path;
 
-use crate::libproc::sys::*;
+use crate::libproc::sys::{listpids, listpidspath};
 
 /// `ProcFilter` is used to filter process ids.
 /// See [`pids_by_type`] and `pids_by_type_and_path` (macos only) for details.
@@ -39,6 +39,11 @@ pub enum ProcFilter {
 
 /// Returns the PIDs of active processes that match the given [`ProcFilter`] filter.
 ///
+/// # Errors
+///
+/// Will return an error if the pids matching the filter cannot be listed for some reason, as
+/// returned in `errno` by Darwin's libproc.
+///
 /// # Examples
 ///
 /// Get the list of all running process IDs using [`pids_by_type`] and [`ProcFilter::All`]:
@@ -74,6 +79,13 @@ pub fn pids_by_type(filter: ProcFilter) -> io::Result<Vec<u32>> {
 ///
 /// (Files opened with the `O_EVTONLY` flag will not prevent a volume from being
 /// unmounted).
+///
+/// # Errors
+///
+/// Will return an error if:
+///   * input `path` is invalid
+///   * the pids matching the filter cannot be listed for some reason, as
+///     returned in `errno` by Darwin's libproc.
 ///
 /// # Examples
 ///
@@ -119,6 +131,13 @@ pub fn pids_by_path(
 ///
 /// (Files opened with the `O_EVTONLY` flag will not prevent a volume from being
 /// unmounted).
+///
+/// # Errors
+///
+/// Will return an error if:
+///   * input `path` is invalid
+///   * the pids matching the filter cannot be listed for some reason, as
+///     returned in `errno` by Darwin's libproc.
 ///
 /// # Examples
 ///

@@ -12,9 +12,9 @@ impl PIDInfo for TaskInfo {
 /// Struct for info on all Tasks
 #[repr(C)]
 pub struct TaskAllInfo {
-    /// BSDInfo
+    /// `BSDInfo`
     pub pbsd : BSDInfo,
-    /// TaskInfo
+    /// `TaskInfo`
     pub ptinfo : TaskInfo
 }
 

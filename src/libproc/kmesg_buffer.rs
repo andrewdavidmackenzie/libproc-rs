@@ -27,6 +27,10 @@ use crate::osx_libproc_bindings::{MAXBSIZE as MAX_MSG_BSIZE, proc_kmsgbuf};
 /// faclev,seqnum,timestamp[optional, ...];message\n
 ///  TAGNAME=value (0 or more Tags)
 /// See <http://opensource.apple.com//source/system_cmds/system_cmds-336.6/dmesg.tproj/dmesg.c>
+///
+/// # Errors
+///
+/// Will return an `Err` if Darwin's method `proc_kmsgbuf` returns an empty message buffer
 #[cfg(target_os = "macos")]
 pub fn kmsgbuf() -> Result<String, String> {
     let mut message_buffer: Vec<u8> = Vec::with_capacity(MAX_MSG_BSIZE as _);
@@ -40,14 +44,13 @@ pub fn kmsgbuf() -> Result<String, String> {
         }
     }
 
-    if !message_buffer.is_empty() {
+    if message_buffer.is_empty() {
+        Err("Could not read kernel message buffer".to_string())
+    } else {
         let msg = str::from_utf8(&message_buffer)
             .map_err(|_| "Could not convert kernel message buffer from utf8".to_string())?
             .parse().map_err(|_| "Could not parse kernel message")?;
-
         Ok(msg)
-    } else {
-        Err("Could not read kernel message buffer".to_string())
     }
 }
 

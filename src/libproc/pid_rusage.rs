@@ -73,7 +73,7 @@ impl PIDRUsage for RUsageInfoV0 {
     }
 
     fn set_memory_used(&mut self, used: u64) {
-        self.ri_resident_size =  used
+        self.ri_resident_size =  used;
     }
 }
 
@@ -125,7 +125,7 @@ impl PIDRUsage for RUsageInfoV1 {
     }
 
     fn set_memory_used(&mut self, used: u64) {
-        self.ri_resident_size =  used
+        self.ri_resident_size =  used;
     }
 }
 
@@ -181,7 +181,7 @@ impl PIDRUsage for RUsageInfoV2 {
     }
 
     fn set_memory_used(&mut self, used: u64) {
-        self.ri_resident_size =  used
+        self.ri_resident_size =  used;
     }
 }
 
@@ -255,7 +255,7 @@ impl PIDRUsage for RUsageInfoV3 {
     }
 
     fn set_memory_used(&mut self, used: u64) {
-        self.ri_resident_size =  used
+        self.ri_resident_size =  used;
     }
 }
 
@@ -345,13 +345,18 @@ impl PIDRUsage for RUsageInfoV4 {
     }
 
     fn set_memory_used(&mut self, used: u64) {
-        self.ri_resident_size =  used
+        self.ri_resident_size =  used;
     }
 }
 
 #[cfg(target_os = "macos")]
 #[cfg(feature = "macosx_10_9")]
 /// Returns the information about resources of the process that match pid passed in.
+///
+/// # Errors
+///
+/// Will return an `Err` if Darwin's underlying method `proc_pid_rusage` returns an error and
+/// set `errno`
 ///
 /// # Examples
 ///
@@ -420,6 +425,6 @@ mod test {
     #[test]
     fn pidrusage_test() {
         let usage: RUsageInfoV0 = pidrusage(std::process::id() as i32).expect("pidrusage() failed");
-        assert!(usage.ri_resident_size > 0, "Resident size reports 0")
+        assert!(usage.ri_resident_size > 0, "Resident size reports 0");
     }
 }

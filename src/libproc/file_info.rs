@@ -10,23 +10,23 @@ use self::libc::c_void;
 #[cfg(target_os = "macos")]
 use crate::osx_libproc_bindings::proc_pidfdinfo;
 
-/// Flavor of Pid FileDescriptor info for different types of File Descriptors
+/// Flavor of Pid `FileDescriptor` info for different types of File Descriptors
 pub enum PIDFDInfoFlavor {
-    /// VNode Info
+    /// `VNodeInfo`
     VNodeInfo = 1,
-    /// VNode Path Info
+    /// `VNodePathInfo`
     VNodePathInfo = 2,
-    /// Socket info
+    /// `SocketInfo`
     SocketInfo = 3,
-    /// PSEM Info
+    /// `PSEMInfo`
     PSEMInfo = 4,
-    /// PSHM Info
+    /// `PSHMInfo`
     PSHMInfo = 5,
-    /// Pipe Info
+    /// `PipeInfo`
     PipeInfo = 6,
-    /// KQueue Info
+    /// `KQueueInfo`
     KQueueInfo = 7,
-    /// Apple Talk Info
+    /// `AppleTalkInfo`
     ATalkInfo = 8,
 }
 
@@ -38,19 +38,19 @@ impl ListPIDInfo for ListFDs {
     fn flavor() -> PidInfoFlavor { PidInfoFlavor::ListFDs }
 }
 
-/// Struct to hold info about a Processes FileDescriptor Info
+/// Struct to hold info about a Processes `FileDescriptor` Info
 #[repr(C)]
 pub struct ProcFDInfo {
-    /// File Descriptor
+    /// `FileDescriptor`
     pub proc_fd: i32,
-    /// File Descriptor type
+    /// `FileDescriptor` type
     pub proc_fdtype: u32,
 }
 
-/// Enum for different File Descriptor types
+/// Enum for different `FileDescriptor` types
 #[derive(Copy, Clone, Debug)]
 pub enum ProcFDType {
-    /// AppleTalk
+    /// `AppleTalk`
     ATalk = 0,
     /// Vnode
     VNode = 1,
@@ -64,8 +64,10 @@ pub enum ProcFDType {
     KQueue = 5,
     /// Pipe
     Pipe = 6,
-    /// FSEvents
+    /// `FSEvents`
     FSEvents = 7,
+    /// `NetPolicy`
+    NetPolicy = 9,
     /// Unknown
     Unknown,
 }
@@ -94,6 +96,10 @@ pub trait PIDFDInfo: Default {
 }
 
 /// Returns the information about file descriptors of the process that match pid passed in.
+///
+/// # Errors
+///
+/// Will return `Err`if the underlying Darwin method `proc_pidfdinfo` returns 0
 ///
 /// # Examples
 ///

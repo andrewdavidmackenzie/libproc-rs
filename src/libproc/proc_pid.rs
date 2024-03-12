@@ -64,17 +64,17 @@ pub trait PIDInfo {
 pub enum PidInfoFlavor {
     /// List of File Descriptors
     ListFDs = 1,
-    /// struct proc_taskallinfo
+    /// struct `proc_taskallinfo`
     TaskAllInfo = 2,
-    /// struct proc_bsdinfo
+    /// struct `proc_bsdinfo`
     TBSDInfo = 3,
-    /// struct proc_taskinfo
+    /// struct `proc_taskinfo`
     TaskInfo = 4,
-    /// struct proc_threadinfo
+    /// struct `proc_threadinfo`
     ThreadInfo = 5,
     /// list if int thread ids
     ListThreads = 6,
-    /// TBD what type RegionInfo is - string?
+    /// TBD what type `RegionInfo` is - string?
     RegionInfo = 7,
     /// Region Path info strings
     RegionPathInfo = 8,
@@ -84,7 +84,7 @@ pub enum PidInfoFlavor {
     ThreadPathInfo = 10,
     /// Strings
     PathInfo = 11,
-    /// struct proc_workqueueinfo
+    /// struct `proc_workqueueinfo`
     WorkQueueInfo = 12,
 }
 
@@ -96,28 +96,28 @@ pub enum PidInfo {
     /// Get all Task Info
     #[cfg(target_os = "macos")]
     TaskAllInfo(TaskAllInfo),
-    /// Get TBSDInfo - TODO doc this
+    /// Get `TBSDInfo` - TODO doc this
     #[cfg(target_os = "macos")]
     TBSDInfo(BSDInfo),
     /// Single Task Info
     #[cfg(target_os = "macos")]
     TaskInfo(TaskInfo),
-    /// ThreadInfo
+    /// `ThreadInfo`
     #[cfg(target_os = "macos")]
     ThreadInfo(ThreadInfo),
     /// A list of Thread IDs
     ListThreads(Vec<i32>),
-    /// RegionInfo
+    /// `RegionInfo`
     RegionInfo(String),
-    /// RegionPathInfo
+    /// `RegionPathInfo`
     RegionPathInfo(String),
-    /// VNodePathInfo
+    /// `VNodePathInfo`
     VNodePathInfo(String),
-    /// ThreadPathInfo
+    /// `ThreadPathInfo`
     ThreadPathInfo(String),
-    /// The path of the executable being run as the process
+    /// `PathInfo` of the executable being run as the process
     PathInfo(String),
-    /// WorkQueueInfo
+    /// `WorkQueueInfo`
     WorkQueueInfo(WorkQueueInfo),
 }
 
@@ -126,7 +126,7 @@ pub enum PidInfo {
 pub trait ListPIDInfo {
     /// Item
     type Item;
-    /// Return the PidInfoFlavor of the implementing struct
+    /// Return the `PidInfoFlavor` of the implementing struct
     fn flavor() -> PidInfoFlavor;
 }
 
@@ -157,13 +157,14 @@ impl From<ProcType> for processes::ProcFilter {
     }
 }
 
-/// Returns the PIDs of the active processes that match the ProcType passed in
+/// Returns the PIDs of the active processes that match the `proc_types` parameter
 ///
 /// # Note
 ///
 /// This function is deprecated in favor of
 /// [`libproc::processes::pids_by_type()`][crate::processes::pids_by_type],
 /// which lets you specify what PGRP / TTY / UID / RUID / PPID you want to filter by
+#[allow(clippy::missing_errors_doc)]
 #[deprecated(
     since = "0.13.0",
     note = "Please use `libproc::processes::pids_by_type()` instead."
@@ -186,6 +187,7 @@ pub fn listpids(proc_types: ProcType) -> Result<Vec<u32>, String> {
 /// filter by.
 ///
 #[cfg(target_os = "macos")]
+#[allow(clippy::missing_errors_doc)]
 #[deprecated(
     since = "0.13.0",
     note = "Please use `libproc::processes::pids_by_type_and_path()` instead."
@@ -205,6 +207,10 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 /// - `TaskAllInfo`
 /// - `ThreadInfo`
 /// - `WorkQueueInfo`
+///
+/// # Errors
+///
+/// Will return an error if underlying Darwin `proc_pidinfo` returns an error or sets `errno`
 ///
 /// # Examples
 ///
@@ -248,6 +254,10 @@ pub fn pidinfo<T: PIDInfo>(_pid: i32, _arg: u64) -> Result<T, String> {
 }
 
 /// Get the filename associated with a memory region
+///
+/// # Errors
+///
+/// Will return an error if underlying Darwin function `proc_regionfilename` returns an error.
 ///
 /// # Examples
 ///
@@ -301,6 +311,10 @@ pub fn regionfilename(_pid: i32, _address: u64) -> Result<String, String> {
 }
 
 /// Get the path of the executable file being run for a process
+///
+/// # Errors
+///
+/// Will return an error if underlying Darwin function `proc_pidpath` returns an error.
 ///
 /// # Examples
 ///
@@ -356,6 +370,11 @@ pub fn pidpath(pid: i32) -> Result<String, String> {
 
 /// Get the major and minor version numbers of the native libproc library (Mac OS X)
 ///
+/// # Errors
+///
+/// Should never return an error, but the `Result` return type is used for consistency with
+/// other methods, and potential future use.
+///
 /// # Examples
 ///
 /// ```
@@ -403,6 +422,10 @@ pub fn libversion() -> Result<(i32, i32), String> {
 
 /// Get the name of a process, using it's process id (pid)
 ///
+/// # Errors
+///
+/// Will return an error if Darwin's `proc_pidinfo` returns 0
+///
 /// # Examples
 ///
 /// ```
@@ -449,6 +472,10 @@ pub fn name(pid: i32) -> Result<String, String> {
 ///
 /// `max_len` is the maximum number of array to return.
 /// The length of return value: `Vec<T::Item>` may be less than `max_len`.
+///
+/// # Errors
+///
+/// Will return an error if Darwin's `proc_pidinfo` returns 0
 ///
 /// # Examples
 ///
@@ -503,6 +530,10 @@ pub fn listpidinfo<T: ListPIDInfo>(_pid: i32, _max_len: usize) -> Result<Vec<T::
 #[cfg(target_os = "macos")]
 /// Gets the path of current working directory for the process with the provided pid.
 ///
+/// # Errors
+///
+/// Currently always returns an error as this is not implemented yet for macos
+///
 /// # Examples
 ///
 /// ```
@@ -538,7 +569,13 @@ pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
 
 /// Gets path of current working directory for the current process.
 ///
-/// Just wraps rusts env::current_dir() function so not so useful.
+/// Just wraps rust's `env::current_dir()` function so not so useful.
+///
+/// # Errors
+///
+/// Returns an Err if the current working directory value is invalid. Possible cases:
+///   * Current directory does not exist.
+///   * There are insufficient permissions to access the current directory.
 ///
 /// # Examples
 ///
@@ -566,6 +603,7 @@ pub fn cwdself() -> Result<PathBuf, String> {
 /// }
 /// ```
 #[cfg(target_os = "macos")]
+#[must_use]
 pub fn am_root() -> bool {
     // geteuid() is unstable still - wait for it or wrap this:
     // https://stackoverflow.com/questions/3214297/how-can-my-c-c-application-determine-if-the-root-user-is-executing-the-command
@@ -660,7 +698,7 @@ mod test {
 
         match pidinfo::<WorkQueueInfo>(pid, 0) {
             Ok(info) => assert!(info.pwq_nthreads > 0),
-            Err(_) => panic!("Error retrieving WorkQueueInfo")
+            Err(e) => panic!("{}: {}", "Error retrieving WorkQueueInfo", e)
         };
     }
 
