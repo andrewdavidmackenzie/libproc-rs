@@ -95,12 +95,12 @@ mod test {
 
         #[test]
         fn test_valid_memory_string() {
-            assert_eq!(parse_memory_string("220844 kB"), Ok(226144256));
+            assert_eq!(parse_memory_string("220844 kB"), Ok(226_144_256));
         }
 
         #[test]
         fn test_valid_memory_string_spaces() {
-            assert_eq!(parse_memory_string("  220844 kB  "), Ok(226144256));
+            assert_eq!(parse_memory_string("  220844 kB  "), Ok(226_144_256));
         }
 
         #[test]

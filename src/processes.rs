@@ -2,7 +2,9 @@ use std::io;
 #[cfg(target_os = "macos")]
 use std::path::Path;
 
-use crate::libproc::sys::{listpids, listpidspath};
+use crate::libproc::sys::listpids;
+#[cfg(target_os = "macos")]
+use crate::libproc::sys::listpidspath;
 
 /// `ProcFilter` is used to filter process ids.
 /// See [`pids_by_type`] and `pids_by_type_and_path` (macos only) for details.

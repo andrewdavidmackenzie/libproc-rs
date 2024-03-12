@@ -9,7 +9,9 @@ use std::fs;
 use std::mem;
 use std::path::PathBuf;
 
-use libc::{c_int, pid_t};
+#[cfg(target_os = "macos")]
+use libc::c_int;
+use libc::pid_t;
 
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 use libc::PATH_MAX;
@@ -97,7 +99,7 @@ pub enum PidInfo {
     /// Get all Task Info
     #[cfg(target_os = "macos")]
     TaskAllInfo(TaskAllInfo),
-    /// Get `TBSDInfo` - TODO doc this
+    /// Get `TBSDInfo`
     #[cfg(target_os = "macos")]
     TBSDInfo(BSDInfo),
     /// Single Task Info
