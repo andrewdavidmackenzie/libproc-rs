@@ -52,8 +52,8 @@ jobs:
 
     - name: Run clippy (installed toolchain version as per matrix)
       run: |
-        cargo clippy --all --tests --no-deps --all-targets --all-features -- --warn clippy::pedantic -D warnings
         rustc --version
+        cargo clippy --all --tests --no-deps --all-targets --all-features -- --warn clippy::pedantic -D warnings
 
     - name: ConfigureCoverage
       if: matrix.rust == 'nightly'
