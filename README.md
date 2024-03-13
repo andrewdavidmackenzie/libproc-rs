@@ -25,6 +25,9 @@ You can find the browseable docs for the latest release on [docs.rs](https://doc
 
 NOTE: `master` branch (code and docs) can differ from those docs prior to a new release.
 
+# Minimum rust version
+The minimum rust version required is currently: 1.74.1 and this is tested in CI and must pass.
+
 # Test Matrix
 The Github Actions CI matrix is:
 
@@ -40,6 +43,7 @@ on the following platforms:
 * `macos-12` (Monterey)
 * `macos-13` (Ventura)
 * `macos-14` (Sonoma)
+
 
 ## Mac OS X Versions
 Calls were added to libproc in 10.9 (Mavericks) and they are under a rust "feature" switch called "macosx_10_9".

@@ -42,22 +42,18 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install latest nightly
+    - name: Install toolchain
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: nightly
+        toolchain: ${{ matrix.rust }}
         override: true
         components: clippy
 
-    - name: Clippy
-      run: make clippy
-
-    - name: Compile check on redox
-      if: runner.os == 'Linux'
+    - name: Run clippy (installed toolchain version as per matrix)
       run: |
-        rustup target add x86_64-unknown-redox
-        cargo +nightly check --target x86_64-unknown-redox
+        cargo clippy --all --tests --no-deps --all-targets --all-features -- --warn clippy::pedantic -D warnings
+        rustc --version
 
     - name: ConfigureCoverage
       if: matrix.rust == 'nightly'
@@ -76,5 +72,5 @@ jobs:
       run: sudo env "PATH=$PATH" cargo test
 
     - name: UploadCoverage
-      if: matrix.rust == 'nightly'
+      if: matrix.rust == 'stable'
       run: make upload-coverage
