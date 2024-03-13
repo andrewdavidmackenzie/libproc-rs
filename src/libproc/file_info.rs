@@ -162,7 +162,8 @@ pub fn pidfdinfo<T: PIDFDInfo>(pid: i32, fd: i32) -> Result<T, String> {
     #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
     let buffer_size = mem::size_of::<T>() as i32;
     let mut pidinfo = T::default();
-    let buffer_ptr = std::ptr::from_mut::<T>(&mut pidinfo).cast::<c_void>();
+    #[allow(clippy::pedantic)]
+    let buffer_ptr = &mut pidinfo as *mut _ as *mut c_void;
     let ret: i32;
 
     unsafe {
