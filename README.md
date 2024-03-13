@@ -25,30 +25,27 @@ You can find the browseable docs for the latest release on [docs.rs](https://doc
 
 NOTE: `master` branch (code and docs) can differ from those docs prior to a new release.
 
-# Rust Channels Tested
-The Github Actions CI matrix tests for rust `stable`, `beta` and `nightly` on all platforms
+# Test Matrix
+The Github Actions CI matrix is:
 
-# Platforms
-Mac OS X (10.5 and above) and Linux.
+rust versions:
+* `stable` (must pass)
+* `beta` (must pass)
+* `1.74.1` (currently the minimum rust version supported) (must pass)
+* `nightly` (allowed to fail) 
+
+on the following platforms:
+* `ubuntu-latest`
+* `macos-11` (Big Sur)
+* `macos-12` (Monterey)
+* `macos-13` (Ventura)
+* `macos-14` (Sonoma)
 
 ## Mac OS X Versions
-Calls were aded to libproc in Mac OS X 10.7 and again in 10.9. 
-This library can be compiled to not include those calls by using rust `features`
-to enable/disable support for those versions.
+Calls were added to libproc in 10.9 (Mavericks) and they are under a rust "feature" switch called "macosx_10_9".
+The default build includes the "macosx_10_9" feature.
 
-The default build is for Mac OS 10.9 or later. See: 
-```toml
-[features]
-default = ["macosx_10_9"]
-macosx_10_7 = []
-macosx_10_9 = ["macosx_10_7"]
-```
-in Cargo.toml
-
-To build for versions prior to Mac OS 10.7 disable the default features by passing --no-default-features to cargo.
-
-To build for Mac OS X 10.7 (or 10.8) you can enable that feature alone using
---no-default-features --features "macosx_10_7"
+To build for versions prior to Mac OS 10.9 disable the default features by passing `--no-default-features` to cargo.
 
 # Examples
 Two simple examples are included to show libproc-rs working.

@@ -15,8 +15,7 @@ libc = "^0.2.62"
 
 [features]
 default = ["macosx_10_9"]
-macosx_10_7 = []
-macosx_10_9 = ["macosx_10_7"]
+macosx_10_9 = []
 
 [lib]
 name = "libproc"
