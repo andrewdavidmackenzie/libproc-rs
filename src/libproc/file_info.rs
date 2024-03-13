@@ -162,6 +162,7 @@ pub fn pidfdinfo<T: PIDFDInfo>(pid: i32, fd: i32) -> Result<T, String> {
     #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
     let buffer_size = mem::size_of::<T>() as i32;
     let mut pidinfo = T::default();
+    #[allow(clippy::ptr_as_ptr, clippy::borrow_as_ptr, clippy::ref_as_ptr)]
     let buffer_ptr = &mut pidinfo as *mut _ as *mut c_void;
     let ret: i32;
 
