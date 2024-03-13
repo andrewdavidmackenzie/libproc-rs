@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-11, macos-12, macos-13, macos-14 ]
-        rust: [stable, beta, 1.74.0] # Minimum Rust Version Supported = 1.74.0
+        rust: [stable, beta, 1.74.1] # Minimum Rust Version Supported = 1.74.1
         experimental: [false]
         include:
           - os: ubuntu-latest
