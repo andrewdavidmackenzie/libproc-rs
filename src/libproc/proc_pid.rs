@@ -238,7 +238,7 @@ pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
     #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
     let buffer_size = mem::size_of::<T>() as c_int;
     let mut pidinfo = unsafe { mem::zeroed() };
-    let buffer_ptr = std::ptr::from_mut::<T>(&mut pidinfo).cast::<c_void>();
+    let buffer_ptr = &mut pidinfo as *mut _ as *mut c_void;
     let ret: i32;
 
     unsafe {

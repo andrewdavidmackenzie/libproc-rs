@@ -59,6 +59,8 @@ pub use libproc::work_queue_info;
 // Not documenting this as this export is legacy, and replaced by all the re-exports of
 // sub-modules above
 #[doc(hidden)]
+#[allow(clippy::ptr_as_ptr)]
+#[allow(clippy::borrow_as_ptr)]
 pub mod libproc;
 
 #[cfg(target_os = "macos")]
