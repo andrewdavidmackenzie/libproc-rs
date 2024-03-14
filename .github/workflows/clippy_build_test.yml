@@ -50,18 +50,27 @@ jobs:
         override: true
         components: clippy
 
-    - name: Run clippy (installed toolchain version as per matrix)
+    - name: InstallLinuxDependencies
+      if: runner.os == 'Linux'
       run: |
-        rustc --version
-        cargo clippy --all --tests --no-deps --all-targets --all-features -- --warn clippy::pedantic -D warnings
+        sudo apt-get update && sudo apt-get -y install lcov
+
+    - name: InstallMacDependencies
+      if: runner.os == 'macOS'
+      run: brew install lcov
 
     - name: ConfigureCoverage
-      if: matrix.rust == 'nightly'
+      if: matrix.rust == 'stable'
       run: |
         cargo install grcov
         rustup component add llvm-tools-preview
         echo RUSTFLAGS="-C instrument-coverage" >> "$GITHUB_ENV"
         echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
+
+    - name: Run clippy (installed toolchain version as per matrix)
+      run: |
+        rustc --version
+        cargo clippy --all --tests --no-deps --all-targets --all-features -- --warn clippy::pedantic -D warnings
 
     - name: Run Tests on Linux
       if: runner.os == 'Linux'
@@ -73,4 +82,9 @@ jobs:
 
     - name: UploadCoverage
       if: matrix.rust == 'stable'
-      run: make upload-coverage
+      run: |
+        grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
+        lcov --remove coverage.info lcov --ignore-errors unused '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
+        bash <(curl -s https://codecov.io/bash) -f coverage.info
+
+
