@@ -30,17 +30,12 @@ ifeq ($(UNAME),Darwin)
 else
 	@RUSTFLAGS="-C instrument-coverage" LLVM_PROFILE_FILE="libproc-%p-%m.profraw" cargo test
 endif
-	@make upload-coverage
 
 .PHONY: gen-coverage
 gen-coverage:
 	@grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
-	#@lcov --remove coverage.info '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
-	#@find . -name "*.profraw" | xargs rm -f
-
-.PHONY: upload-coverage
-upload-coverage:
-	bash <(curl -s https://codecov.io/bash) -f coverage.info
+	@lcov --remove coverage.info '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
+	@find . -name "*.profraw" | xargs rm -f
 
 .PHONY: view-coverage
 view-coverage:

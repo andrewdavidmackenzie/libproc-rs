@@ -50,6 +50,15 @@ jobs:
         override: true
         components: clippy
 
+    - name: InstallLinuxDependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update && sudo apt-get -y install lcov
+
+    - name: InstallMacDependencies
+      if: runner.os == 'macOS'
+      run: brew install lcov
+
     - name: ConfigureCoverage
       if: matrix.rust == 'stable'
       run: |
@@ -75,7 +84,7 @@ jobs:
       if: matrix.rust == 'stable'
       run: |
         grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
-        #lcov --remove coverage.info '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
+        lcov --remove coverage.info '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
         bash <(curl -s https://codecov.io/bash) -f coverage.info
 
 
