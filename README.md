@@ -88,10 +88,14 @@ I put the "help wanted" label where I need help from others.
 - Add own custom error type and implement From::from to ease reporting of multiple error types in clients
 
 ## Build and Test Locally
-If you're feeling lucky today, start with 
-`make`
+If you're feeling lucky today, start with `make`
+that will run `clippy`, `test` and will build docs also.
 
-`cargo test` will build and test as usual.
+If you want to test locally as much of the test matrix as possible (different OS and
+versions of rust), that you can use `make matrix`. On macos, if you have `act`
+installed, it will use it to run the linux part of the matrix.
+
+If you want to stay "pure rust" : `cargo test` will build and test as usual.
 
 However, as some functions need to be run as `root` to work, CI tests are run as `root`.
 So, when developing in local it's best if you use `sudo cargo test`.
@@ -108,8 +112,9 @@ If you develop on macos but want to ensure code builds and tests pass on linux w
 you can use the [act](https://github.com/nektos/act) tool to run the Github Actions Workflows on
 the test matrix.
 
-Just install "act" (`brew install act`) (previously install docker if you don't have it already,
-and make sure the daemon is running) then run `act` at the command line
+Just install `act` (`brew install act`) (previously install docker if you don't have it already,
+and make sure the daemon is running) then run `act -W .github/workflows/clippy_build_test.yml`
+at the command line
 
 ### Macos: clang detection and header file finding
 Newer versions of `bindgen` have improved the detection of `clang` and hence macos header files.
