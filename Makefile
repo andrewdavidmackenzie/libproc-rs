@@ -9,15 +9,6 @@ all: clippy test build-docs
 clippy:
 	@cargo clippy --all --tests --no-deps --all-targets --all-features -- --warn clippy::pedantic -D warnings
 
-.PHONY: configure-coverage
-configure-coverage:
-	cargo install grcov
-	rustup component add llvm-tools-preview
-	export RUSTFLAGS="-Zinstrument-coverage"
-	echo RUSTFLAGS="-Zinstrument-coverage" >> "$GITHUB_ENV"
-	export LLVM_PROFILE_FILE="libproc-%p-%m.profraw"
-	echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
-
 .PHONY: test
 test:
 ifeq ($(UNAME),Darwin)
@@ -27,11 +18,25 @@ else
 	@env "PATH=$$PATH" cargo test
 endif
 
+.PHONY: coverage
+coverage:
+	@RUSTFLAGS="-C instrument-coverage" LLVM_PROFILE_FILE="libproc-%p-%m.profraw" cargo build
+ifeq ($(UNAME),Darwin)
+	@echo "On macos, process tests are required to be run as root - so please enter your password at the prompt"
+	@RUSTFLAGS="-C instrument-coverage" LLVM_PROFILE_FILE="libproc-%p-%m.profraw" sudo cargo test
+else
+	@RUSTFLAGS="-C instrument-coverage" LLVM_PROFILE_FILE="libproc-%p-%m.profraw" cargo test
+endif
+	@make upload-coverage
+
 .PHONY: upload-coverage
-uppload-coverage:
-	grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o lcov.info
-	bash <(curl -s https://codecov.io/bash) -f lcov.info
-	rm -f lcov.info
+upload-coverage:
+	@grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
+	#@lcov --remove coverage.info '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
+	#@find . -name "*.profraw" | xargs rm -f
+	@genhtml -o target/coverage --quiet coverage.info
+	@echo "View coverage report using 'open target/coverage/index.html'"
+	bash <(curl -s https://codecov.io/bash) -f coverage.info
 
 .PHONY: build-docs
 build-docs:
