@@ -46,7 +46,6 @@ on the following platforms:
 * `macos-12` (Monterey) (Intel)
 * `macos-13` (Ventura) (Intel)
 * `macos-14` (Sonoma) (Arm64)
-* `macos-14-large` (Sonoma) (Intel)
 
 ## Mac OS X Versions
 Calls were added to libproc in 10.9 (Mavericks) and they are under a rust "feature" switch called "macosx_10_9".
