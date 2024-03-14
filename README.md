@@ -42,11 +42,11 @@ rust versions:
 
 on the following platforms:
 * `ubuntu-latest`
-* `macos-11` (Big Sur)
-* `macos-12` (Monterey)
-* `macos-13` (Ventura)
-* `macos-14` (Sonoma)
-
+* `macos-11` (Big Sur) (Intel)
+* `macos-12` (Monterey) (Intel)
+* `macos-13` (Ventura) (Intel)
+* `macos-14` (Sonoma) (Arm64)
+* `macos-14-large` (Sonoma) (Intel)
 
 ## Mac OS X Versions
 Calls were added to libproc in 10.9 (Mavericks) and they are under a rust "feature" switch called "macosx_10_9".
