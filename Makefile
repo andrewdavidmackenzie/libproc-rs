@@ -34,8 +34,8 @@ upload-coverage:
 	@grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
 	#@lcov --remove coverage.info '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
 	#@find . -name "*.profraw" | xargs rm -f
-	@genhtml -o target/coverage --quiet coverage.info
-	@echo "View coverage report using 'open target/coverage/index.html'"
+	#@genhtml -o target/coverage --quiet coverage.info
+	#@echo "View coverage report using 'open target/coverage/index.html'"
 	bash <(curl -s https://codecov.io/bash) -f coverage.info
 
 .PHONY: build-docs
