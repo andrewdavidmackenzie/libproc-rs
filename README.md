@@ -26,7 +26,10 @@ You can find the browseable docs for the latest release on [docs.rs](https://doc
 NOTE: `master` branch (code and docs) can differ from those docs prior to a new release.
 
 # Minimum rust version
-The minimum rust version required is currently: 1.74.1 and this is tested in CI and must pass.
+The minimum rust version required, by version:
+* libproc-rs: 0.14.6 --> 1.74.1 
+* libproc-rs: 0.14.7 --> 1.72.0
+This is tested in CI and must pass.
 
 # Test Matrix
 The Github Actions CI matrix is:
