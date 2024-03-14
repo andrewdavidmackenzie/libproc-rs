@@ -1,9 +1,13 @@
+RUST_MIN_VERSION := 1.72.0
+ACT := $(shell command -v act 2> /dev/null)
+UNAME := $(shell uname -s)
+
 .PHONY: all
-all: clippy run-tests build-docs
+all: clippy test build-docs
 
 .PHONY: clippy
 clippy:
-	cargo clippy --all --tests --no-deps --all-targets --all-features -- --warn clippy::pedantic -D warnings
+	@cargo clippy --all --tests --no-deps --all-targets --all-features -- --warn clippy::pedantic -D warnings
 
 .PHONY: configure-coverage
 configure-coverage:
@@ -14,13 +18,14 @@ configure-coverage:
 	export LLVM_PROFILE_FILE="libproc-%p-%m.profraw"
 	echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
 
-.PHONY: run-tests
-run-tests:
-	env "PATH=$$PATH" cargo test
-
-.PHONY: run-tests-root
-run-tests-root:
-	sudo env "PATH=$$PATH" cargo test
+.PHONY: test
+test:
+ifeq ($(UNAME),Darwin)
+	@echo "On macos, process tests are required to be run as root - so please enter your password at the prompt"
+	@sudo env "PATH=$$PATH" cargo test
+else
+	@env "PATH=$$PATH" cargo test
+endif
 
 .PHONY: upload-coverage
 uppload-coverage:
@@ -31,3 +36,22 @@ uppload-coverage:
 .PHONY: build-docs
 build-docs:
 	cargo doc --workspace --quiet --all-features --no-deps --target-dir=target
+
+.PHONY: matrix
+matrix:
+	@for rust_version in stable beta nightly $(RUST_MIN_VERSION) ; do \
+        echo rust: $$rust_version ; \
+        rustup override set $$rust_version ; \
+        make clippy ; \
+        make test ; \
+    done
+ifeq ($(UNAME),Darwin)
+ifneq ($(ACT),)
+	@echo "Running Linux GH Action workflow using `act` on macos"
+	@act -W .github/workflows/clippy_build_test.yml
+else
+	@echo "`act` is not installed so skipping running Linux matrix"
+endif
+else
+	@echo "Cannot run Linux parts of matrix on macos, create PR and make sure all checks pass"
+endif
