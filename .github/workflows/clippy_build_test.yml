@@ -71,7 +71,12 @@ jobs:
       if: runner.os == 'macOS'
       run: sudo env "PATH=$PATH" cargo test
 
+  #@lcov --remove coverage.info '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
+  #@find . -name "*.profraw" | xargs rm -f
     - name: UploadCoverage
       if: matrix.rust == 'stable'
-      run: make upload-coverage
+      run: |
+        grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
+        bash <(curl -s https://codecov.io/bash) -f coverage.info
+
 

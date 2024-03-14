@@ -19,7 +19,10 @@ else
 endif
 
 .PHONY: coverage
-coverage:
+coverage: test-with-coverage gen-coverage view-coverage
+
+.PHONY: test-with-coverage
+test-with-coverage:
 	@RUSTFLAGS="-C instrument-coverage" LLVM_PROFILE_FILE="libproc-%p-%m.profraw" cargo build
 ifeq ($(UNAME),Darwin)
 	@echo "On macos, process tests are required to be run as root - so please enter your password at the prompt"
@@ -29,14 +32,20 @@ else
 endif
 	@make upload-coverage
 
-.PHONY: upload-coverage
-upload-coverage:
+.PHONY: gen-coverage
+gen-coverage:
 	@grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
 	#@lcov --remove coverage.info '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
 	#@find . -name "*.profraw" | xargs rm -f
-	#@genhtml -o target/coverage --quiet coverage.info
-	#@echo "View coverage report using 'open target/coverage/index.html'"
+
+.PHONY: upload-coverage
+upload-coverage:
 	bash <(curl -s https://codecov.io/bash) -f coverage.info
+
+.PHONY: view-coverage
+view-coverage:
+	@genhtml -o target/coverage --quiet coverage.info
+	@echo "View coverage report using 'open target/coverage/index.html'"
 
 .PHONY: build-docs
 build-docs:
