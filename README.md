@@ -82,8 +82,7 @@ I put the "help wanted" label where I need help from others.
 - Add own custom error type and implement From::from to ease reporting of multiple error types in clients
 
 ## Build and Test Locally
-If you're feeling lucky today, start with `make`
-that will run `clippy`, `test` and will build docs also.
+If you're feeling lucky today, start with `make` that will run `clippy`, `test` and will build docs also.
 
 If you want to stay "pure rust" : `cargo test` will build and test as usual.
 
