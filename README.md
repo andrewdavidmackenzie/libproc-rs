@@ -29,15 +29,16 @@ NOTE: `master` branch (code and docs) can differ from those docs prior to a new 
 The minimum rust version required, by version:
 * libproc-rs: 0.14.6 --> 1.74.1 
 * libproc-rs: 0.14.7 --> 1.72.0
+
 This is tested in CI and must pass.
 
 # Test Matrix
-The Github Actions CI matrix is:
+The Github Actions CI test `libproc-rs` on :
 
 rust versions:
 * `stable` (must pass)
 * `beta` (must pass)
-* `1.74.1` (currently the minimum rust version supported) (must pass)
+* `1.72.0` (currently the minimum rust version supported) (must pass)
 * `nightly` (allowed to fail) 
 
 on the following platforms:
@@ -46,12 +47,6 @@ on the following platforms:
 * `macos-12` (Monterey) (Intel)
 * `macos-13` (Ventura) (Intel)
 * `macos-14` (Sonoma) (Arm64)
-
-## Mac OS X Versions
-Calls were added to libproc in 10.9 (Mavericks) and they are under a rust "feature" switch called "macosx_10_9".
-The default build includes the "macosx_10_9" feature.
-
-To build for versions prior to Mac OS 10.9 disable the default features by passing `--no-default-features` to cargo.
 
 # Examples
 Two simple examples are included to show libproc-rs working.
@@ -81,7 +76,7 @@ This project is in Drips [here](https://www.drips.network/app/projects/github/an
 See the [list of issues](https://github.com/andrewdavidmackenzie/libproc-rs/issues). 
 I put the "help wanted" label where I need help from others.
  
-- Look at what similar methods could be implemented as a starting point on Linux
+- Look at what similar methods could be implemented as a starting poon Linux
 - Complete the API on Mac OS X - figuring out all the Mac OS X / Darwin version mess....
 - Add more documentation (including samples with documentation test)
 - Add own custom error type and implement From::from to ease reporting of multiple error types in clients
@@ -89,10 +84,6 @@ I put the "help wanted" label where I need help from others.
 ## Build and Test Locally
 If you're feeling lucky today, start with `make`
 that will run `clippy`, `test` and will build docs also.
-
-If you want to test locally as much of the test matrix as possible (different OS and
-versions of rust), that you can use `make matrix`. On macos, if you have `act`
-installed, it will use it to run the linux part of the matrix.
 
 If you want to stay "pure rust" : `cargo test` will build and test as usual.
 
@@ -106,20 +97,29 @@ To fix that run `sudo cargo clean` and then build or test as you prefer.
 In order to have tests pass when run as `root` or not, some tests need to check if they are `root`
 at run-time (using our own `am_root()` function is handy) and avoid failing if *not* run as `root`.
 
-### Using "act" to run GH Actions CI workflows locally
+### Using `act` to run GH Actions locally
 If you develop on macos but want to ensure code builds and tests pass on linux while making changes,
 you can use the [act](https://github.com/nektos/act) tool to run the Github Actions Workflows on
 the test matrix.
 
-Just install `act` (`brew install act`) (previously install docker if you don't have it already,
-and make sure the daemon is running) then run `act -W .github/workflows/clippy_build_test.yml`
-at the command line
+Just install `act` (`brew install act` on macOS) (previously install docker if you don't have it already,
+and make sure the daemon is running) then run `act push`. You can test a subset of the rust 
+and os versions of the matrix with something like `act push --matrix os:ubuntu-latest`
+
+## Enter the matrix
+If you want to test locally as much of the test matrix as possible (different OS and
+versions of rust), that you can use `make matrix`. On macos, if you have `act`
+installed, it will use it to run the linux part of the matrix.
 
 ### Macos: clang detection and header file finding
 Newer versions of `bindgen` have improved the detection of `clang` and hence macos header files.
 If you also have llvm/clang installed directly or via `brew` this may cause the build to fail saying it
 cannot find `libproc.h`. This can be fixed by setting `CLANG_PATH="/usr/bin/clang"` so that `bindgen`
 detects the Xcode version and hence can fidn the correct header files.
+
+# Other docs
+* [Reference docs](doc/References.md) used to build and document libproc-rs
+* Details on methods available in different [macOS versions](doc/MacosVersions.md)
 
 # LICENSE
 This code is licensed under MIT license (see LICENCE).

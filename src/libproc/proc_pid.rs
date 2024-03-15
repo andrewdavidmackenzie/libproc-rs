@@ -74,7 +74,7 @@ pub enum PidInfoFlavor {
     TaskInfo = 4,
     /// struct `proc_threadinfo`
     ThreadInfo = 5,
-    /// list if int thread ids
+    /// list thread ids
     ListThreads = 6,
     /// TBD what type `RegionInfo` is - string?
     RegionInfo = 7,
@@ -489,7 +489,7 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
     let flavor = T::flavor() as i32;
     // No type `T` will be bigger than `c_int::MAX`!!
     #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
-    let buffer_size = mem::size_of::<T::Item>() as c_int * max_len as c_int;
+    let buffer_size = mem::size_of::<T::Item>() as c_ * max_len as c_int;
     let mut buffer = Vec::<T::Item>::with_capacity(max_len);
     let buffer_ptr = unsafe {
         buffer.set_len(max_len);
