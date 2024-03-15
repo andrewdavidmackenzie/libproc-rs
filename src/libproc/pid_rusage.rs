@@ -357,7 +357,6 @@ impl PIDRUsage for RUsageInfoV4 {
 }
 
 #[cfg(target_os = "macos")]
-#[cfg(feature = "macosx_10_9")]
 /// Returns the information about resources of the process that match pid passed in.
 ///
 /// # Errors

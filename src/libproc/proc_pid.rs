@@ -74,7 +74,7 @@ pub enum PidInfoFlavor {
     TaskInfo = 4,
     /// struct `proc_threadinfo`
     ThreadInfo = 5,
-    /// list if int thread ids
+    /// list thread ids
     ListThreads = 6,
     /// TBD what type `RegionInfo` is - string?
     RegionInfo = 7,
