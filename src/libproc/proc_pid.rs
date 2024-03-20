@@ -209,7 +209,7 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 /// - `TaskInfo` - see struct `proc_taskinfo` in generated `osx_libproc_bindings.rs`
 /// - `TaskAllInfo` - see struct `TaskAllInfo` in `task_info.rs` that contains the two structs above
 /// - `ThreadInfo` - see struct `proc_threadinfo` in generated `osx_libproc_bindings.rs`
-/// - `WorkQueueInfo`
+/// - `WorkQueueInfo` - see struct `proc_workqueueinfo` in generated `osx_libproc_bindings.rs`
 ///
 /// # Errors
 ///
@@ -224,6 +224,7 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 /// use libproc::task_info::{TaskAllInfo, TaskInfo};
 /// use std::process;
 /// use libproc::thread_info::ThreadInfo;
+/// use libproc::work_queue_info::WorkQueueInfo;
 ///
 /// let pid = process::id() as i32;
 ///
@@ -251,6 +252,12 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 /// // Get the `ThreadInfo` for process with pid 0
 /// match pidinfo::<ThreadInfo>(pid, 0) {
 ///     Ok(info) => assert!(!info.pth_name.is_empty()),
+///     Err(err) => eprintln!("Error retrieving process info: {}", err)
+/// };
+///
+/// // Get the `WorkQueueInfo` for process with pid 0
+/// match pidinfo::<WorkQueueInfo>(pid, 0) {
+///     Ok(info) => assert!(info.pwq_nthreads > 0),
 ///     Err(err) => eprintln!("Error retrieving process info: {}", err)
 /// };
 /// ```
@@ -706,9 +713,7 @@ mod test {
     #[cfg(target_os = "macos")]
     #[test]
     fn workqueueinfo_test() {
-        let pid = process::id() as i32;
-
-        match pidinfo::<WorkQueueInfo>(pid, 0) {
+        match pidinfo::<WorkQueueInfo>(0, 0) {
             Ok(info) => assert!(info.pwq_nthreads > 0),
             Err(e) => panic!("{}: {}", "Error retrieving WorkQueueInfo", e),
         };
