@@ -205,10 +205,10 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 }
 
 /// Get info about a process, task, thread or work queue by specifying the appropriate type for `T`:
-/// - `BSDInfo`
+/// - `BSDInfo` - see struct `proc_bsdinfo` in generated `osx_libproc_bindings.rs`
 /// - `TaskInfo` - see struct `proc_taskinfo` in generated `osx_libproc_bindings.rs`
-/// - `TaskAllInfo`
-/// - `ThreadInfo`
+/// - `TaskAllInfo` - see struct `TaskAllInfo` in `task_info.rs` that contains the two structs above
+/// - `ThreadInfo` - see struct `proc_threadinfo` in generated `osx_libproc_bindings.rs`
 /// - `WorkQueueInfo`
 ///
 /// # Errors
@@ -221,8 +221,9 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 /// use std::io::Write;
 /// use libproc::proc_pid::pidinfo;
 /// use libproc::bsd_info::BSDInfo;
-/// use libproc::task_info::TaskInfo;
+/// use libproc::task_info::{TaskAllInfo, TaskInfo};
 /// use std::process;
+/// use libproc::thread_info::ThreadInfo;
 ///
 /// let pid = process::id() as i32;
 ///
@@ -235,6 +236,21 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 /// // Get the `TaskInfo` for process with pid 0
 /// match pidinfo::<TaskInfo>(pid, 0) {
 ///     Ok(info) => assert!(info.pti_threadnum  > 0),
+///     Err(err) => eprintln!("Error retrieving process info: {}", err)
+/// };
+///
+/// // Get the `TaskAllInfo` for process with pid 0
+/// match pidinfo::<TaskAllInfo>(pid, 0) {
+///     Ok(info) => {
+///         assert_eq!(info.pbsd.pbi_pid as i32, pid);
+///         assert!(info.ptinfo.pti_threadnum  > 0);
+///     }
+///     Err(err) => eprintln!("Error retrieving process info: {}", err)
+/// };
+///
+/// // Get the `ThreadInfo` for process with pid 0
+/// match pidinfo::<ThreadInfo>(pid, 0) {
+///     Ok(info) => assert!(!info.pth_name.is_empty()),
 ///     Err(err) => eprintln!("Error retrieving process info: {}", err)
 /// };
 /// ```
@@ -677,14 +693,11 @@ mod test {
         };
     }
 
-    #[ignore]
     #[cfg(target_os = "macos")]
     #[test]
     fn threadinfo_test() {
-        let pid = process::id() as i32;
-
-        match pidinfo::<ThreadInfo>(pid, 0) {
-            Ok(info) => assert!(info.pth_user_time > 0),
+        match pidinfo::<ThreadInfo>(0, 0) {
+            Ok(info) => assert!(!info.pth_name.is_empty()),
             Err(e) => panic!("Error retrieving ThreadInfo: {}", e),
         };
     }
