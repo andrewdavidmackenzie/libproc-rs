@@ -206,7 +206,7 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 
 /// Get info about a process, task, thread or work queue by specifying the appropriate type for `T`:
 /// - `BSDInfo`
-/// - `TaskInfo`
+/// - `TaskInfo` - see struct `proc_taskinfo` in generated `osx_libproc_bindings.rs`
 /// - `TaskAllInfo`
 /// - `ThreadInfo`
 /// - `WorkQueueInfo`
@@ -219,15 +219,22 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 ///
 /// ```
 /// use std::io::Write;
-/// use libproc::libproc::proc_pid::pidinfo;
-/// use libproc::libproc::bsd_info::BSDInfo;
+/// use libproc::proc_pid::pidinfo;
+/// use libproc::bsd_info::BSDInfo;
+/// use libproc::task_info::TaskInfo;
 /// use std::process;
 ///
 /// let pid = process::id() as i32;
 ///
-/// // Get the `BSDInfo` for Process of pid 0
+/// // Get the `BSDInfo` for process with pid 0
 /// match pidinfo::<BSDInfo>(pid, 0) {
 ///     Ok(info) => assert_eq!(info.pbi_pid as i32, pid),
+///     Err(err) => eprintln!("Error retrieving process info: {}", err)
+/// };
+///
+/// // Get the `TaskInfo` for process with pid 0
+/// match pidinfo::<TaskInfo>(pid, 0) {
+///     Ok(info) => assert!(info.pti_threadnum  > 0),
 ///     Err(err) => eprintln!("Error retrieving process info: {}", err)
 /// };
 /// ```
