@@ -87,8 +87,8 @@ impl From<u32> for ProcFDType {
     }
 }
 
-/// The `PIDFDInfo` trait is needed for polymorphism on pidfdinfo types, also abstracting flavor in order to provide
-/// type-guaranteed flavor correctness
+/// The `PIDFDInfo` trait is needed for polymorphism on pidfdinfo types, also abstracting flavor
+/// in order to provide type-guaranteed flavor correctness
 pub trait PIDFDInfo: Default {
     /// Return the Pid File Descriptor Info flavor of the implementing struct
     fn flavor() -> PIDFDInfoFlavor;
@@ -117,10 +117,12 @@ pub trait PIDFDInfo: Default {
 /// let _listener = TcpListener::bind("127.0.0.1:8000");
 ///
 /// let info = pidinfo::<BSDInfo>(pid, 0).expect("Could not get BSDInfo on {pid}");///
-/// let fds = listpidinfo::<ListFDs>(pid, info.pbi_nfiles as usize).expect("Could not list FD of {pid}");
+/// let fds = listpidinfo::<ListFDs>(pid, info.pbi_nfiles as usize)
+///     .expect("Could not list FD of {pid}");
 /// for fd in &fds {
 ///     if let(ProcFDType::Socket) = fd.proc_fdtype.into() {
-///         let socket = pidfdinfo::<SocketFDInfo>(pid, fd.proc_fd).expect("Could not get SocketFDInfo");
+///         let socket = pidfdinfo::<SocketFDInfo>(pid, fd.proc_fd)
+///             .expect("Could not get SocketFDInfo");
 ///         if let(SocketInfoKind::Tcp) = socket.psi.soi_kind.into() {
 ///             // access to the member of `soi_proto` is unsafe becasuse of union type.
 ///             let info = unsafe { socket.psi.soi_proto.pri_tcp };
@@ -140,7 +142,8 @@ pub trait PIDFDInfo: Default {
 ///             addr |= s_addr << 8  & 0x00ff0000;
 ///             addr |= s_addr << 24 & 0xff000000;
 ///
-///             println!("{}.{}.{}.{}:{}", addr >> 24 & 0xff, addr >> 16 & 0xff, addr >> 8 & 0xff, addr & 0xff, port);
+///             println!("{}.{}.{}.{}:{}", addr >> 24 & 0xff, addr >> 16 & 0xff, addr >> 8 & 0xff,
+///                         addr & 0xff, port);
 ///         }
 ///     }
 /// }
