@@ -709,11 +709,10 @@ mod test {
         };
     }
 
-    #[ignore]
     #[cfg(target_os = "macos")]
     #[test]
     fn workqueueinfo_test() {
-        match pidinfo::<WorkQueueInfo>(0, 0) {
+        match pidinfo::<WorkQueueInfo>(1, 0) {
             Ok(info) => assert!(info.pwq_nthreads > 0),
             Err(e) => panic!("{}: {}", "Error retrieving WorkQueueInfo", e),
         };
