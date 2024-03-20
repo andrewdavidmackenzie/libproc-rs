@@ -121,34 +121,30 @@ pub trait PIDFDInfo: Default {
 /// for fd in &fds {
 ///     if let(ProcFDType::Socket) = fd.proc_fdtype.into() {
 ///         let socket = pidfdinfo::<SocketFDInfo>(pid, fd.proc_fd).expect("Could not get SocketFDInfo");
-///         match socket.psi.soi_kind.into() {
-///             SocketInfoKind::Tcp => {
-///                 // access to the member of `soi_proto` is unsafe becasuse of union type.
-///                 let info = unsafe { socket.psi.soi_proto.pri_tcp };
+///         if let(SocketInfoKind::Tcp) = socket.psi.soi_kind.into() {
+///             // access to the member of `soi_proto` is unsafe becasuse of union type.
+///             let info = unsafe { socket.psi.soi_proto.pri_tcp };
 ///
-///                 // change endian and cut off because insi_lport is network endian and 16bit witdh.
-///                 let mut port = 0;
-///                 port |= info.tcpsi_ini.insi_lport >> 8 & 0x00ff;
-///                 port |= info.tcpsi_ini.insi_lport << 8 & 0xff00;
+///             // change endian and cut off because insi_lport is network endian and 16bit witdh.
+///             let mut port = 0;
+///             port |= info.tcpsi_ini.insi_lport >> 8 & 0x00ff;
+///             port |= info.tcpsi_ini.insi_lport << 8 & 0xff00;
 ///
-///                 // access to the member of `insi_laddr` is unsafe becasuse of union type.
-///                 let s_addr = unsafe { info.tcpsi_ini.insi_laddr.ina_46.i46a_addr4.s_addr };
+///             // access to the member of `insi_laddr` is unsafe becasuse of union type.
+///             let s_addr = unsafe { info.tcpsi_ini.insi_laddr.ina_46.i46a_addr4.s_addr };
 ///
-///                 // change endian because insi_laddr is network endian.
-///                 let mut addr = 0;
-///                 addr |= s_addr >> 24 & 0x000000ff;
-///                 addr |= s_addr >> 8  & 0x0000ff00;
-///                 addr |= s_addr << 8  & 0x00ff0000;
-///                 addr |= s_addr << 24 & 0xff000000;
+///             // change endian because insi_laddr is network endian.
+///             let mut addr = 0;
+///             addr |= s_addr >> 24 & 0x000000ff;
+///             addr |= s_addr >> 8  & 0x0000ff00;
+///             addr |= s_addr << 8  & 0x00ff0000;
+///             addr |= s_addr << 24 & 0xff000000;
 ///
-///                 println!("{}.{}.{}.{}:{}", addr >> 24 & 0xff, addr >> 16 & 0xff, addr >> 8 & 0xff, addr & 0xff, port);
-///             }
-///             _ => (),
+///             println!("{}.{}.{}.{}:{}", addr >> 24 & 0xff, addr >> 16 & 0xff, addr >> 8 & 0xff, addr & 0xff, port);
 ///         }
 ///     }
 /// }
 /// ```
-///
 #[cfg(target_os = "macos")]
 pub fn pidfdinfo<T: PIDFDInfo>(pid: i32, fd: i32) -> Result<T, String> {
     let flavor = T::flavor() as i32;
