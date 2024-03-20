@@ -105,7 +105,7 @@ pub trait PIDFDInfo: Default {
 /// ```
 /// use std::io::Write;
 /// use std::net::TcpListener;
-/// use libproc::libproc::proc_pid::{listpidinfo, pidinfo, ListThreads};
+/// use libproc::libproc::proc_pid::{listpidinfo, pidinfo};
 /// use libproc::libproc::bsd_info::{BSDInfo};
 /// use libproc::libproc::net_info::{SocketFDInfo, SocketInfoKind};
 /// use libproc::libproc::file_info::{pidfdinfo, ListFDs, ProcFDType};
@@ -116,40 +116,34 @@ pub trait PIDFDInfo: Default {
 /// // Open TCP port:8000 to test.
 /// let _listener = TcpListener::bind("127.0.0.1:8000");
 ///
-/// if let Ok(info) = pidinfo::<BSDInfo>(pid, 0) {
-///     if let Ok(fds) = listpidinfo::<ListFDs>(pid, info.pbi_nfiles as usize) {
-///         for fd in &fds {
-///             match fd.proc_fdtype.into() {
-///                 ProcFDType::Socket => {
-///                     if let Ok(socket) = pidfdinfo::<SocketFDInfo>(pid, fd.proc_fd) {
-///                         match socket.psi.soi_kind.into() {
-///                             SocketInfoKind::Tcp => {
-///                                 // access to the member of `soi_proto` is unsafe becasuse of union type.
-///                                let info = unsafe { socket.psi.soi_proto.pri_tcp };
+/// let info = pidinfo::<BSDInfo>(pid, 0).expect("Could not get BSDInfo on {pid}");///
+/// let fds = listpidinfo::<ListFDs>(pid, info.pbi_nfiles as usize).expect("Could not list FD of {pid}");
+/// for fd in &fds {
+///     if let(ProcFDType::Socket) = fd.proc_fdtype.into() {
+///         let socket = pidfdinfo::<SocketFDInfo>(pid, fd.proc_fd).expect("Could not get SocketFDInfo");
+///         match socket.psi.soi_kind.into() {
+///             SocketInfoKind::Tcp => {
+///                 // access to the member of `soi_proto` is unsafe becasuse of union type.
+///                 let info = unsafe { socket.psi.soi_proto.pri_tcp };
 ///
-///                                 // change endian and cut off because insi_lport is network endian and 16bit witdh.
-///                                 let mut port = 0;
-///                                 port |= info.tcpsi_ini.insi_lport >> 8 & 0x00ff;
-///                                 port |= info.tcpsi_ini.insi_lport << 8 & 0xff00;
+///                 // change endian and cut off because insi_lport is network endian and 16bit witdh.
+///                 let mut port = 0;
+///                 port |= info.tcpsi_ini.insi_lport >> 8 & 0x00ff;
+///                 port |= info.tcpsi_ini.insi_lport << 8 & 0xff00;
 ///
-///                                 // access to the member of `insi_laddr` is unsafe becasuse of union type.
-///                                 let s_addr = unsafe { info.tcpsi_ini.insi_laddr.ina_46.i46a_addr4.s_addr };
+///                 // access to the member of `insi_laddr` is unsafe becasuse of union type.
+///                 let s_addr = unsafe { info.tcpsi_ini.insi_laddr.ina_46.i46a_addr4.s_addr };
 ///
-///                                 // change endian because insi_laddr is network endian.
-///                                 let mut addr = 0;
-///                                 addr |= s_addr >> 24 & 0x000000ff;
-///                                 addr |= s_addr >> 8  & 0x0000ff00;
-///                                 addr |= s_addr << 8  & 0x00ff0000;
-///                                 addr |= s_addr << 24 & 0xff000000;
+///                 // change endian because insi_laddr is network endian.
+///                 let mut addr = 0;
+///                 addr |= s_addr >> 24 & 0x000000ff;
+///                 addr |= s_addr >> 8  & 0x0000ff00;
+///                 addr |= s_addr << 8  & 0x00ff0000;
+///                 addr |= s_addr << 24 & 0xff000000;
 ///
-///                                 println!("{}.{}.{}.{}:{}", addr >> 24 & 0xff, addr >> 16 & 0xff, addr >> 8 & 0xff, addr & 0xff, port);
-///                             }
-///                             _ => (),
-///                         }
-///                     }
-///                 }
-///                 _ => (),
+///                 println!("{}.{}.{}.{}:{}", addr >> 24 & 0xff, addr >> 16 & 0xff, addr >> 8 & 0xff, addr & 0xff, port);
 ///             }
+///             _ => (),
 ///         }
 ///     }
 /// }
