@@ -13,6 +13,13 @@ env:
   RUST_BACKTRACE: full
 
 jobs:
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: taiki-e/install-action@cargo-hack
+    - run: cargo hack check --rust-version --workspace --all-targets --ignore-private
+
   build:
     runs-on: ${{ matrix.os }}
     strategy:
