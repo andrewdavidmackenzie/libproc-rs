@@ -8,6 +8,7 @@ documentation = "https://andrewdavidmackenzie.github.io/libproc-rs/libproc/index
 readme = "README.md"
 license = "MIT"
 edition = "2018"
+rust-version = "1.72"
 
 [dependencies]
 errno = "0.3.0"
