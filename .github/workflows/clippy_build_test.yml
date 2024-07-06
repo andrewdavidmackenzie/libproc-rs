@@ -31,9 +31,6 @@ jobs:
           - os: ubuntu-latest
             rust: nightly
             experimental: true
-          - os: macos-11
-            rust: nightly
-            experimental: true
           - os: macos-12
             rust: nightly
             experimental: true
