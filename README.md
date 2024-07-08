@@ -43,7 +43,6 @@ rust versions:
 
 on the following platforms:
 * `ubuntu-latest`
-* `macos-11` (Big Sur) (Intel)
 * `macos-12` (Monterey) (Intel)
 * `macos-13` (Ventura) (Intel)
 * `macos-14` (Sonoma) (Arm64)
