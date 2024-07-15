@@ -4,8 +4,11 @@ use crate::libproc::proc_pid::{PIDInfo, PidInfoFlavor};
 #[cfg(target_os = "macos")]
 pub use crate::osx_libproc_bindings::proc_taskinfo as TaskInfo;
 
+/// # Safety
+///
+/// `TaskInfo` is the right size to be passed to `proc_pidinfo`.
 #[cfg(target_os = "macos")]
-impl PIDInfo for TaskInfo {
+unsafe impl PIDInfo for TaskInfo {
     fn flavor() -> PidInfoFlavor {
         PidInfoFlavor::TaskInfo
     }
@@ -21,8 +24,11 @@ pub struct TaskAllInfo {
     pub ptinfo: TaskInfo,
 }
 
+/// # Safety
+///
+/// `TaskInfoAll` is the right size to be passed to `proc_pidinfo`.
 #[cfg(target_os = "macos")]
-impl PIDInfo for TaskAllInfo {
+unsafe impl PIDInfo for TaskAllInfo {
     fn flavor() -> PidInfoFlavor {
         PidInfoFlavor::TaskAllInfo
     }

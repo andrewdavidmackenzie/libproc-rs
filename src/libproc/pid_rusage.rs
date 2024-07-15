@@ -11,7 +11,13 @@ use crate::osx_libproc_bindings::proc_pid_rusage;
 
 /// The `PIDRUsage` trait is needed for polymorphism on pidrusage types, also abstracting flavor in order to provide
 /// type-guaranteed flavor correctness
-pub trait PIDRUsage: Default {
+///
+/// # Safety
+///
+/// The type this trait is implemented on must be correctly sized such that
+/// a pointer to that type can be passed to the libproc `proc_pid_rusage` function
+/// as the buffer parameter.
+pub unsafe trait PIDRUsage: Default {
     /// Return the `PidRUsageFlavor` for the implementing struct
     fn flavor() -> PidRUsageFlavor;
     /// Memory used in bytes
@@ -62,7 +68,10 @@ pub struct RUsageInfoV0 {
     pub ri_proc_exit_abstime: u64,
 }
 
-impl PIDRUsage for RUsageInfoV0 {
+/// # Safety
+///
+/// The size is appropriate for getting passed to `proc_pid_pidrusage`.
+unsafe impl PIDRUsage for RUsageInfoV0 {
     fn flavor() -> PidRUsageFlavor {
         PidRUsageFlavor::V0
     }
@@ -116,7 +125,10 @@ pub struct RUsageInfoV1 {
     pub ri_child_elapsed_abstime: u64,
 }
 
-impl PIDRUsage for RUsageInfoV1 {
+/// # Safety
+///
+/// The size is appropriate for getting passed to `proc_pid_pidrusage`.
+unsafe impl PIDRUsage for RUsageInfoV1 {
     fn flavor() -> PidRUsageFlavor {
         PidRUsageFlavor::V1
     }
@@ -174,7 +186,10 @@ pub struct RUsageInfoV2 {
     pub ri_diskio_byteswritten: u64,
 }
 
-impl PIDRUsage for RUsageInfoV2 {
+/// # Safety
+///
+/// The size is appropriate for getting passed to `proc_pid_pidrusage`.
+unsafe impl PIDRUsage for RUsageInfoV2 {
     fn flavor() -> PidRUsageFlavor {
         PidRUsageFlavor::V2
     }
@@ -250,7 +265,10 @@ pub struct RUsageInfoV3 {
     pub ri_serviced_system_time: u64,
 }
 
-impl PIDRUsage for RUsageInfoV3 {
+/// # Safety
+///
+/// The size is appropriate for getting passed to `proc_pid_pidrusage`.
+unsafe impl PIDRUsage for RUsageInfoV3 {
     fn flavor() -> PidRUsageFlavor {
         PidRUsageFlavor::V3
     }
@@ -342,7 +360,10 @@ pub struct RUsageInfoV4 {
     pub ri_unused: [u64; 1],
 }
 
-impl PIDRUsage for RUsageInfoV4 {
+/// # Safety
+///
+/// The size is appropriate for getting passed to `proc_pid_pidrusage`.
+unsafe impl PIDRUsage for RUsageInfoV4 {
     fn flavor() -> PidRUsageFlavor {
         PidRUsageFlavor::V4
     }

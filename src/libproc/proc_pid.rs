@@ -56,7 +56,13 @@ pub enum ProcType {
 
 /// The `PIDInfo` trait is needed for polymorphism on pidinfo types, also abstracting flavor in order to provide
 /// type-guaranteed flavor correctness
-pub trait PIDInfo {
+///
+/// # Safety
+///
+/// The type this trait is implemented on must be correctly sized such that
+/// a pointer to that type can be passed to the libproc `proc_pidinfo` function
+/// as the buffer parameter.
+pub unsafe trait PIDInfo {
     /// Return the `PidInfoFlavor` of the implementing struct
     fn flavor() -> PidInfoFlavor;
 }
@@ -126,7 +132,14 @@ pub enum PidInfo {
 
 /// The `ListPIDInfo` trait is needed for polymorphism on listpidinfo types, also abstracting flavor in order to provide
 /// type-guaranteed flavor correctness
-pub trait ListPIDInfo {
+///
+/// # Safety
+///
+/// The `Item` type associated with this trait on must be correctly sized such that
+/// a pointer to an array of that type can be passed to the libproc
+/// `proc_pidinfo` function as the buffer parameter, with the `flavor()`
+/// value indicating the correct output type.
+pub unsafe trait ListPIDInfo {
     /// Item
     type Item;
     /// Return the `PidInfoFlavor` of the implementing struct
@@ -136,7 +149,10 @@ pub trait ListPIDInfo {
 /// Struct for List of Threads
 pub struct ListThreads;
 
-impl ListPIDInfo for ListThreads {
+/// # Safety
+///
+/// `Item` is correctly sized and the flavor matches.
+unsafe impl ListPIDInfo for ListThreads {
     type Item = u64;
     fn flavor() -> PidInfoFlavor {
         PidInfoFlavor::ListThreads

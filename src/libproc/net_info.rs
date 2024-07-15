@@ -35,7 +35,11 @@ pub struct ProcFileInfo {
     pub rfu_1: i32,
 }
 
-impl PIDFDInfo for SocketFDInfo {
+/// # Saftey
+///
+/// The size of `SocketFDInfo` is correct for getting passed to
+/// `proc_pidfdinfo`.
+unsafe impl PIDFDInfo for SocketFDInfo {
     fn flavor() -> PIDFDInfoFlavor {
         PIDFDInfoFlavor::SocketInfo
     }

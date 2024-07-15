@@ -13,7 +13,10 @@ pub struct WorkQueueInfo {
     pub reserved: [u32; 1],
 }
 
-impl PIDInfo for WorkQueueInfo {
+/// # Safety
+///
+/// `WorkQueueInfo` is the right size to be passed to `proc_pidinfo`.
+unsafe impl PIDInfo for WorkQueueInfo {
     fn flavor() -> PidInfoFlavor {
         PidInfoFlavor::WorkQueueInfo
     }
