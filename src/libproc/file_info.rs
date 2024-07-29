@@ -30,7 +30,10 @@ pub enum PIDFDInfoFlavor {
 /// Struct for Listing File Descriptors
 pub struct ListFDs;
 
-impl ListPIDInfo for ListFDs {
+/// # Safety
+///
+/// `Item` is correctly sized and the flavor matches.
+unsafe impl ListPIDInfo for ListFDs {
     type Item = ProcFDInfo;
     fn flavor() -> PidInfoFlavor {
         PidInfoFlavor::ListFDs
@@ -89,7 +92,13 @@ impl From<u32> for ProcFDType {
 
 /// The `PIDFDInfo` trait is needed for polymorphism on pidfdinfo types, also abstracting flavor
 /// in order to provide type-guaranteed flavor correctness
-pub trait PIDFDInfo: Default {
+///
+/// # Safety
+///
+/// The type this trait is implemented on must be correctly sized such that
+/// a pointer to that type can be passed to the libproc `proc_pidfdinfo` function
+/// as the buffer parameter.
+pub unsafe trait PIDFDInfo: Default {
     /// Return the Pid File Descriptor Info flavor of the implementing struct
     fn flavor() -> PIDFDInfoFlavor;
 }
