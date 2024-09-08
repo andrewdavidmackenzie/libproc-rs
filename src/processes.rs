@@ -7,7 +7,7 @@ use crate::libproc::sys::listpids;
 use crate::libproc::sys::listpidspath;
 
 /// `ProcFilter` is used to filter process ids.
-/// See [`pids_by_type`] and `pids_by_type_and_path` (macos only) for details.
+/// See [`pids_by_type`] and `pids_by_type_and_path` (macOS only) for details.
 #[derive(Copy, Clone)]
 pub enum ProcFilter {
     /// All processes
@@ -75,12 +75,12 @@ pub fn pids_by_type(filter: ProcFilter) -> io::Result<Vec<u32>> {
     listpids(filter)
 }
 
-/// Returns the PIDs of active processes that reference reference an open file
-/// with the given path or volume, with or without files opened with the
-/// `O_EVTONLY` flag.
+/// Returns the PIDs of active processes that reference an open file with the given path or volume.
 ///
-/// (Files opened with the `O_EVTONLY` flag will not prevent a volume from being
-/// unmounted).
+///Filter for pids with or without files opened with the `O_EVTONLY` flag.
+///
+/// Files opened with the `O_EVTONLY` flag will not prevent a volume from being
+/// unmounted.
 ///
 /// # Errors
 ///
@@ -126,13 +126,12 @@ pub fn pids_by_path(
     listpidspath(ProcFilter::All, path, is_volume, exclude_event_only)
 }
 
-/// Returns a filtered list of PIDs of active processes that reference reference
-/// an open file with the given path or volume, with or without files opened
-/// with the `O_EVTONLY` flag. Use a [`ProcFilter`] member to specify how to
-/// filter the list of PIDs returned.
+/// Get a filtered list of PIDs of active processes that reference an open file with the given path or volume.
 ///
-/// (Files opened with the `O_EVTONLY` flag will not prevent a volume from being
-/// unmounted).
+/// Filter the list for pids with or without files opened with the `O_EVTONLY` flag.
+/// Use a [`ProcFilter`] member to specify how to filter the list of PIDs returned.
+///
+/// Files opened with the `O_EVTONLY` flag will not prevent a volume from being unmounted.
 ///
 /// # Errors
 ///
