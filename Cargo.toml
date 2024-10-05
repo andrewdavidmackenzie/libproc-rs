@@ -27,3 +27,7 @@ bindgen = { version = "0.70.0", default-features = false, features = ["runtime"]
 [target.'cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))'.dev-dependencies]
 procfs = "0.16.0"
 tempfile = "3.3.0"
+
+# Build docs for macos and linux
+[package.metadata.docs.rs]
+targets = ["aarch64-apple-darwin", "x86_64-unknown-linux-gnu"]
