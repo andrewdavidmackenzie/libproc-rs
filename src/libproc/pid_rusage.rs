@@ -384,7 +384,7 @@ pub fn pidrusage<T: PIDRUsage>(pid: i32) -> Result<T, String> {
     let flavor = T::flavor() as i32;
     let mut pidrusage = T::default();
     #[allow(clippy::pedantic)]
-    let buffer_ptr = &mut pidrusage as *mut _ as *mut c_void;
+        let buffer_ptr = &mut pidrusage as *mut _ as *mut c_void;
     let ret: i32;
 
     unsafe {
@@ -403,7 +403,7 @@ pub fn pidrusage<T: PIDRUsage>(pid: i32) -> Result<T, String> {
 ///
 /// # Errors
 ///
-/// Will return `Err` if no process with PID `pid` esists, if the procfs file system cannot be
+/// Will return `Err` if no process with PID `pid` exists, if the procfs file system cannot be
 /// read or the information `VmSize` cannot be read from it for the process in question
 ///
 /// # Examples
