@@ -19,7 +19,7 @@ enum ProcStatField {
 }
 
 /// Parse out a specific field from the stat file beloning to a path starting
-/// with /proc/<pid> Expects the indicated (0-based) field to be parsable as a
+/// with /proc/pid Expects the indicated (0-based) field to be parsable as a
 /// u32 integer, and field must be > 2.  I/O errors are ignored, with the
 /// assumption that the process has gone away.
 fn proc_stat_field(proc_path: &path::Path, field: ProcStatField) -> Option<u32> {
@@ -52,7 +52,7 @@ fn file_owner_uid(path: &path::Path) -> Option<u32> {
     fs::metadata(path).map(|md| md.uid()).ok()
 }
 
-/// Reads process information from /proc/<pid>/{,stat} to enumerate PIDs matching the filter
+/// Reads process information from /proc/pid/{,stat} to enumerate PIDs matching the filter
 pub fn listpids(proc_types: ProcFilter) -> io::Result<Vec<u32>> {
     let mut pids = Vec::<u32>::new();
 
@@ -185,7 +185,7 @@ mod test {
                 let pids = listpids(ProcFilter::ByProgramGroup {
                     pgrpid: *pgrp as u32,
                 })
-                .unwrap_or_default();
+                    .unwrap_or_default();
                 for pid in pids {
                     if !procfs_pids.remove(&(pid as i32)) {
                         not_matched += 1;
@@ -225,7 +225,7 @@ mod test {
                 let pids = listpids(ProcFilter::ByTTY {
                     tty: *tty_nr as u32,
                 })
-                .unwrap_or_default();
+                    .unwrap_or_default();
                 for pid in pids {
                     if !procfs_pids.remove(&(pid as i32)) {
                         not_matched += 1;

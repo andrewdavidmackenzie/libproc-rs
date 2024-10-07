@@ -64,5 +64,8 @@ pub mod libproc;
 #[cfg(target_os = "macos")]
 #[allow(warnings, missing_docs)]
 mod osx_libproc_bindings {
+    #[cfg(not(docsrs))]
     include!(concat!(env!("OUT_DIR"), "/osx_libproc_bindings.rs"));
+    #[cfg(docsrs)]
+    include!("../docs_rs/osx_libproc_bindings.rs");
 }
