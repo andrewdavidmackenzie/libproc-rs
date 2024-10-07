@@ -25,7 +25,7 @@ bindgen = { version = "0.70.0", default-features = false, features = ["runtime"]
 # supports it. It's quite probably that neither of those two things ever happen.
 # But making this assumption for now so that everything compiles at least for redox
 [target.'cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))'.dev-dependencies]
-procfs = "0.16.0"
+procfs = "0.17.0"
 tempfile = "3.3.0"
 
 # Build docs for macos and linux
