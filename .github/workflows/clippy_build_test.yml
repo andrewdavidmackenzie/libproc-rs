@@ -16,22 +16,19 @@ jobs:
   msrv:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: taiki-e/install-action@cargo-hack
-    - run: cargo hack check --rust-version --workspace --all-targets --ignore-private
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@cargo-hack
+      - run: cargo hack check --rust-version --workspace --all-targets --ignore-private
 
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-12, macos-13, macos-14 ]
-        rust: [stable, beta, 1.72.0] # Minimum Rust Version Supported = 1.72.0
-        experimental: [false]
+        os: [ ubuntu-latest, macos-13, macos-14, macos-15 ]
+        rust: [ stable, beta, 1.72.0 ] # Minimum Rust Version Supported = 1.72.0
+        experimental: [ false ]
         include:
           - os: ubuntu-latest
-            rust: nightly
-            experimental: true
-          - os: macos-12
             rust: nightly
             experimental: true
           - os: macos-13
@@ -40,55 +37,58 @@ jobs:
           - os: macos-14
             rust: nightly
             experimental: true
+          - os: macos-15
+            rust: nightly
+            experimental: true
 
     continue-on-error: ${{ matrix.experimental }}
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Install toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: ${{ matrix.rust }}
-        override: true
-        components: clippy
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+          components: clippy
 
-    - name: InstallLinuxDependencies
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update && sudo apt-get -y install lcov
+      - name: InstallLinuxDependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update && sudo apt-get -y install lcov
 
-    - name: InstallMacDependencies
-      if: runner.os == 'macOS'
-      run: brew install lcov
+      - name: InstallMacDependencies
+        if: runner.os == 'macOS'
+        run: brew install lcov
 
-    - name: ConfigureCoverage
-      if: matrix.rust == 'stable'
-      run: |
-        cargo install grcov
-        rustup component add llvm-tools-preview
-        echo RUSTFLAGS="-C instrument-coverage" >> "$GITHUB_ENV"
-        echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
+      - name: ConfigureCoverage
+        if: matrix.rust == 'stable'
+        run: |
+          cargo install grcov
+          rustup component add llvm-tools-preview
+          echo RUSTFLAGS="-C instrument-coverage" >> "$GITHUB_ENV"
+          echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
 
-    - name: Run clippy (installed toolchain version as per matrix)
-      run: |
-        rustc --version
-        cargo clippy --all --tests --no-deps --all-targets --all-features -- --warn clippy::pedantic -D warnings
+      - name: Run clippy (installed toolchain version as per matrix)
+        run: |
+          rustc --version
+          cargo clippy --all --tests --no-deps --all-targets --all-features -- --warn clippy::pedantic -D warnings
 
-    - name: Run Tests on Linux
-      if: runner.os == 'Linux'
-      run: env "PATH=$PATH" cargo test
+      - name: Run Tests on Linux
+        if: runner.os == 'Linux'
+        run: env "PATH=$PATH" cargo test
 
-    - name: Run Tests as Root on Mac
-      if: runner.os == 'macOS'
-      run: sudo env "PATH=$PATH" cargo test
+      - name: Run Tests as Root on Mac
+        if: runner.os == 'macOS'
+        run: sudo env "PATH=$PATH" cargo test
 
-    - name: UploadCoverage
-      if: matrix.rust == 'stable'
-      run: |
-        grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
-        lcov --remove coverage.info lcov --ignore-errors unused '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
-        bash <(curl -s https://codecov.io/bash) -f coverage.info
+      - name: UploadCoverage
+        if: matrix.rust == 'stable'
+        run: |
+          grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
+          lcov --remove coverage.info lcov --ignore-errors unused '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
+          bash <(curl -s https://codecov.io/bash) -f coverage.info
 
 
