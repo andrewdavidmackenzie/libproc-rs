@@ -1,11 +1,12 @@
-use bindgen::{RustEdition, RustTarget};
-use std::env;
-use std::path::Path;
-
 #[cfg(target_os = "macos")]
 fn main() {
+    use bindgen::{RustEdition, RustTarget};
+    use std::env;
+    use std::path::Path;
+
     match RustTarget::stable(72, 0) {
-        Ok(rust_target) => {
+        Ok(rust
+           _target) => {
             let bindings = bindgen::builder()
                 .header_contents("libproc_rs.h", "#include <libproc.h>")
                 .rust_target(rust_target)
