@@ -1,4 +1,4 @@
-RUST_MIN_VERSION := 1.72.0
+RUST_MIN_VERSION := 1.82.0
 ACT := $(shell command -v act 2> /dev/null)
 UNAME := $(shell uname -s)
 
