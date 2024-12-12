@@ -8,7 +8,7 @@ documentation = "https://docs.rs/libproc/latest/libproc"
 readme = "README.md"
 license = "MIT"
 edition = "2018"
-rust-version = "1.72"
+rust-version = "1.82"
 
 [dependencies]
 errno = "0.3.0"
