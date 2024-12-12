@@ -5,8 +5,7 @@ fn main() {
     use std::path::Path;
 
     match RustTarget::stable(72, 0) {
-        Ok(rust
-           _target) => {
+        Ok(rust_target) => {
             let bindings = bindgen::builder()
                 .header_contents("libproc_rs.h", "#include <libproc.h>")
                 .rust_target(rust_target)
