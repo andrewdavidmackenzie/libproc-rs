@@ -675,7 +675,7 @@ mod test {
         match pidinfo::<BSDInfo>(pid, 0) {
             Ok(info) => assert_eq!(info.pbi_pid as i32, pid),
             Err(e) => panic!("Error retrieving BSDInfo: {}", e),
-        };
+        }
     }
 
     #[cfg(target_os = "macos")]
@@ -686,7 +686,7 @@ mod test {
         match pidinfo::<TaskInfo>(pid, 0) {
             Ok(info) => assert!(info.pti_virtual_size > 0),
             Err(e) => panic!("Error retrieving TaskInfo: {}", e),
-        };
+        }
     }
 
     #[cfg(target_os = "macos")]
@@ -697,7 +697,7 @@ mod test {
         match pidinfo::<TaskAllInfo>(pid, 0) {
             Ok(info) => assert!(info.ptinfo.pti_virtual_size > 0),
             Err(e) => panic!("Error retrieving TaskAllInfo: {}", e),
-        };
+        }
     }
 
     #[cfg(target_os = "macos")]
@@ -706,7 +706,7 @@ mod test {
         match pidinfo::<ThreadInfo>(0, 0) {
             Ok(info) => assert!(!info.pth_name.is_empty()),
             Err(e) => panic!("Error retrieving ThreadInfo: {}", e),
-        };
+        }
     }
 
     #[cfg(target_os = "macos")]
@@ -715,7 +715,7 @@ mod test {
         match pidinfo::<WorkQueueInfo>(1, 0) {
             Ok(info) => assert!(info.pwq_nthreads > 0),
             Err(e) => panic!("{}: {}", "Error retrieving WorkQueueInfo", e),
-        };
+        }
     }
 
     #[cfg(target_os = "macos")]
@@ -731,7 +731,7 @@ mod test {
             }
             if let Ok(fds) = listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
                 assert!(!fds.is_empty());
-            };
+            }
         }
     }
 
