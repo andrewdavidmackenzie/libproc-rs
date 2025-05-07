@@ -33,7 +33,7 @@ The minimum rust version required, by version:
 This is tested in CI and must pass.
 
 # Test Matrix
-The Github Actions CI test `libproc-rs` on :
+The GitHub Actions CI test `libproc-rs` on :
 
 rust versions:
 * `stable` (must pass)
@@ -50,11 +50,11 @@ on the following platforms:
 # Examples
 Two simple examples are included to show libproc-rs working.
 
-- `procinfo` that takes a PID as an optional argument (uses it's own pid if none supplied) and returns
+- `procinfo` that takes a PID as an optional argument (uses its own pid if none supplied) and returns
   information about the process on stdout
 - `dmesg` is a version of dmesg implemented in rust that uses libproc-rs.
 
-These can be ran thus:
+These can be run thus:
 `sudo cargo run --example procinfo` or 
 `sudo cargo run --example dmesg`
 
@@ -75,7 +75,7 @@ This project is in Drips [here](https://www.drips.network/app/projects/github/an
 See the [list of issues](https://github.com/andrewdavidmackenzie/libproc-rs/issues). 
 I put the "help wanted" label where I need help from others.
  
-- Look at what similar methods could be implemented as a starting poon Linux
+- Look at what similar methods could be implemented on Linux
 - Complete the API on Mac OS X - figuring out all the Mac OS X / Darwin version mess....
 - Add more documentation (including samples with documentation test)
 - Add own custom error type and implement From::from to ease reporting of multiple error types in clients
@@ -96,8 +96,8 @@ In order to have tests pass when run as `root` or not, some tests need to check 
 at run-time (using our own `am_root()` function is handy) and avoid failing if *not* run as `root`.
 
 ### Using `act` to run GH Actions locally
-If you develop on macos but want to ensure code builds and tests pass on linux while making changes,
-you can use the [act](https://github.com/nektos/act) tool to run the Github Actions Workflows on
+If you develop on macOS but want to ensure code builds and tests pass on linux while making changes,
+you can use the [act](https://github.com/nektos/act) tool to run the GitHub Actions Workflows on
 the test matrix.
 
 Just install `act` (`brew install act` on macOS) (previously install docker if you don't have it already,
@@ -106,14 +106,14 @@ and os versions of the matrix with something like `act push --matrix os:ubuntu-l
 
 ## Enter the matrix
 If you want to test locally as much of the test matrix as possible (different OS and
-versions of rust), that you can use `make matrix`. On macos, if you have `act`
+versions of rust), that you can use `make matrix`. On macOS, if you have `act`
 installed, it will use it to run the linux part of the matrix.
 
-### Macos: clang detection and header file finding
-Newer versions of `bindgen` have improved the detection of `clang` and hence macos header files.
+### macOS: clang detection and header file finding
+Newer versions of `bindgen` have improved the detection of `clang` and hence macOS header files.
 If you also have llvm/clang installed directly or via `brew` this may cause the build to fail saying it
 cannot find `libproc.h`. This can be fixed by setting `CLANG_PATH="/usr/bin/clang"` so that `bindgen`
-detects the Xcode version and hence can fidn the correct header files.
+detects the Xcode version and hence can find the correct header files.
 
 # Other docs
 * [Reference docs](doc/References.md) used to build and document libproc-rs

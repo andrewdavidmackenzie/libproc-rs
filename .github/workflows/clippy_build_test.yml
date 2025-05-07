@@ -24,18 +24,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-13, macos-14, macos-15 ]
+        os: [ ubuntu-latest, macos-14, macos-15 ]
         rust: [ stable, beta, 1.72.0 ] # Minimum Rust Version Supported = 1.72.0
         experimental: [ false ]
         include:
           - os: ubuntu-latest
             rust: nightly
-            experimental: true
-          - os: macos-13
-            rust: nightly
-            experimental: true
-          - os: macos-13
-            rust: 1.72.0
             experimental: true
           - os: macos-14
             rust: nightly
