@@ -63,7 +63,7 @@ jobs:
       - name: ConfigureCoverage
         if: matrix.rust == 'stable'
         run: |
-          sudo cargo install grcov
+          cargo install grcov
           which grcov
           sudo which grcov
           rustup component add llvm-tools-preview
