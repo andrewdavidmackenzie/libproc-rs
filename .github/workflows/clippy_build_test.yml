@@ -64,6 +64,8 @@ jobs:
         if: matrix.rust == 'stable'
         run: |
           cargo install grcov
+          which grcov
+          sudo which grcov
           rustup component add llvm-tools-preview
           echo RUSTFLAGS="-C instrument-coverage" >> "$GITHUB_ENV"
           echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
@@ -87,5 +89,3 @@ jobs:
           sudo grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
           sudo lcov --remove coverage.info lcov --ignore-errors unused,unused '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
           sudo bash <(curl -s https://codecov.io/bash) -f coverage.info || true
-
-
