@@ -64,8 +64,8 @@ jobs:
         if: matrix.rust == 'stable'
         run: |
           cargo binstall grcov
-          /Users/runner/.cargo/bin/grcov --version
-          sudo /Users/runner/.cargo/bin/grcov --version
+          $HOME/.cargo/bin/grcov --version
+          sudo $HOME/runner/.cargo/bin/grcov --version
           rustup component add llvm-tools-preview
           echo RUSTFLAGS="-C instrument-coverage" >> "$GITHUB_ENV"
           echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
