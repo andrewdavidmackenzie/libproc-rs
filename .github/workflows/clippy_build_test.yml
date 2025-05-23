@@ -86,6 +86,6 @@ jobs:
       - name: UploadCoverage
         if: matrix.rust == 'stable'
         run: |
-          sudo grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
+          sudo env PATH=$PATH $HOME/.cargo/bin/grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
           sudo lcov --remove coverage.info lcov --ignore-errors unused,unused '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
           sudo bash <(curl -s https://codecov.io/bash) -f coverage.info || true
