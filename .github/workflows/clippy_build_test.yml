@@ -64,8 +64,6 @@ jobs:
         if: matrix.rust == 'stable'
         run: |
           cargo install grcov
-          $HOME/.cargo/bin/grcov --version
-          sudo env PATH=$PATH $HOME/.cargo/bin/grcov --version
           rustup component add llvm-tools-preview
           echo RUSTFLAGS="-C instrument-coverage" >> "$GITHUB_ENV"
           echo LLVM_PROFILE_FILE="libproc-%p-%m.profraw" >> "$GITHUB_ENV"
@@ -86,6 +84,6 @@ jobs:
       - name: UploadCoverage
         if: matrix.rust == 'stable'
         run: |
-          sudo env PATH=$PATH $HOME/.cargo/bin/grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
-          sudo lcov --remove coverage.info lcov --ignore-errors unused,unused '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
-          sudo bash <(curl -s https://codecov.io/bash) -f coverage.info || true
+          grcov . --binary-path target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "/*" -o coverage.info
+          lcov --remove coverage.info lcov --ignore-errors unused,unused '/Applications/*' 'target/debug/build/**' 'target/release/build/**' '/usr*' '**/errors.rs' '**/build.rs' 'examples/**' '*tests/*' -o coverage.info
+          bash <(curl -s https://codecov.io/bash) -f coverage.info || true
