@@ -19,7 +19,7 @@ name = "libproc"
 path = "src/lib.rs"
 
 [build-dependencies]
-bindgen = { version = "0.71.1", default-features = false, features = ["runtime"] }
+bindgen = { version = "0.72.0", default-features = false, features = ["runtime"] }
 
 # NOTE: This assumes that there is a procfs compatible FS in redox and the procfs crate
 # supports it. It's quite probably that neither of those two things ever happen.
