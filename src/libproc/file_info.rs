@@ -181,17 +181,13 @@ mod test {
     use crate::libproc::file_info::{ListFDs, ProcFDType};
     use crate::libproc::net_info::{SocketFDInfo, SocketInfoKind};
     use crate::libproc::proc_pid::{listpidinfo, pidinfo};
-
+    use std::process;
     use super::pidfdinfo;
 
     #[test]
     #[allow(clippy::cast_possible_wrap)]
     fn pidfdinfo_test() {
-        use std::net::TcpListener;
-        use std::process;
         let pid = process::id() as i32;
-
-        let _listener = TcpListener::bind("127.0.0.1:65535");
 
         let info = pidinfo::<BSDInfo>(pid, 0).expect("pidinfo() failed");
         let fds =
