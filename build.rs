@@ -1,17 +1,26 @@
-#[cfg(target_os = "macos")]
 fn main() {
+    let target_os = std::env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
+    if target_os == "macos" {
+        build_macos_bindings();
+    }
+}
+
+fn build_macos_bindings() {
     use bindgen::{RustEdition, RustTarget};
     use std::env;
     use std::path::Path;
 
     match RustTarget::stable(72, 0) {
         Ok(rust_target) => {
+            let sdk_path = env::var("SDKROOT")
+                .unwrap_or_else(|_| "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk".into());
+
             let bindings = bindgen::builder()
                 .header_contents("libproc_rs.h", "#include <libproc.h>")
                 .rust_target(rust_target)
                 .rust_edition(RustEdition::Edition2018)
                 .layout_tests(false)
-                .clang_args(&["-x", "c++", "-I", "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/"])
+                .clang_args(&["-x", "c++", "-I", &format!("{}/usr/include/", sdk_path)])
                 .generate()
                 .expect("Failed to build libproc bindings");
 
@@ -26,6 +35,3 @@ fn main() {
         _ => eprintln!("Error executing bindgen")
     }
 }
-
-#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
-fn main() {}
