@@ -6,7 +6,7 @@ This is a library for getting information about running processes for Mac OS X a
 
 Add it to your project's `Cargo.toml`:
 ```toml
-libproc = "0.14.4"
+libproc = "0.14.11"
 ```
 
 And then use it in your code:
