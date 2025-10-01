@@ -6,7 +6,7 @@ This is a library for getting information about running processes for Mac OS X a
 
 Add it to your project's `Cargo.toml`:
 ```toml
-libproc = "0.14.4"
+libproc = "0.14.11"
 ```
 
 And then use it in your code:
@@ -29,6 +29,7 @@ NOTE: `master` branch (code and docs) can differ from those docs prior to a new 
 The minimum rust version required, by version:
 * libproc-rs: 0.14.6 --> 1.74.1 
 * libproc-rs: 0.14.7 --> 1.72.0
+* libproc-rs: 0.14.11 --> 1.72.0
 
 This is tested in CI and must pass.
 
