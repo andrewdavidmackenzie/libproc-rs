@@ -20,18 +20,18 @@ fn build_macos_bindings() {
                 .rust_target(rust_target)
                 .rust_edition(RustEdition::Edition2018)
                 .layout_tests(false)
-                .clang_args(&["-x", "c++", "-I", &format!("{}/usr/include/", sdk_path)])
+                .clang_args(&["-x", "c++", "-I", &format!("{sdk_path}/usr/include/")])
                 .generate()
                 .expect("Failed to build libproc bindings");
 
-            let output_path = Path::new(&env::var("OUT_DIR")
-                .expect("OUT_DIR env var was not defined"))
-                .join("osx_libproc_bindings.rs");
+            let output_path =
+                Path::new(&env::var("OUT_DIR").expect("OUT_DIR env var was not defined"))
+                    .join("osx_libproc_bindings.rs");
 
             bindings
                 .write_to_file(output_path)
                 .expect("Failed to write libproc bindings");
         }
-        _ => eprintln!("Error executing bindgen")
+        _ => eprintln!("Error executing bindgen"),
     }
 }

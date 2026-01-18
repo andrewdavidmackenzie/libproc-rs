@@ -384,7 +384,7 @@ pub fn pidrusage<T: PIDRUsage>(pid: i32) -> Result<T, String> {
     let flavor = T::flavor() as i32;
     let mut pidrusage = T::default();
     #[allow(clippy::pedantic)]
-        let buffer_ptr = &mut pidrusage as *mut _ as *mut c_void;
+    let buffer_ptr = &mut pidrusage as *mut _ as *mut c_void;
     let ret: i32;
 
     unsafe {

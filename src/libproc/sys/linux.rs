@@ -185,7 +185,7 @@ mod test {
                 let pids = listpids(ProcFilter::ByProgramGroup {
                     pgrpid: *pgrp as u32,
                 })
-                    .unwrap_or_default();
+                .unwrap_or_default();
                 for pid in pids {
                     if !procfs_pids.remove(&(pid as i32)) {
                         not_matched += 1;
@@ -225,7 +225,7 @@ mod test {
                 let pids = listpids(ProcFilter::ByTTY {
                     tty: *tty_nr as u32,
                 })
-                    .unwrap_or_default();
+                .unwrap_or_default();
                 for pid in pids {
                     if !procfs_pids.remove(&(pid as i32)) {
                         not_matched += 1;

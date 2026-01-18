@@ -177,12 +177,12 @@ pub fn pidfdinfo<T: PIDFDInfo>(_pid: i32, _fd: i32) -> Result<T, String> {
 
 #[cfg(all(test, target_os = "macos"))]
 mod test {
+    use super::pidfdinfo;
     use crate::libproc::bsd_info::BSDInfo;
     use crate::libproc::file_info::{ListFDs, ProcFDType};
     use crate::libproc::net_info::{SocketFDInfo, SocketInfoKind};
     use crate::libproc::proc_pid::{listpidinfo, pidinfo};
     use std::process;
-    use super::pidfdinfo;
 
     #[test]
     #[allow(clippy::cast_possible_wrap)]
