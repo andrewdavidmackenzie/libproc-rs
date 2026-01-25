@@ -680,6 +680,20 @@ mod test {
 
     #[cfg(target_os = "macos")]
     #[test]
+    fn pidinfo_kernel_task_test() {
+        // PID = 0 is the kernel task
+        let pid = 0;
+        match pidinfo::<BSDInfo>(pid, 0) {
+            Ok(info) => {
+                println!("BSDInfo: {:?}", info);
+                assert_eq!(info.pbi_pid as i32, pid)
+            },
+            Err(e) => panic!("Error retrieving BSDInfo: {}", e),
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
     fn taskinfo_test() {
         let pid = process::id() as i32;
 
