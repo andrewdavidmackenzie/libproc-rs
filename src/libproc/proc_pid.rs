@@ -685,7 +685,7 @@ mod test {
         let pid = 0;
         match pidinfo::<BSDInfo>(pid, 0) {
             Ok(info) => {
-                println!("BSDInfo: {:?}", info);
+                println!("BSDInfo: {info:?}");
                 assert_eq!(info.pbi_pid as i32, pid);
             },
             Err(e) => panic!("Error retrieving BSDInfo: {}", e),
