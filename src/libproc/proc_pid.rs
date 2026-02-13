@@ -266,7 +266,7 @@ pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
     let flavor = T::flavor() as i32;
     // No type `T` will be bigger than `i32::MAX`!!
     #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
-    let buffer_size = mem::size_of::<T>() as c_int;
+    let buffer_size = size_of::<T>() as c_int;
     let mut pidinfo = unsafe { mem::zeroed() };
     #[allow(clippy::pedantic)]
     let buffer_ptr = &mut pidinfo as *mut _ as *mut c_void;
@@ -519,7 +519,7 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
     let flavor = T::flavor() as i32;
     // No type `T` will be bigger than `c_int::MAX`!!
     #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
-    let buffer_size = mem::size_of::<T::Item>() as c_int * max_len as c_int;
+    let buffer_size = size_of::<T::Item>() as c_int * max_len as c_int;
     let mut buffer = Vec::<T::Item>::with_capacity(max_len);
     let buffer_ptr = unsafe {
         buffer.set_len(max_len);
@@ -537,7 +537,7 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
     } else {
         // `ret` must be greater than 0 here, so no sign-loss
         #[allow(clippy::cast_sign_loss)]
-        let actual_len = ret as usize / mem::size_of::<T::Item>();
+        let actual_len = ret as usize / size_of::<T::Item>();
         buffer.truncate(actual_len);
         Ok(buffer)
     }
