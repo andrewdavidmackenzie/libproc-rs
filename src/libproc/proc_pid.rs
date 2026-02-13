@@ -263,6 +263,11 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 /// ```
 #[cfg(target_os = "macos")]
 pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
+    // You cannot request information about the kernel task (pid=0) unless you are root
+    if pid == 0 && !am_root() {
+        return Err("Cannot request information about kernel task (pid=0) unless running as root".to_owned());
+    }
+
     let flavor = T::flavor() as i32;
     // No type `T` will be bigger than `i32::MAX`!!
     #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
