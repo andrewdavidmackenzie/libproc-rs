@@ -206,16 +206,51 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
     )
 }
 
-/// Get info about a process, task, thread or work queue by specifying the appropriate type for `T`:
-/// - `BSDInfo` - see struct `proc_bsdinfo` in generated `osx_libproc_bindings.rs`
-/// - `TaskInfo` - see struct `proc_taskinfo` in generated `osx_libproc_bindings.rs`
-/// - `TaskAllInfo` - see struct `TaskAllInfo` in `task_info.rs` that contains the two structs above
-/// - `ThreadInfo` - see struct `proc_threadinfo` in generated `osx_libproc_bindings.rs`
-/// - `WorkQueueInfo` - see struct `proc_workqueueinfo` in generated `osx_libproc_bindings.rs`
+/// Get info about a process, task, thread or work queue by specifying the appropriate type for `T`.
+///
+/// # Type Parameter Variants
+///
+/// ## `BSDInfo`
+/// Returns BSD-level process information (pid, ppid, uid, gid, tty, process name, flags, etc.).
+/// The `arg` parameter is unused and should be `0`.
+/// - Requires root to query pid=0 (kernel task)
+/// - Most other processes can be queried without special privileges
+///
+/// ## `TaskInfo`
+/// Returns Mach task-level information (virtual/resident memory sizes, page faults,
+/// thread count, CPU times, etc.). The `arg` parameter is unused and should be `0`.
+/// - Requires root to query pid=0 (kernel task)
+///
+/// ## `TaskAllInfo`
+/// Returns both `BSDInfo` and `TaskInfo` in a single call.
+/// The `arg` parameter is unused and should be `0`.
+/// - Requires root to query pid=0 (kernel task)
+///
+/// ## `ThreadInfo`
+/// Returns information about a specific thread (run state, flags, CPU usage, priority, etc.).
+/// **Important**: The `arg` parameter must be a valid thread ID for the target process.
+/// - First call `listpidinfo::<ListThreads>()` to get the list of thread IDs
+/// - Then use one of those thread IDs as the `arg` parameter
+/// - Passing `arg=0` will fail unless the process happens to have a thread with ID 0
+/// - Returns `ESRCH` ("No such process") if the thread ID is invalid
+///
+/// ## `WorkQueueInfo`
+/// Returns Grand Central Dispatch (GCD) work queue information (thread counts).
+/// The `arg` parameter is unused and should be `0`.
+/// - **Important**: Only works for processes that use GCD/libdispatch work queues
+/// - Returns `ESRCH` ("No such process") if the process has no work queue allocated
+/// - Work queues are lazily created only when a process uses `dispatch_async()` or similar
+/// - Returns `EPERM` ("Operation not permitted") for privileged system processes like
+///   pid=1 (launchd) unless running as root
 ///
 /// # Errors
 ///
-/// Will return an error if underlying Darwin `proc_pidinfo` returns an error or sets `errno`
+/// Will return an error if underlying Darwin `proc_pidinfo` returns an error or sets `errno`.
+/// Common errors include:
+/// - `ESRCH` - No such process, or (for ThreadInfo/WorkQueueInfo) the requested
+///   thread/work queue doesn't exist
+/// - `EPERM` - Operation not permitted (insufficient privileges)
+/// - Custom error for pid=0 when not running as root
 ///
 /// # Examples
 ///
