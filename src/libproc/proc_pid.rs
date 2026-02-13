@@ -5,6 +5,8 @@ use std::ffi::CString;
 use std::fs;
 #[cfg(target_os = "macos")]
 use std::mem;
+#[cfg(target_os = "macos")]
+use std::mem::size_of;
 use std::path::PathBuf;
 
 #[cfg(target_os = "macos")]
