@@ -37,7 +37,7 @@ use libc::{c_char, readlink};
 use crate::processes;
 
 /// The `ProcType` type. Used to specify what type of processes you are interested
-/// in in other calls, such as `listpids`.
+/// in other calls, such as `listpids`.
 #[derive(Copy, Clone)]
 pub enum ProcType {
     /// All processes
@@ -54,7 +54,7 @@ pub enum ProcType {
     ProcPPIDOnly = 6,
 }
 
-/// The `PIDInfo` trait is needed for polymorphism on pidinfo types, also abstracting flavor in order to provide
+/// The `PIDInfo` trait is needed for polymorphism on pidinfo types, also abstracting flavor provides
 /// type-guaranteed flavor correctness
 pub trait PIDInfo {
     /// Return the `PidInfoFlavor` of the implementing struct
@@ -90,7 +90,7 @@ pub enum PidInfoFlavor {
     WorkQueueInfo = 12,
 }
 
-/// The `PidInfo` enum contains a piece of information about a processes
+/// The `PidInfo` enum contains a piece of information about processes
 #[allow(clippy::large_enum_variant)]
 pub enum PidInfo {
     /// File Descriptors used by Process
@@ -124,8 +124,8 @@ pub enum PidInfo {
     WorkQueueInfo(WorkQueueInfo),
 }
 
-/// The `ListPIDInfo` trait is needed for polymorphism on listpidinfo types, also abstracting flavor in order to provide
-/// type-guaranteed flavor correctness
+/// The `ListPIDInfo` trait is needed for polymorphism on listpidinfo types, also abstracting flavor
+/// provides type-guaranteed flavor correctness
 pub trait ListPIDInfo {
     /// Item
     type Item;
@@ -228,19 +228,19 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 ///
 /// let pid = process::id() as i32;
 ///
-/// // Get the `BSDInfo` for process with pid 0
+/// // Get the `BSDInfo` for the process with pid 0
 /// match pidinfo::<BSDInfo>(pid, 0) {
 ///     Ok(info) => assert_eq!(info.pbi_pid as i32, pid),
 ///     Err(err) => eprintln!("Error retrieving process info: {}", err)
 /// };
 ///
-/// // Get the `TaskInfo` for process with pid 0
+/// // Get the `TaskInfo` for the process with pid 0
 /// match pidinfo::<TaskInfo>(pid, 0) {
 ///     Ok(info) => assert!(info.pti_threadnum  > 0),
 ///     Err(err) => eprintln!("Error retrieving process info: {}", err)
 /// };
 ///
-/// // Get the `TaskAllInfo` for process with pid 0
+/// // Get the `TaskAllInfo` for the process with pid 0
 /// match pidinfo::<TaskAllInfo>(pid, 0) {
 ///     Ok(info) => {
 ///         assert_eq!(info.pbsd.pbi_pid as i32, pid);
@@ -249,13 +249,13 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 ///     Err(err) => eprintln!("Error retrieving process info: {}", err)
 /// };
 ///
-/// // Get the `ThreadInfo` for process with pid 0
+/// // Get the `ThreadInfo` for the process with pid 0
 /// match pidinfo::<ThreadInfo>(pid, 0) {
 ///     Ok(info) => assert!(!info.pth_name.is_empty()),
 ///     Err(err) => eprintln!("Error retrieving process info: {}", err)
 /// };
 ///
-/// // Get the `WorkQueueInfo` for process with pid 0
+/// // Get the `WorkQueueInfo` for the process with pid 0
 /// match pidinfo::<WorkQueueInfo>(pid, 0) {
 ///     Ok(info) => assert!(info.pwq_nthreads > 0),
 ///     Err(err) => eprintln!("Error retrieving process info: {}", err)
@@ -431,7 +431,7 @@ pub fn libversion() -> Result<(i32, i32), String> {
     Err("Linux does not use a library, so no library version number".to_owned())
 }
 
-/// Get the name of a process, using it's process id (pid)
+/// Get the name of a process, using its process id (pid)
 ///
 /// # Errors
 ///
@@ -476,7 +476,7 @@ pub fn name(pid: i32) -> Result<String, String> {
     }
 }
 
-/// Get the name of a process, using it's process id (pid)
+/// Get the name of a process, using its process id (pid)
 ///
 /// # Errors
 ///
@@ -488,8 +488,8 @@ pub fn name(pid: i32) -> Result<String, String> {
 
 /// Get information on all running processes.
 ///
-/// `max_len` is the maximum number of array to return.
-/// The length of return value: `Vec<T::Item>` may be less than `max_len`.
+/// `max_len` is the maximum length of the array to return.
+/// The length of the returned value: `Vec<T::Item>` may be less than `max_len`.
 ///
 /// # Errors
 ///
@@ -544,11 +544,11 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
 }
 
 #[cfg(target_os = "macos")]
-/// Gets the path of current working directory for the process with the provided pid.
+/// Gets the path of the current working directory for the process with the provided pid.
 ///
 /// # Errors
 ///
-/// Currently always returns an error as this is not implemented yet for macos
+/// Currently, always returns an error as this is not implemented yet for macOS
 ///
 /// # Examples
 ///
@@ -565,11 +565,11 @@ pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
 }
 
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
-/// Gets the path of current working directory for the process with the provided pid.
+/// Gets the path of the current working directory for the process with the provided pid.
 ///
 /// # Errors
 ///
-/// An `Err` is returned if process with PID `pid` does not exist, or the information
+/// An `Err` is returned if the process with PID `pid` does not exist, or the information
 /// about it in the procfs file system cannot be read or parsed
 ///
 /// # Examples
@@ -586,7 +586,7 @@ pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
     fs::read_link(format!("/proc/{pid}/cwd")).map_err(|e| e.to_string())
 }
 
-/// Gets path of current working directory for the current process.
+/// Gets the path of the current working directory for the current process.
 ///
 /// Just wraps rust's `env::current_dir()` function so not so useful.
 ///
@@ -594,7 +594,7 @@ pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
 ///
 /// Returns an Err if the current working directory value is invalid. Possible cases:
 ///   * Current directory does not exist.
-///   * There are insufficient permissions to access the current directory.
+///   * There are not enough permissions to access the current directory.
 ///
 /// # Examples
 ///
@@ -629,11 +629,12 @@ pub fn am_root() -> bool {
     unsafe { libc::getuid() == 0 }
 }
 
-/// Return true if the calling process is being run by the root user, false otherwise
+/// Return true if the root user is running the calling process, false otherwise
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 #[must_use]
 pub fn am_root() -> bool {
-    // when this becomes stable in rust libc then we can remove this function or combine for mac and linux
+    // when this becomes stable in rust's libc, then we can remove this function or combine for macOS
+    // and linux
     unsafe { libc::geteuid() == 0 }
 }
 
@@ -776,7 +777,7 @@ mod test {
     }
 
     #[test]
-    // This checks that it cannot find the path of the process with pid -1 and returns correct error message
+    // This checks that it cannot find the path of the process with pid -1 and returns the correct error message
     fn pidpath_test_unknown_pid_test() {
         #[cfg(target_os = "macos")]
         let error_message = "No such process";
@@ -800,7 +801,7 @@ mod test {
     }
 
     // Pretty useless test as it uses the exact same code as the function - but I guess we
-    // should check it can be called and returns correct value
+    // should check it can be called and returns the correct value
     #[test]
     fn cwd_self_test() {
         assert_eq!(
