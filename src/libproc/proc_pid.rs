@@ -425,7 +425,7 @@ pub fn libversion() -> Result<(i32, i32), String> {
     let ret: i32;
 
     unsafe {
-        ret = proc_libversion(&mut major, &mut minor);
+        ret = proc_libversion(&raw mut major, &raw mut minor);
     };
 
     // return value of 0 indicates success (inconsistent with other functions... :-( )
