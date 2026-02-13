@@ -687,7 +687,7 @@ mod test {
     #[cfg(target_os = "macos")]
     #[test]
     fn pidinfo_kernel_task_test() {
-        // PID = 0 is the kernel task
+        // PID = 0 is the kernel task - as is this will require running as root to pass
         let pid = 0;
         match pidinfo::<BSDInfo>(pid, 0) {
             Ok(info) => {
