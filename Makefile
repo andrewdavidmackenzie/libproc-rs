@@ -12,6 +12,9 @@ clippy:
 .PHONY: test
 test:
 ifeq ($(UNAME),Darwin)
+	# proc_pidinfo only returns valid data for processes owned by the same user or system processes when the calling
+	# process runs with elevated privileges (e.g., via sudo).
+	# For processes owned by other users, the function may return zero or incomplete data due to sandboxing and security restrictions.
 	@echo "On macos, process tests are required to be run as root - so please enter your password at the prompt"
 	@sudo env "PATH=$$PATH" cargo test
 else
