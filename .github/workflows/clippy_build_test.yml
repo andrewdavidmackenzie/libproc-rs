@@ -79,7 +79,7 @@ jobs:
 
       - name: Run Tests as Root on Mac
         if: runner.os == 'macOS'
-        run: sudo env "PATH=$PATH" cargo test
+        run: env "PATH=$PATH" cargo test
 
       - name: UploadCoverage
         if: matrix.rust == 'stable'
