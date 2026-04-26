@@ -101,8 +101,8 @@ pub(crate) fn listpidspath(
     exclude_event_only: bool,
 ) -> io::Result<Vec<u32>> {
     let path_bytes = path.as_os_str().as_bytes();
-    let c_path = ffi::CString::new(path_bytes)
-        .map_err(|_| io::Error::new(io::ErrorKind::Other, "CString::new failed"))?;
+    let c_path =
+        ffi::CString::new(path_bytes).map_err(|_| io::Error::other("CString::new failed"))?;
     let mut pathflags: u32 = 0;
     if is_volume {
         pathflags |= osx_libproc_bindings::PROC_LISTPIDSPATH_PATH_IS_VOLUME;

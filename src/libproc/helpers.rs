@@ -12,14 +12,14 @@ pub fn get_errno_with_message(return_code: i32) -> String {
     format!("return code = {return_code}, errno = {code}, message = '{e}'")
 }
 
-/// Helper function that depending on the `ret` value:
+/// A helper function that depending on the `ret` value:
 /// - is negative or 0, then form an error message from the `errno` value
 /// - is positive, take `ret` as the length of the success message in `buf` in bytes
 pub fn check_errno(ret: i32, buf: &mut Vec<u8>) -> Result<String, String> {
     if ret <= 0 {
         Err(get_errno_with_message(ret))
     } else {
-        // `ret` mucg be greater than 0 here so no sign-loss
+        // `ret` must be greater than 0 here so no sign-loss
         #[allow(clippy::cast_sign_loss)]
         unsafe {
             buf.set_len(ret as usize);
@@ -59,8 +59,8 @@ pub(crate) fn procfile_field(filename: &str, field_name: &str) -> Result<String,
 }
 
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
-/// Parse a memory amount string into integer number of bytes
-/// e.g. 220844 kB -->
+/// Parse a memory amount string into an integer number of bytes
+/// e.g., 220,844kB -->
 pub fn parse_memory_string(line: &str) -> Result<u64, String> {
     let parts: Vec<&str> = line.trim().split(' ').collect();
     if parts.is_empty() {

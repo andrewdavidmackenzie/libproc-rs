@@ -5,6 +5,8 @@ use std::ffi::CString;
 use std::fs;
 #[cfg(target_os = "macos")]
 use std::mem;
+#[cfg(target_os = "macos")]
+use std::mem::size_of;
 use std::path::PathBuf;
 
 #[cfg(target_os = "macos")]
@@ -37,7 +39,7 @@ use libc::{c_char, readlink};
 use crate::processes;
 
 /// The `ProcType` type. Used to specify what type of processes you are interested
-/// in in other calls, such as `listpids`.
+/// in other calls, such as `listpids`.
 #[derive(Copy, Clone)]
 pub enum ProcType {
     /// All processes
@@ -54,7 +56,7 @@ pub enum ProcType {
     ProcPPIDOnly = 6,
 }
 
-/// The `PIDInfo` trait is needed for polymorphism on pidinfo types, also abstracting flavor in order to provide
+/// The `PIDInfo` trait is needed for polymorphism on pidinfo types, also abstracting flavor provides
 /// type-guaranteed flavor correctness
 pub trait PIDInfo {
     /// Return the `PidInfoFlavor` of the implementing struct
@@ -90,7 +92,7 @@ pub enum PidInfoFlavor {
     WorkQueueInfo = 12,
 }
 
-/// The `PidInfo` enum contains a piece of information about a processes
+/// The `PidInfo` enum contains a piece of information about processes
 #[allow(clippy::large_enum_variant)]
 pub enum PidInfo {
     /// File Descriptors used by Process
@@ -124,8 +126,8 @@ pub enum PidInfo {
     WorkQueueInfo(WorkQueueInfo),
 }
 
-/// The `ListPIDInfo` trait is needed for polymorphism on listpidinfo types, also abstracting flavor in order to provide
-/// type-guaranteed flavor correctness
+/// The `ListPIDInfo` trait is needed for polymorphism on listpidinfo types, also abstracting flavor
+/// provides type-guaranteed flavor correctness
 pub trait ListPIDInfo {
     /// Item
     type Item;
@@ -204,16 +206,51 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
     )
 }
 
-/// Get info about a process, task, thread or work queue by specifying the appropriate type for `T`:
-/// - `BSDInfo` - see struct `proc_bsdinfo` in generated `osx_libproc_bindings.rs`
-/// - `TaskInfo` - see struct `proc_taskinfo` in generated `osx_libproc_bindings.rs`
-/// - `TaskAllInfo` - see struct `TaskAllInfo` in `task_info.rs` that contains the two structs above
-/// - `ThreadInfo` - see struct `proc_threadinfo` in generated `osx_libproc_bindings.rs`
-/// - `WorkQueueInfo` - see struct `proc_workqueueinfo` in generated `osx_libproc_bindings.rs`
+/// Get info about a process, task, thread or work queue by specifying the appropriate type for `T`.
+///
+/// # Type Parameter Variants
+///
+/// ## `BSDInfo`
+/// Returns BSD-level process information (pid, ppid, uid, gid, tty, process name, flags, etc.).
+/// The `arg` parameter is unused and should be `0`.
+/// - Requires root to query pid=0 (kernel task)
+/// - Most other processes can be queried without special privileges
+///
+/// ## `TaskInfo`
+/// Returns Mach task-level information (virtual/resident memory sizes, page faults,
+/// thread count, CPU times, etc.). The `arg` parameter is unused and should be `0`.
+/// - Requires root to query pid=0 (kernel task)
+///
+/// ## `TaskAllInfo`
+/// Returns both `BSDInfo` and `TaskInfo` in a single call.
+/// The `arg` parameter is unused and should be `0`.
+/// - Requires root to query pid=0 (kernel task)
+///
+/// ## `ThreadInfo`
+/// Returns information about a specific thread (run state, flags, CPU usage, priority, etc.).
+/// **Important**: The `arg` parameter must be a valid thread ID for the target process.
+/// - First call `listpidinfo::<ListThreads>()` to get the list of thread IDs
+/// - Then use one of those thread IDs as the `arg` parameter
+/// - Passing `arg=0` will fail unless the process happens to have a thread with ID 0
+/// - Returns `ESRCH` ("No such process") if the thread ID is invalid
+///
+/// ## `WorkQueueInfo`
+/// Returns Grand Central Dispatch (GCD) work queue information (thread counts).
+/// The `arg` parameter is unused and should be `0`.
+/// - **Important**: Only works for processes that use GCD/libdispatch work queues
+/// - Returns `ESRCH` ("No such process") if the process has no work queue allocated
+/// - Work queues are lazily created only when a process uses `dispatch_async()` or similar
+/// - Returns `EPERM` ("Operation not permitted") for privileged system processes like
+///   pid=1 (launchd) unless running as root
 ///
 /// # Errors
 ///
-/// Will return an error if underlying Darwin `proc_pidinfo` returns an error or sets `errno`
+/// Will return an error if underlying Darwin `proc_pidinfo` returns an error or sets `errno`.
+/// Common errors include:
+/// - `ESRCH` - No such process, or (for ThreadInfo/WorkQueueInfo) the requested
+///   thread/work queue doesn't exist
+/// - `EPERM` - Operation not permitted (insufficient privileges)
+/// - Custom error for pid=0 when not running as root
 ///
 /// # Examples
 ///
@@ -228,19 +265,19 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 ///
 /// let pid = process::id() as i32;
 ///
-/// // Get the `BSDInfo` for process with pid 0
+/// // Get the `BSDInfo` for the process with pid 0
 /// match pidinfo::<BSDInfo>(pid, 0) {
 ///     Ok(info) => assert_eq!(info.pbi_pid as i32, pid),
 ///     Err(err) => eprintln!("Error retrieving process info: {}", err)
 /// };
 ///
-/// // Get the `TaskInfo` for process with pid 0
+/// // Get the `TaskInfo` for the process with pid 0
 /// match pidinfo::<TaskInfo>(pid, 0) {
 ///     Ok(info) => assert!(info.pti_threadnum  > 0),
 ///     Err(err) => eprintln!("Error retrieving process info: {}", err)
 /// };
 ///
-/// // Get the `TaskAllInfo` for process with pid 0
+/// // Get the `TaskAllInfo` for the process with pid 0
 /// match pidinfo::<TaskAllInfo>(pid, 0) {
 ///     Ok(info) => {
 ///         assert_eq!(info.pbsd.pbi_pid as i32, pid);
@@ -249,13 +286,13 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 ///     Err(err) => eprintln!("Error retrieving process info: {}", err)
 /// };
 ///
-/// // Get the `ThreadInfo` for process with pid 0
+/// // Get the `ThreadInfo` for the process with pid 0
 /// match pidinfo::<ThreadInfo>(pid, 0) {
 ///     Ok(info) => assert!(!info.pth_name.is_empty()),
 ///     Err(err) => eprintln!("Error retrieving process info: {}", err)
 /// };
 ///
-/// // Get the `WorkQueueInfo` for process with pid 0
+/// // Get the `WorkQueueInfo` for the process with pid 0
 /// match pidinfo::<WorkQueueInfo>(pid, 0) {
 ///     Ok(info) => assert!(info.pwq_nthreads > 0),
 ///     Err(err) => eprintln!("Error retrieving process info: {}", err)
@@ -263,10 +300,18 @@ pub fn listpidspath(proc_types: ProcType, path: &str) -> Result<Vec<u32>, String
 /// ```
 #[cfg(target_os = "macos")]
 pub fn pidinfo<T: PIDInfo>(pid: i32, arg: u64) -> Result<T, String> {
+    // You cannot request information about the kernel task (pid=0) unless you are root
+    if pid == 0 && !am_root() {
+        return Err(
+            "Cannot request information about kernel task (pid=0) unless running as root"
+                .to_owned(),
+        );
+    }
+
     let flavor = T::flavor() as i32;
     // No type `T` will be bigger than `i32::MAX`!!
     #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
-    let buffer_size = mem::size_of::<T>() as c_int;
+    let buffer_size = size_of::<T>() as c_int;
     let mut pidinfo = unsafe { mem::zeroed() };
     #[allow(clippy::pedantic)]
     let buffer_ptr = &mut pidinfo as *mut _ as *mut c_void;
@@ -415,7 +460,7 @@ pub fn libversion() -> Result<(i32, i32), String> {
     let ret: i32;
 
     unsafe {
-        ret = proc_libversion(&mut major, &mut minor);
+        ret = proc_libversion(&raw mut major, &raw mut minor);
     };
 
     // return value of 0 indicates success (inconsistent with other functions... :-( )
@@ -431,7 +476,7 @@ pub fn libversion() -> Result<(i32, i32), String> {
     Err("Linux does not use a library, so no library version number".to_owned())
 }
 
-/// Get the name of a process, using it's process id (pid)
+/// Get the name of a process, using its process id (pid)
 ///
 /// # Errors
 ///
@@ -476,7 +521,7 @@ pub fn name(pid: i32) -> Result<String, String> {
     }
 }
 
-/// Get the name of a process, using it's process id (pid)
+/// Get the name of a process, using its process id (pid)
 ///
 /// # Errors
 ///
@@ -488,8 +533,8 @@ pub fn name(pid: i32) -> Result<String, String> {
 
 /// Get information on all running processes.
 ///
-/// `max_len` is the maximum number of array to return.
-/// The length of return value: `Vec<T::Item>` may be less than `max_len`.
+/// `max_len` is the maximum length of the array to return.
+/// The length of the returned value: `Vec<T::Item>` may be less than `max_len`.
 ///
 /// # Errors
 ///
@@ -519,7 +564,7 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
     let flavor = T::flavor() as i32;
     // No type `T` will be bigger than `c_int::MAX`!!
     #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
-    let buffer_size = mem::size_of::<T::Item>() as c_int * max_len as c_int;
+    let buffer_size = size_of::<T::Item>() as c_int * max_len as c_int;
     let mut buffer = Vec::<T::Item>::with_capacity(max_len);
     let buffer_ptr = unsafe {
         buffer.set_len(max_len);
@@ -537,18 +582,18 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
     } else {
         // `ret` must be greater than 0 here, so no sign-loss
         #[allow(clippy::cast_sign_loss)]
-        let actual_len = ret as usize / mem::size_of::<T::Item>();
+        let actual_len = ret as usize / size_of::<T::Item>();
         buffer.truncate(actual_len);
         Ok(buffer)
     }
 }
 
 #[cfg(target_os = "macos")]
-/// Gets the path of current working directory for the process with the provided pid.
+/// Gets the path of the current working directory for the process with the provided pid.
 ///
 /// # Errors
 ///
-/// Currently always returns an error as this is not implemented yet for macos
+/// Currently, always returns an error as this is not implemented yet for macOS
 ///
 /// # Examples
 ///
@@ -565,11 +610,11 @@ pub fn pidcwd(_pid: pid_t) -> Result<PathBuf, String> {
 }
 
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
-/// Gets the path of current working directory for the process with the provided pid.
+/// Gets the path of the current working directory for the process with the provided pid.
 ///
 /// # Errors
 ///
-/// An `Err` is returned if process with PID `pid` does not exist, or the information
+/// An `Err` is returned if the process with PID `pid` does not exist, or the information
 /// about it in the procfs file system cannot be read or parsed
 ///
 /// # Examples
@@ -586,7 +631,7 @@ pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
     fs::read_link(format!("/proc/{pid}/cwd")).map_err(|e| e.to_string())
 }
 
-/// Gets path of current working directory for the current process.
+/// Gets the path of the current working directory for the current process.
 ///
 /// Just wraps rust's `env::current_dir()` function so not so useful.
 ///
@@ -594,7 +639,7 @@ pub fn pidcwd(pid: pid_t) -> Result<PathBuf, String> {
 ///
 /// Returns an Err if the current working directory value is invalid. Possible cases:
 ///   * Current directory does not exist.
-///   * There are insufficient permissions to access the current directory.
+///   * There are not enough permissions to access the current directory.
 ///
 /// # Examples
 ///
@@ -629,11 +674,12 @@ pub fn am_root() -> bool {
     unsafe { libc::getuid() == 0 }
 }
 
-/// Return true if the calling process is being run by the root user, false otherwise
+/// Return true if the root user is running the calling process, false otherwise
 #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 #[must_use]
 pub fn am_root() -> bool {
-    // when this becomes stable in rust libc then we can remove this function or combine for mac and linux
+    // when this becomes stable in rust's libc, then we can remove this function or combine for macOS
+    // and linux
     unsafe { libc::geteuid() == 0 }
 }
 
@@ -680,6 +726,22 @@ mod test {
 
     #[cfg(target_os = "macos")]
     #[test]
+    fn pidinfo_kernel_task_test() {
+        // PID = 0 is the kernel task - as is this will require running as root to pass
+        if am_root() {
+            let pid = 0;
+            match pidinfo::<BSDInfo>(pid, 0) {
+                Ok(info) => {
+                    println!("BSDInfo: {info:?}");
+                    assert_eq!(info.pbi_pid as i32, pid);
+                }
+                Err(e) => panic!("Error retrieving BSDInfo: {}", e),
+            }
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
     fn taskinfo_test() {
         let pid = process::id() as i32;
 
@@ -703,8 +765,22 @@ mod test {
     #[cfg(target_os = "macos")]
     #[test]
     fn threadinfo_test() {
-        match pidinfo::<ThreadInfo>(0, 0) {
-            Ok(info) => assert!(!info.pth_name.is_empty()),
+        let pid = process::id() as i32;
+
+        // First get the task info to know how many threads there are
+        let task_info = pidinfo::<TaskAllInfo>(pid, 0).expect("Failed to get TaskAllInfo");
+        #[allow(clippy::cast_sign_loss)]
+        let thread_count = task_info.ptinfo.pti_threadnum as usize;
+
+        // Get the list of thread IDs
+        let thread_ids =
+            listpidinfo::<ListThreads>(pid, thread_count).expect("Failed to get thread list");
+        assert!(!thread_ids.is_empty(), "Thread list should not be empty");
+
+        // Use the first thread ID to get ThreadInfo
+        let first_thread_id = thread_ids[0];
+        match pidinfo::<ThreadInfo>(pid, first_thread_id) {
+            Ok(info) => assert!(info.pth_run_state > 0),
             Err(e) => panic!("Error retrieving ThreadInfo: {}", e),
         }
     }
@@ -712,9 +788,20 @@ mod test {
     #[cfg(target_os = "macos")]
     #[test]
     fn workqueueinfo_test() {
-        match pidinfo::<WorkQueueInfo>(1, 0) {
+        let pid = process::id() as i32;
+
+        //  The "No such process" error (ESRCH) in this context actually means "no such
+        //   work queue" - the process exists but doesn't have a GCD work queue.
+        // A simple Rust test binary that doesn't use any GCD/libdispatch features never allocates
+        // a work queue.
+        // When proc_pidinfo with PROC_PIDWORKQUEUEINFO queries the kernel, it looks for the
+        // process's workqueue structure. If none exists, it returns ESRCH.
+        match pidinfo::<WorkQueueInfo>(pid, 0) {
             Ok(info) => assert!(info.pwq_nthreads > 0),
-            Err(e) => panic!("{}: {}", "Error retrieving WorkQueueInfo", e),
+            Err(e) if e.contains("No such process") => {
+                // Process has no work queue - this is valid
+            }
+            Err(e) => panic!("Error retrieving WorkQueueInfo: {}", e),
         }
     }
 
@@ -762,7 +849,7 @@ mod test {
     }
 
     #[test]
-    // This checks that it cannot find the path of the process with pid -1 and returns correct error message
+    // This checks that it cannot find the path of the process with pid -1 and returns the correct error message
     fn pidpath_test_unknown_pid_test() {
         #[cfg(target_os = "macos")]
         let error_message = "No such process";
@@ -786,7 +873,7 @@ mod test {
     }
 
     // Pretty useless test as it uses the exact same code as the function - but I guess we
-    // should check it can be called and returns correct value
+    // should check it can be called and returns the correct value
     #[test]
     fn cwd_self_test() {
         assert_eq!(
