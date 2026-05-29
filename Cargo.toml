@@ -10,6 +10,9 @@ license = "MIT"
 edition = "2018"
 rust-version = "1.85"
 
+[lints.clippy]
+pedantic = "deny"
+
 [dependencies]
 errno = "0.3.14"
 libc = "^0.2.176"
