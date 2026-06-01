@@ -26,6 +26,8 @@ use crate::libproc::thread_info::ThreadInfo;
 #[cfg(target_os = "macos")]
 use crate::libproc::work_queue_info::WorkQueueInfo;
 #[cfg(target_os = "macos")]
+use crate::libproc::kinfo::{KProcInfo, KinfoProc};
+#[cfg(target_os = "macos")]
 use crate::osx_libproc_bindings::{
     proc_libversion, proc_name, proc_pidinfo, proc_pidpath, proc_regionfilename,
     PROC_PIDPATHINFO_MAXSIZE,
@@ -586,6 +588,66 @@ pub fn listpidinfo<T: ListPIDInfo>(pid: i32, max_len: usize) -> Result<Vec<T::It
         buffer.truncate(actual_len);
         Ok(buffer)
     }
+}
+
+/// Get the raw macOS `kinfo_proc` structure for `pid` via `sysctl(KERN_PROC_PID)`.
+///
+/// Unlike [`pidinfo`], this works for PID 0 (`kernel_task`) and does not require
+/// root. Returns the raw [`KinfoProc`](crate::libproc::kinfo::KinfoProc); most
+/// callers want the friendly [`kproc_info`] wrapper.
+///
+/// # Errors
+///
+/// Returns an error if `sysctl` fails (e.g. no process with the given `pid`).
+#[cfg(target_os = "macos")]
+pub fn kproc_info_raw(pid: i32) -> Result<KinfoProc, String> {
+    let mut mib: [c_int; 4] = [libc::CTL_KERN, libc::KERN_PROC, libc::KERN_PROC_PID, pid];
+    // KinfoProc is a plain repr(C) struct of scalars/pointers; a zeroed value is a
+    // valid initial state and sysctl overwrites it on success.
+    let mut info = unsafe { mem::zeroed::<KinfoProc>() };
+    let mut size = mem::size_of::<KinfoProc>();
+
+    let ret = unsafe {
+        libc::sysctl(
+            mib.as_mut_ptr(),
+            4,
+            std::ptr::addr_of_mut!(info).cast::<c_void>(),
+            &raw mut size,
+            std::ptr::null_mut(),
+            0,
+        )
+    };
+
+    if ret != 0 {
+        return Err(helpers::get_errno_with_message(ret));
+    }
+    if size == 0 {
+        return Err(format!("No process found with pid {pid}"));
+    }
+    Ok(info)
+}
+
+/// Get process information for `pid` via `sysctl(KERN_PROC_PID)`.
+///
+/// Works for PID 0 (`kernel_task`) and other PIDs where [`pidinfo`] fails, and
+/// does not require root for basic process information. Returns a friendly
+/// [`KProcInfo`](crate::libproc::kinfo::KProcInfo); for the raw structure use
+/// [`kproc_info_raw`].
+///
+/// # Errors
+///
+/// Returns an error if `sysctl` fails (e.g. no process with the given `pid`).
+///
+/// # Example
+/// ```no_run
+/// use libproc::libproc::proc_pid::kproc_info;
+/// if let Ok(info) = kproc_info(0) {
+///     println!("PID 0 is {}", info.comm); // "kernel_task"
+/// }
+/// ```
+#[cfg(target_os = "macos")]
+pub fn kproc_info(pid: i32) -> Result<KProcInfo, String> {
+    kproc_info_raw(pid).map(|raw| KProcInfo::from(&raw))
 }
 
 #[cfg(target_os = "macos")]

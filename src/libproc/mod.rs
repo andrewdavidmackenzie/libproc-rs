@@ -31,5 +31,9 @@ pub mod work_queue_info;
 /// Information about Network usage by a process
 pub mod net_info;
 
+#[cfg(any(target_os = "macos", doc))]
+/// Process information via `sysctl(KERN_PROC_PID)` - works for PID 0 (`kernel_task`)
+pub mod kinfo;
+
 mod helpers;
 pub(crate) mod sys;

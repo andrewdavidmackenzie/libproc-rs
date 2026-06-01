@@ -56,6 +56,11 @@ pub use libproc::thread_info;
 /// Get information about Work Queues
 pub use libproc::work_queue_info;
 
+#[cfg(any(target_os = "macos", doc))]
+#[doc(inline)]
+/// Get process information via `sysctl(KERN_PROC_PID)` - works for PID 0 (`kernel_task`)
+pub use libproc::kinfo;
+
 // Not documenting this as this export is legacy, and replaced by all the re-exports of
 // sub-modules above
 #[doc(hidden)]
