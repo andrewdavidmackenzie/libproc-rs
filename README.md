@@ -86,6 +86,19 @@ This project is in Drips [here](https://www.drips.network/app/projects/github/an
 * How to do error reporting? Define own new Errors, or keep simple with Strings?
 * Would like Path/PathBuf returned when it makes sense instead of String?
 
+## Caller-held process snapshots on macOS
+
+`processes::pids_by_type_into(filter, &mut buffer)` uses the existing
+`ProcFilter` and writes one native snapshot into a caller-owned `u32` buffer.
+It returns the number of entries written and preserves the untouched tail.
+A count equal to the buffer length describes a prefix; it does not establish
+that every matching process was included. An empty buffer is rejected before
+the native call, and native failures retain their IO kind and errno.
+
+The snapshot can become stale immediately. Listing a PID does not give the
+caller custody of that process; lifecycle and signalling still require the
+caller's own valid process relation.
+
 ## TODO
 
 See the [list of issues](https://github.com/andrewdavidmackenzie/libproc-rs/issues).
