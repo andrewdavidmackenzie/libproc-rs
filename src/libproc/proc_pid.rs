@@ -20,13 +20,13 @@ use libc::PATH_MAX;
 use crate::libproc::bsd_info::BSDInfo;
 use crate::libproc::helpers;
 #[cfg(target_os = "macos")]
+use crate::libproc::kinfo::{KProcInfo, KinfoProc};
+#[cfg(target_os = "macos")]
 use crate::libproc::task_info::{TaskAllInfo, TaskInfo};
 #[cfg(target_os = "macos")]
 use crate::libproc::thread_info::ThreadInfo;
 #[cfg(target_os = "macos")]
 use crate::libproc::work_queue_info::WorkQueueInfo;
-#[cfg(target_os = "macos")]
-use crate::libproc::kinfo::{KProcInfo, KinfoProc};
 #[cfg(target_os = "macos")]
 use crate::osx_libproc_bindings::{
     proc_libversion, proc_name, proc_pidinfo, proc_pidpath, proc_regionfilename,
@@ -876,7 +876,7 @@ mod test {
         if let Ok(info) = pidinfo::<TaskAllInfo>(pid, 0) {
             if let Ok(threads) = listpidinfo::<ListThreads>(pid, info.ptinfo.pti_threadnum as usize)
             {
-                assert!(!threads.is_empty());
+                assert_ne!(threads, [] as [u64; 0]);
             }
             if let Ok(fds) = listpidinfo::<ListFDs>(pid, info.pbsd.pbi_nfiles as usize) {
                 assert!(!fds.is_empty());
