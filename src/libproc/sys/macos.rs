@@ -913,7 +913,7 @@ mod test {
                 cleanup = cleanup
             );
             assert_eq!(cleanup.pid, u32::try_from(pid).expect("positive owned PID"));
-            assert_eq!(cleanup.errors.len(), 1, "cleanup={cleanup:?}",);
+            assert_eq!(cleanup.errors.len(), 1, "cleanup={cleanup:?}");
             assert_eq!(cleanup.errors[0].0, "initial_wait");
             assert_eq!(cleanup.errors[0].1.raw_os_error(), Some(libc::ECHILD));
             let error = primary.expect_err("actual native one-byte buffer must refuse");
