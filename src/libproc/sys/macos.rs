@@ -223,7 +223,7 @@ mod test {
     fn test_listpids() -> io::Result<()> {
         let pid = std::process::id();
         let pids = listpids(ProcFilter::All)?;
-        assert!(!pids.is_empty());
+        assert_ne!(pids, [] as [u32; 0]);
         assert!(pids.contains(&pid));
         Ok(())
     }
@@ -398,7 +398,7 @@ mod test {
     fn test_listpids_invalid_parent_pid() {
         let pids = listpids(ProcFilter::ByParentProcess { ppid: u32::MAX })
             .expect("Error requesting children of inexistant process");
-        assert!(pids.is_empty());
+        assert_eq!(pids, [] as [u32; 0]);
     }
 
     // No point in writing test cases for all ProcFilter members, as the Darwin
@@ -412,7 +412,7 @@ mod test {
         let root = std::path::Path::new("/");
         let pids: Vec<u32> =
             listpidspath(ProcFilter::All, root, true, false).expect("Failed to load PIDs for path");
-        assert!(!pids.is_empty());
+        assert_ne!(pids, [] as [u32; 0]);
     }
 
     mod bounded {
@@ -464,7 +464,7 @@ mod test {
                             let retirement = fixture.retire();
                             assert!(
                                 publication.is_ok(),
-                                "native spawn succeeded; publication={publication:?}; retirement={retirement:?}"
+                                "native spawn succeeded; publication={publication:?}; retirement={retirement:?}", publication = publication, retirement = retirement
                             );
                         }
                         Ok(fixture)
@@ -472,7 +472,7 @@ mod test {
                     Err(error) => {
                         assert!(
                             publication.is_ok(),
-                            "native spawn primary={error:?}; publication={publication:?}; no child was acquired"
+                            "native spawn primary={error:?}; publication={publication:?}; no child was acquired", error = error, publication = publication
                         );
                         Err(error)
                     }
@@ -653,7 +653,7 @@ mod test {
                             && !retirement.deadline_exhausted
                             && retirement.status.is_some()
                     }),
-                "member-spawn={acquired:?}; publication={member_publication:?}; bounded={bounded:?}; publication={bounded_publication:?}; complete={complete:?}; publication={complete_publication:?}; retirements={retirements:?}"
+                "member-spawn={acquired:?}; publication={member_publication:?}; bounded={bounded:?}; publication={bounded_publication:?}; complete={complete:?}; publication={complete_publication:?}; retirements={retirements:?}", acquired = acquired, member_publication = member_publication, bounded = bounded, bounded_publication = bounded_publication, complete = complete, complete_publication = complete_publication, retirements = retirements
             );
             let leader_status = assert_retired(&bounded, leader_cleanup);
             let member_status = assert_retired(&complete, member_cleanup);
@@ -795,7 +795,11 @@ mod test {
                     let cleanup = leader.retire();
                     assert_publication(&primary, &publication, &[cleanup]);
                     let status = assert_retired(&primary, cleanup);
-                    assert!(cleanup.kill_attempted, "cleanup={cleanup:?}");
+                    assert!(
+                        cleanup.kill_attempted,
+                        "cleanup={cleanup:?}",
+                        cleanup = cleanup
+                    );
                     assert_eq!(status.signal(), Some(libc::SIGKILL));
                     Ok(())
                 }
@@ -808,7 +812,7 @@ mod test {
                     let leader_cleanup = leader.retire();
                     let acquired_cleanup = acquired.retire();
                     panic!(
-                        "native member unexpectedly spawned pid={acquired_pid}; publication={publication:?}; leader={leader_cleanup:?}; acquired={acquired_cleanup:?}"
+                        "native member unexpectedly spawned pid={acquired_pid}; publication={publication:?}; leader={leader_cleanup:?}; acquired={acquired_cleanup:?}", acquired_pid = acquired_pid, publication = publication, leader_cleanup = leader_cleanup, acquired_cleanup = acquired_cleanup
                     );
                 }
             }
@@ -842,7 +846,8 @@ mod test {
                 // status is initialized writable storage. WNOHANG never blocks.
                 // This controlled external reap deliberately invalidates Child's
                 // wait custody; the fixture may not signal after observing ECHILD.
-                let reaped = unsafe { libc::waitpid(pid, &mut status, libc::WNOHANG) };
+                let reaped =
+                    unsafe { libc::waitpid(pid, std::ptr::addr_of_mut!(status), libc::WNOHANG) };
                 if reaped == -1 {
                     return Err(io::Error::last_os_error());
                 }
@@ -892,20 +897,41 @@ mod test {
                 primary.as_ref().err()
             );
             assert_eq!(externally_reaped?.code(), Some(0));
-            assert!(cleanup.status.is_none(), "cleanup={cleanup:?}");
-            assert!(!cleanup.kill_attempted, "cleanup={cleanup:?}");
-            assert!(!cleanup.deadline_exhausted, "cleanup={cleanup:?}");
+            assert!(
+                cleanup.status.is_none(),
+                "cleanup={cleanup:?}",
+                cleanup = cleanup
+            );
+            assert!(
+                !cleanup.kill_attempted,
+                "cleanup={cleanup:?}",
+                cleanup = cleanup
+            );
+            assert!(
+                !cleanup.deadline_exhausted,
+                "cleanup={cleanup:?}",
+                cleanup = cleanup
+            );
             assert_eq!(cleanup.pid, u32::try_from(pid).expect("positive owned PID"));
-            assert_eq!(cleanup.errors.len(), 1, "cleanup={cleanup:?}");
+            assert_eq!(
+                cleanup.errors.len(),
+                1,
+                "cleanup={cleanup:?}",
+                cleanup = cleanup
+            );
             assert_eq!(cleanup.errors[0].0, "initial_wait");
             assert_eq!(cleanup.errors[0].1.raw_os_error(), Some(libc::ECHILD));
             let error = primary.expect_err("actual native one-byte buffer must refuse");
             assert_eq!(error.raw_os_error(), Some(libc::ENOMEM));
             assert_eq!(pids, [u32::MAX; 1]);
-            let first_record = cleanup as *const NativeRetirement;
+            let first_record = std::ptr::from_ref::<NativeRetirement>(cleanup);
             let repeated = child.retire();
             assert!(std::ptr::eq(first_record, repeated));
-            assert!(!repeated.kill_attempted, "repeated={repeated:?}");
+            assert!(
+                !repeated.kill_attempted,
+                "repeated={repeated:?}",
+                repeated = repeated
+            );
             assert_eq!(repeated.errors[0].1.raw_os_error(), Some(libc::ECHILD));
             // The same unknown Child result is retained. Drop makes no second
             // wait/kill attempt; the actual external wait above reaped it.

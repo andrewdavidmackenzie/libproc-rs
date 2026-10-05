@@ -34,7 +34,7 @@ fn generate_macos_bindings(rust_target: bindgen::RustTarget) {
         .rust_target(rust_target)
         .rust_edition(RustEdition::Edition2018)
         .layout_tests(false)
-        .clang_args(&["-x", "c++", "-I", &format!("{sdk_path}/usr/include/")])
+        .clang_args(["-x", "c++", "-I", &format!("{sdk_path}/usr/include/")])
         .generate()
         .expect("Failed to build libproc bindings");
 
