@@ -75,6 +75,29 @@ pub fn pids_by_type(filter: ProcFilter) -> io::Result<Vec<u32>> {
     listpids(filter)
 }
 
+/// Writes process IDs matching `filter` into a caller-provided buffer on macOS.
+///
+/// The result is a count of PIDs, not bytes. Only `pids[..count]` is an observed
+/// result. A count equal to `pids.len()` may be truncated; it does not establish
+/// that every matching process was observed. Even a short result is only a
+/// snapshot and does not grant permission to signal or otherwise act on a PID.
+/// Darwin includes retained zombie processes in process-group results.
+///
+/// This makes one native `proc_listpids` call with the exact supplied capacity.
+/// It does not query a global size or allocate a PID list. Darwin still scans
+/// its process lists, so the buffer bound is not an execution-time guarantee.
+///
+/// # Errors
+///
+/// Returns `InvalidInput` for an empty buffer or a byte length that cannot be
+/// represented by Darwin's `int` buffer size. A native failure retains its
+/// original OS error. An invalid native byte count is `InvalidData`. A zero
+/// result without a native error is an empty snapshot, not an ownership verdict.
+#[cfg(target_os = "macos")]
+pub fn pids_by_type_into(filter: ProcFilter, pids: &mut [u32]) -> io::Result<usize> {
+    crate::libproc::sys::listpids_into(filter, pids)
+}
+
 /// Returns the PIDs of active processes that reference an open file with the given path or volume.
 ///
 ///Filter for pids with or without files opened with the `O_EVTONLY` flag.
