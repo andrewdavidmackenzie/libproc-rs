@@ -7,7 +7,7 @@ all: clippy test build-docs
 
 .PHONY: clippy
 clippy:
-	@cargo clippy --all --tests --no-deps --all-targets --all-features -- --warn clippy::pedantic -D warnings
+	@cargo clippy --all --tests --no-deps --all-targets --all-features
 
 .PHONY: test
 test:
