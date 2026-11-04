@@ -71,7 +71,7 @@ jobs:
       - name: Run clippy (installed toolchain version as per matrix)
         run: |
           rustc --version
-          cargo clippy --all --tests --no-deps --all-targets --all-features -- --warn clippy::pedantic -D warnings
+          cargo clippy --all --tests --no-deps --all-targets --all-features
 
       - name: Run Tests on Linux
         if: runner.os == 'Linux'

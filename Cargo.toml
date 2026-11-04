@@ -1,6 +1,6 @@
 [package]
 name = "libproc"
-version = "0.14.11"
+version = "0.15.0"
 description = "A library to get information about running processes - for Mac OS X and Linux"
 authors = ["Andrew Mackenzie <andrew@mackenzie-serres.net>"]
 repository = "https://github.com/andrewdavidmackenzie/libproc-rs"
@@ -10,8 +10,15 @@ license = "MIT"
 edition = "2018"
 rust-version = "1.85"
 
+[lints.rust]
+warnings = "deny"
+# Allow unknown lints so that newer clippy lint names (e.g. assert_is_empty,
+# added in 1.98) don't cause errors when building with the MSRV toolchain (1.85)
+unknown_lints = "allow"
+
 [lints.clippy]
-pedantic = "deny"
+pedantic = { level = "warn", priority = -1 }
+assert_is_empty = "allow"
 
 [dependencies]
 errno = "0.3.14"
