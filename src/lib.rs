@@ -62,7 +62,7 @@ pub use libproc::work_queue_info;
 pub use libproc::kinfo;
 
 // Not documenting this as this export is legacy, and replaced by all the re-exports of
-// sub-modules above
+// submodules above
 #[doc(hidden)]
 pub mod libproc;
 
